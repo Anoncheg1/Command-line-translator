@@ -2,7 +2,7 @@
 # access translate.google.com from terminal
 # mirror http://pastebin.com/kPTYjY6W
 # mirror https://github.com/Anoncheg1/Command-line-translator
-# requirents: curl, Mozilla js shell, forvo.com account
+# requirements: curl, Mozilla js shell, forvo.com account
 # + output: translated text, fixed text with highlight, dictionary, transcription, audio pronunciation
 # + cache for all words
 # + saving words to file for learning
