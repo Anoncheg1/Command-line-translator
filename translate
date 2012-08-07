@@ -1,7 +1,8 @@
 #!/bin/bash
 # access translate.google.com from terminal
-# http://pastebin.com/kPTYjY6W
-# requiments: curl, Mozilla js shell, forvo.com account
+# mirror http://pastebin.com/kPTYjY6W
+# mirror https://github.com/Anoncheg1/Command-line-translator
+# requirents: curl, Mozilla js shell, forvo.com account
 # + output: translated text, fixed text with highlight, dictionary, transcription, audio pronunciation
 # + cache for all words
 # + saving words to file for learning
@@ -93,7 +94,7 @@ if [[ ${#request} -gt 300 ]]; then
 	echo -e "\033[32;1m"$(iconv -f $encoding <<<"$result" |  awk 'BEGIN {RS="</div>"};/<span[^>]* id=["'\'']?result_box["'\'']?/' | html2text -utf8)"\033[0m"
 
 else
-	result2=$(curl -s -i --user-agent "" --data-urlencode "text=$request" "http://translate.google.com/translate_a/t?client=t&hl=en&sl=$source&tl=$target&ie=UTF-8&oe=UTF-8&multires=1&ssel=0&tsel=0&sc=1") #getting google result for short sentence
+	result2=$(curl -s -i --user-agent "" --data-urlencode "text=$request" "http://translate.google.com/translate_a/t?client=t&hl=$target&sl=$source&tl=$target&ie=UTF-8&oe=UTF-8&multires=1&ssel=0&tsel=0&sc=1") #getting google result for short sentence
 	if [[ $(echo "$request"  |wc -w) -lt 3 ]];then
 		fl=$(echo "$result2" | grep -o '[^"]*/i[^"]*' | sed 's/\\u003cb\\u003e\\u003ci\\u003e//g' | sed 's/\\u003c\/i\\u003e\\u003c\/b\\u003e//g' | sed 's/\\u0026#39;.//g')
 		diffnum=$(cmp -l <(echo -n $request) <(echo -n $fl) 2>/dev/null | head -n 1 | sed 's/\([0-9][0-9]\?\).*/\1/') 
