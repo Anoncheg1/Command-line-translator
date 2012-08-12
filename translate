@@ -1,5 +1,5 @@
 #!/bin/bash
-# It is tool for access translate.google.com from terminal and to have English dictionary.
+# This tool for access translate.google.com from terminal and to have English dictionary.
 # mirror https://github.com/Anoncheg1/Command-line-translator
 # mirror http://pastebin.com/kPTYjY6W
 # requirements: curl, Mozilla js shell, forvo.com account
