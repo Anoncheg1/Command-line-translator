@@ -1,7 +1,7 @@
 #!/bin/bash
-# access translate.google.com from terminal
-# mirror http://pastebin.com/kPTYjY6W
+# It is tool for access translate.google.com from terminal and to have English dictionary.
 # mirror https://github.com/Anoncheg1/Command-line-translator
+# mirror http://pastebin.com/kPTYjY6W
 # requirements: curl, Mozilla js shell, forvo.com account
 # + output: translated text, fixed text with highlight, dictionary, transcription, audio pronunciation
 # + cache for all words
@@ -87,6 +87,8 @@ fi
 [ ! -d "$PR_DIR" ] && mkdir "$PR_DIR"
 [ ! -d "$PR_DIR"/cache ] && mkdir "$PR_DIR"/cache
 
+r_words_count=$(echo "$request"  |wc -w)
+
 if [[ ${#request} -gt 300 ]]; then
 	result=$(curl -s -i --user-agent "" -d "sl=$source" -d "tl=$target" --data-urlencode "text=$request" http://translate.google.com)
 	encoding=$(awk '/Content-Type: .* charset=/ {sub(/^.*charset=["'\'']?/,""); sub(/[ "'\''].*$/,""); print}' <<<"$result")
@@ -95,7 +97,7 @@ if [[ ${#request} -gt 300 ]]; then
 
 else
 	result2=$(curl -s -i --user-agent "" --data-urlencode "text=$request" "http://translate.google.com/translate_a/t?client=t&hl=$target&sl=$source&tl=$target&ie=UTF-8&oe=UTF-8&multires=1&ssel=0&tsel=0&sc=1") #getting google result for short sentence
-	if [[ $(echo "$request"  |wc -w) -lt 3 ]];then
+	if [[ $r_words_count -le 2 ]];then
 		fl=$(echo "$result2" | grep -o '[^"]*/i[^"]*' | sed 's/\\u003cb\\u003e\\u003ci\\u003e//g' | sed 's/\\u003c\/i\\u003e\\u003c\/b\\u003e//g' | sed 's/\\u0026#39;.//g')
 		diffnum=$(cmp -l <(echo -n $request) <(echo -n $fl) 2>/dev/null | head -n 1 | sed 's/\([0-9][0-9]\?\).*/\1/') 
 #		echo $diffnum
@@ -112,18 +114,18 @@ else
 	[[ ! $fl ]] &&  echo -n "dictionary(googlearr);" >> "$PR_DIR"/tmpjsobj
 	
 	#for english only. but it may be altered
-	if [[ $(echo "$request"  |wc -w) -eq 1 && $source == en && ! $fl && $(echo "$request" | tr '[:upper:]' '[:lower:]') !=  $(echo "$res" | tr '[:upper:]' '[:lower:]') ]]; then
+	if [[ $r_words_count -eq 1 && $source == en && ! $fl && $(echo "$request" | tr '[:upper:]' '[:lower:]') !=  $(echo "$res" | tr '[:upper:]' '[:lower:]') ]]; then #dictionary
 		cachefile="$PR_DIR/cache/$request"
 		if [[ ! -e "$cachefile" || (( $sound == 1 && ! -e "$cachefile".mp3 )) ]]; then #check for word in cache
 
 			js "$PR_DIR"/tmpjsobj > "$cachefile" #google translated text and dictionary to cache
 
-			raw_phras=$(curl -s --user-agent "" http://www.macmillandictionary.com/dictionary/american/"$request" | grep -o '<li ID.*End of DIV SENSE--></li>' | sed 's/<.\?span[^>]*>//g' )
+			raw_phras=$(curl -s --user-agent "" http://www.macmillandictionary.com/dictionary/american/"$(echo $request | tr ' ' - )" | grep -o '<li ID.*End of DIV SENSE--></li>' | sed 's/<.\?span[^>]*>//g' )
 			phras=$(echo $raw_phras |  sed 's/End of DIV SENSE--><\/li>/End of DIV SENSE--><\/li>\n/g' | grep -n -o '"h2">[^>]*<' | sed 's/^\([^:]*\):.*>\([^<]*\).*/\1 \2\./') #getting phrases
 			phras2=$(echo $raw_phras |  sed 's/End of DIV SENSE--><\/li>/End of DIV SENSE--><\/li>\n/g' | grep -n -o '"EXAMPLE">[^>]*<' | sed 's/^\([^:]*\):.*>\([^<]*\).*/\1 \2/') #getting examples
 			if [[ $raw_phras ]]; then
 				echo -e "\033[1;35m"PHRASES:$(tput sgr0) >> "$cachefile"
-				join --nocheck-order -a 1 -a 2 <(echo "$phras") <(echo "$phras2") >> "$cachefile"
+				join --nocheck-order -a 1 -a 2 <(echo "$phras") <(echo "$phras2") >> "$cachefile" | sed '/^$/d'
 #				echo "$phras" > tm1
 #				echo "$phras2" >tm2
 #				echo -e "\033[34m"http://www.macmillandictionary.com/dictionary/american/"$request"$(tput sgr0) >> "$cachefile"
@@ -168,6 +170,16 @@ else
 	else
 		js "$PR_DIR"/tmpjsobj #google dictionary and translated text output
 		[[ $fl ]] && echo $fl #google fixed text output
+
+		if [[ $r_words_count -gt 1 && $r_words_count -le 3 && $source == en && ! $fl && $(echo "$request" | tr '[:upper:]' '[:lower:]') !=  $(echo "$res" | tr '[:upper:]' '[:lower:]') ]]; then #phrases for 2 3 words of phrasal verbs
+			raw_phras=$(curl -s --user-agent "" http://www.macmillandictionary.com/dictionary/american/"$(echo $request | tr ' ' - )" | grep -o '<li.*End of DIV SENSE--></li>' | sed 's/<.\?span[^>]*>//g' )
+			phras=$(echo $raw_phras |  sed 's/End of DIV SENSE--><\/li>/End of DIV SENSE--><\/li>\n/g' | grep -n -o '"h2">[^>]*<' | sed 's/^\([^:]*\):.*>\([^<]*\).*/\1 \2\./') #getting phrases
+			phras2=$(echo $raw_phras |  sed 's/End of DIV SENSE--><\/li>/End of DIV SENSE--><\/li>\n/g' | grep -n -o '"EXAMPLE">[^>]*<' | sed 's/^\([^:]*\):.*>\([^<]*\).*/\1 \2/') #getting examples
+			if [[ $raw_phras ]]; then
+				echo -e "\033[1;35m"PHRASES:$(tput sgr0)
+				join --nocheck-order -a 1 -a 2 <(echo "$phras") <(echo "$phras2") | sed '/^$/d'
+			fi
+		fi
 	fi
 fi
 
