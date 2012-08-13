@@ -129,7 +129,7 @@ else
 				raw_phras=$(curl -s --user-agent "" http://www.macmillandictionary.com/dictionary/american/"$(echo $request | tr ' ' - )" | grep -o '<li ID.*End of DIV SENSE--></li>' | sed 's/<.\?span[^>]*>//g' )
 				phras=$(echo $raw_phras |  sed 's/End of DIV SENSE--><\/li>/End of DIV SENSE--><\/li>\n/g' | grep -n -o '"h2">[^>]*<' | sed 's/^\([^:]*\):.*>\([^<]*\).*/\1 \2\./') #getting phrases
 				phras2=$(echo $raw_phras |  sed 's/End of DIV SENSE--><\/li>/End of DIV SENSE--><\/li>\n/g' | grep -n -o '"EXAMPLE">[^>]*<' | sed 's/^\([^:]*\):.*>\([^<]*\).*/\1 \2/') #getting examples
-				if [[ $raw_phras ]]; then
+				if [[ $phras ]]; then
 					echo -e "\033[1;35m"PHRASES:$(tput sgr0) >> "$cachefile"
 					join --nocheck-order -a 1 -a 2 <(echo "$phras") <(echo "$phras2") >> "$cachefile" | sed '/^$/d'
 #					echo "$phras" > tm1
@@ -172,7 +172,7 @@ else
 				raw_phras=$(curl -s --user-agent "" http://www.macmillandictionary.com/dictionary/american/"$(echo $request | tr ' ' - )" | grep -o '<li.*End of DIV SENSE--></li>' | sed 's/<.\?span[^>]*>//g' )
 				phras=$(echo $raw_phras |  sed 's/End of DIV SENSE--><\/li>/End of DIV SENSE--><\/li>\n/g' | grep -n -o '"h2">[^>]*<' | sed 's/^\([^:]*\):.*>\([^<]*\).*/\1 \2\./') #getting phrases
 				phras2=$(echo $raw_phras |  sed 's/End of DIV SENSE--><\/li>/End of DIV SENSE--><\/li>\n/g' | grep -n -o '"EXAMPLE">[^>]*<' | sed 's/^\([^:]*\):.*>\([^<]*\).*/\1 \2/') #getting examples
-				if [[ $raw_phras ]]; then
+				if [[ $phras2 ]]; then
 					echo -e "\033[1;35m"PHRASES:$(tput sgr0)
 					join --nocheck-order -a 1 -a 2 <(echo "$phras") <(echo "$phras2") | sed '/^$/d'
 				fi
