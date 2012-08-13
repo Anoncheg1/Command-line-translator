@@ -3,7 +3,7 @@
 # mirror https://github.com/Anoncheg1/Command-line-translator
 # mirror http://pastebin.com/kPTYjY6W
 # requirements: curl, Mozilla js shell, forvo.com account
-# + output: translated text, fixed text with highlight, dictionary, transcription, audio pronunciation
+# + output: translated text, fixed text with highlight, dictionary, phrases, transcription, audio pronunciation
 # + cache for all words
 # + saving words to file for learning
 
@@ -29,7 +29,7 @@ words_buffer=2000
 PR_DIR="/home/$USER/.translate"
 timeout=5
 
-jsout_dictionary="var googlearr = eval(myJSONObject);
+jsout_dictionary="var googlearr = eval(JSON.stringify(myJSONObject));
 var rsum=\"\"; //translated text
 if(typeof googlearr[0] !== 'undefined' && googlearr[0] !== null){  //summing sentences
 	for (var i = 0; i < googlearr[0].length; i++){
@@ -96,19 +96,25 @@ if [[ ${#request} -gt 300 ]]; then
 	echo -e "\033[32;1m"$(iconv -f $encoding <<<"$result" |  awk 'BEGIN {RS="</div>"};/<span[^>]* id=["'\'']?result_box["'\'']?/' | html2text -utf8)"\033[0m"
 
 else
-	result2=$(curl -s -i --user-agent "" --data-urlencode "text=$request" "http://translate.google.com/translate_a/t?client=t&hl=$target&sl=$source&tl=$target&ie=UTF-8&oe=UTF-8&multires=1&ssel=0&tsel=0&sc=1") #getting google result for short sentence
-	if [[ $r_words_count -le 2 ]];then
-		fl=$(echo "$result2" | grep -o '[^"]*/i[^"]*' | sed 's/\\u003cb\\u003e\\u003ci\\u003e//g' | sed 's/\\u003c\/i\\u003e\\u003c\/b\\u003e//g' | sed 's/\\u0026#39;.//g')
+	grespond=$(curl -s -i --user-agent "" --data-urlencode "text=$request" "http://translate.google.com/translate_a/t?client=t&hl=$target&sl=$source&tl=$target&ie=UTF-8&oe=UTF-8&multires=1&ssel=0&tsel=0&sc=1") #getting google respond for short sentence
+
+	#echo -n "var myJSONObject = " > "$PR_DIR"/tmpjsobj2
+	#echo [$(echo "$grespond" | grep -o '"[^"]*/i[^"]*"')"];" >> "$PR_DIR"/tmpjsobj2
+	#echo [$(echo "$grespond" | grep -o '[^"]*/i[^"]*')"];"
+	#echo -e "var googlearr = eval(JSON.stringify(myJSONObject));\n print(googlearr);" >> "$PR_DIR"/tmpjsobj2
+	#js "$PR_DIR"/tmpjsobj2
+	if [[ $r_words_count -le 2 ]];then #getting google fixed text from $grespond
+		fl=$(echo "$grespond" | grep -o '[^"]*/i[^"]*' | sed 's/\\u003cb\\u003e\\u003ci\\u003e//g' | sed 's/\\u003c\/i\\u003e\\u003c\/b\\u003e//g' | sed 's/\\u0026#39;.//g')
 		diffnum=$(cmp -l <(echo -n $request) <(echo -n $fl) 2>/dev/null | head -n 1 | sed 's/\([0-9][0-9]\?\).*/\1/') 
 #		echo $diffnum
 		[[ $diffnum > 0 ]] && fl="$(tput bold)$(tput setaf 3)${fl:0:$diffnum-1}$(tput bold)$(tput setaf 1)${fl:$diffnum-1:1}$(tput bold)$(tput setaf 3)${fl:$diffnum}$(tput sgr0)" #highlight difference in one word
 	else
-		fl=$(echo "$result2" | grep -o '[^"]*/i[^"]*' | sed 's/\\u003cb\\u003e\\u003ci\\u003e/'$(tput bold)$(tput setaf 3)'/g' | sed 's/\\u003c\/i\\u003e\\u003c\/b\\u003e/'$(tput sgr0)'/g' | sed 's/\\u0026#39;.//g') #google fixed text
+		fl=$(echo "$grespond" | grep -o '[^"]*/i[^"]*' | sed 's/\\u003cb\\u003e\\u003ci\\u003e/'$(tput bold)$(tput setaf 3)'/g' | sed 's/\\u003c\/i\\u003e\\u003c\/b\\u003e/'$(tput sgr0)'/g' | sed 's/\\u0026//g' | sed "s/\#39;/'/g" ) #google fixed text
 	fi
-#	echo $result2 | grep -o '\[.*\]' 
+#	echo $grespond | grep -o '\[.*\]' 
 
 	echo -n "var myJSONObject = " > "$PR_DIR"/tmpjsobj
-	echo -n "$result2" | grep -o '\[.*\]' >> "$PR_DIR"/tmpjsobj
+	echo -n "$grespond" | grep -o '\[.*\]' >> "$PR_DIR"/tmpjsobj
 	echo ";">> "$PR_DIR"/tmpjsobj
 	echo -n "$jsout_dictionary" >> "$PR_DIR"/tmpjsobj
 	[[ ! $fl ]] &&  echo -n "dictionary(googlearr);" >> "$PR_DIR"/tmpjsobj
@@ -157,7 +163,7 @@ else
 					fi
 				fi
 			fi
-			[[ $(ls "$PR_DIR"/cache/*.mp3 | wc -l) -gt $words_buffer ]] && find "$PR_DIR"/cache -mtime +30 -delete #cache cleaning
+			[[ $(ls "$PR_DIR"/cache/*.mp3 | wc -l) -gt $words_buffer ]] && find "$PR_DIR"/cache -mtime +20 -delete #cache cleaning
 		else #cache output
 			cat "$cachefile" #output
 			echo -e "\033[34m"http://oxforddictionaries.com/definition/english/"$request"$(tput sgr0)
