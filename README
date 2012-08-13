@@ -4,7 +4,7 @@ mirror http://pastebin.com/kPTYjY6W
 requirements: curl, Mozilla js shell, forvo.com account
 
 features:
-output: translated text, fixed text with highlight, dictionary, transcription, audio pronunciation
+output: translated text, fixed text with highlight, dictionary, phrases, transcription, audio pronunciation
 cache for all words
 saving words to file for learning
 

@@ -25,7 +25,7 @@ ENGLISH_TARGET_LANG=ru		#target language for english request
 target=en 			#target for all languages except english
 flogin=121212 			#forvo.com login and pass REQUIRED!
 fpass=121212
-words_buffer=2000
+words_buffer=3000
 PR_DIR="/home/$USER/.translate"
 timeout=5
 
@@ -163,7 +163,7 @@ else
 					fi
 				fi
 			fi
-			[[ $(ls "$PR_DIR"/cache/*.mp3 | wc -l) -gt $words_buffer ]] && find "$PR_DIR"/cache -mtime +20 -delete #cache cleaning
+			[[ $(ls "$cachefile" | wc -l) -gt $words_buffer ]] && find "$PR_DIR"/cache -mtime +20 -delete #cache cleaning
 		else #cache output
 			cat "$cachefile" #output
 			echo -e "\033[34m"http://oxforddictionaries.com/definition/english/"$request"$(tput sgr0)
