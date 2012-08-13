@@ -131,7 +131,7 @@ else
 				phras2=$(echo $raw_phras |  sed 's/End of DIV SENSE--><\/li>/End of DIV SENSE--><\/li>\n/g' | grep -n -o '"EXAMPLE">[^>]*<' | sed 's/^\([^:]*\):.*>\([^<]*\).*/\1 \2/') #getting examples
 				if [[ $phras ]]; then
 					echo -e "\033[1;35m"PHRASES:$(tput sgr0) >> "$cachefile"
-					join --nocheck-order -a 1 -a 2 <(echo "$phras") <(echo "$phras2") >> "$cachefile" | sed '/^$/d'
+					join --nocheck-order -a 1 -a 2 <(echo "$phras") <(echo "$phras2")  | sed '/^$/d' >> "$cachefile"
 #					echo "$phras" > tm1
 #					echo "$phras2" >tm2
 #					echo -e "\033[34m"http://www.macmillandictionary.com/dictionary/american/"$request"$(tput sgr0) >> "$cachefile"
