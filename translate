@@ -122,48 +122,48 @@ else
 		[[ ! $fl ]] &&  echo -n "dictionary(googlearr);" >> "$PR_DIR"/tmpjsobj
 	
 		#for english only. but it may be altered
-		if [[ $r_words_count -eq 1 && $source == en && ! $fl && $(echo "$request" | tr '[:upper:]' '[:lower:]') !=  $(echo "$res" | tr '[:upper:]' '[:lower:]') ]]; then #dictionary
+		if [[ $r_words_count -eq 1 && ${#request} -gt 1 && $source == en && ! $fl && $(echo "$request" | tr '[:upper:]' '[:lower:]') !=  $(echo "$res" | tr '[:upper:]' '[:lower:]') ]]; then #dictionary
 
-				js "$PR_DIR"/tmpjsobj > "$cachefile" #google translated text and dictionary to cache
+			js "$PR_DIR"/tmpjsobj > "$cachefile" #google translated text and dictionary to cache
 
-				raw_phras=$(curl -s --user-agent "" http://www.macmillandictionary.com/dictionary/american/"$(echo $request | tr ' ' - )" | grep -o '<li ID.*End of DIV SENSE--></li>' | sed 's/<.\?span[^>]*>//g' )
-				phras=$(echo $raw_phras |  sed 's/End of DIV SENSE--><\/li>/End of DIV SENSE--><\/li>\n/g' | grep -n -o '"h2">[^>]*<' | sed 's/^\([^:]*\):.*>\([^<]*\).*/\1 \2\./') #getting phrases
-				phras2=$(echo $raw_phras |  sed 's/End of DIV SENSE--><\/li>/End of DIV SENSE--><\/li>\n/g' | grep -n -o '"EXAMPLE">[^>]*<' | sed 's/^\([^:]*\):.*>\([^<]*\).*/\1 \2/') #getting examples
-				if [[ $phras ]]; then
-					echo -e "\033[1;35m"PHRASES:$(tput sgr0) >> "$cachefile"
-					join --nocheck-order -a 1 -a 2 <(echo "$phras") <(echo "$phras2")  | sed '/^$/d' >> "$cachefile"
-#					echo "$phras" > tm1
-#					echo "$phras2" >tm2
-#					echo -e "\033[34m"http://www.macmillandictionary.com/dictionary/american/"$request"$(tput sgr0) >> "$cachefile"
+			raw_phras=$(curl -s --user-agent "" http://www.macmillandictionary.com/dictionary/american/"$(echo $request | tr ' ' - )" | grep -o '<li ID.*End of DIV SENSE--></li>' | sed 's/<.\?span[^>]*>//g' )
+			phras=$(echo $raw_phras |  sed 's/End of DIV SENSE--><\/li>/End of DIV SENSE--><\/li>\n/g' | grep -n -o '"h2">[^>]*<' | sed 's/^\([^:]*\):.*>\([^<]*\).*/\1 \2\./') #getting phrases
+			phras2=$(echo $raw_phras |  sed 's/End of DIV SENSE--><\/li>/End of DIV SENSE--><\/li>\n/g' | grep -n -o '"EXAMPLE">[^>]*<' | sed 's/^\([^:]*\):.*>\([^<]*\).*/\1 \2/') #getting examples
+			if [[ $phras ]]; then
+				echo -e "\033[1;35m"PHRASES:$(tput sgr0) >> "$cachefile"
+				join --nocheck-order -a 1 -a 2 <(echo "$phras") <(echo "$phras2")  | sed '/^$/d' >> "$cachefile"
+#				echo "$phras" > tm1
+#				echo "$phras2" >tm2
+#				echo -e "\033[34m"http://www.macmillandictionary.com/dictionary/american/"$request"$(tput sgr0) >> "$cachefile"
+			fi
+
+			trans=$(curl -s --user-agent "" http://lingvopro.abbyyonline.com/en/Translate/en-ru/"$request" | grep -o '"[^"]*Handlers/TranscriptionHandler\.ashx[^"]*"' | sed 's/.*=\(.*\)"/\1/'| echo -n -e $(sed 's/+/ /g; s/%/\\x/g')) #getting transcription
+			[[ $trans ]] && echo "[$trans]" >> "$cachefile"
+
+			cat "$cachefile" 2>/dev/null #output
+			echo -e "\033[34m"http://oxforddictionaries.com/definition/english/"$request"$(tput sgr0) # just another good english dictionary
+
+			if [[ $trans ]] ; then
+
+				#saving words
+				if [[ ${#request} -gt 2 && ! $(grep "$request" "$PR_DIR"/translated_words 2>/dev/null) ]]; then
+					#echo -e "$request \t\t\t\t\t\t\t\t\t\t [$trans]" >> "$PR_DIR"/translated_words
+					echo -e "$request" >> "$PR_DIR"/translated_words
 				fi
 
-				trans=$(curl -s --user-agent "" http://lingvopro.abbyyonline.com/en/Translate/en-ru/"$request" | grep -o '"[^"]*Handlers/TranscriptionHandler\.ashx[^"]*"' | sed 's/.*=\(.*\)"/\1/'| echo -n -e $(sed 's/+/ /g; s/%/\\x/g')) #getting transcription
-				[[ $trans ]] && echo "[$trans]" >> "$cachefile"
-
-				cat "$cachefile" 2>/dev/null #output
-				echo -e "\033[34m"http://oxforddictionaries.com/definition/english/"$request"$(tput sgr0) # just another good english dictionary
-
-				if [[ $trans ]] ; then
-
-					#saving words
-					if [[ ! $(grep "$request" "$PR_DIR"/translated_words 2>/dev/null) ]]; then
-						#echo -e "$request \t\t\t\t\t\t\t\t\t\t [$trans]" >> "$PR_DIR"/translated_words
-						echo -e "$request" >> "$PR_DIR"/translated_words
-					fi
-
-					#getting sound (always) from forvo.com
-					if [[ ! -e "$cachefile".mp3 ]]; then
-						curl -s -c "$PR_DIR"/tmpcookie --connect-timeout $timeout -m $timeout --user-agent "" -d "login=$flogin&password=$fpass" http://ru.forvo.com/login/ -o/dev/null
-						if [[ -e "$PR_DIR"/tmpcookie ]]; then
-							slink=$(curl -s -b $PR_DIR/tmpcookie --connect-timeout $timeout -m $timeout http://ru.forvo.com/word/"$request"/ | grep -o '[^"]*/download/mp3/'"$request"'/en/[^"]*' |head -n 1 )
-							[[ $slink ]] && curl -s -b "$PR_DIR"/tmpcookie --connect-timeout $timeout -m $timeout --user-agent "" -o "$cachefile".mp3 http://ru.forvo.com"$slink"
-							rm "$PR_DIR"/tmpcookie 2>/dev/null
-						else
-							echo fail to get sound from forvo.com
-						fi
+				#getting sound (always) from forvo.com
+				if [[ ! -e "$cachefile".mp3 ]]; then
+					curl -s -c "$PR_DIR"/tmpcookie --connect-timeout $timeout -m $timeout --user-agent "" -d "login=$flogin&password=$fpass" http://ru.forvo.com/login/ -o/dev/null
+					if [[ -e "$PR_DIR"/tmpcookie ]]; then
+						slink=$(curl -s -b $PR_DIR/tmpcookie --connect-timeout $timeout -m $timeout http://ru.forvo.com/word/"$request"/ | grep -o '[^"]*/download/mp3/'"$request"'/en/[^"]*' |head -n 1 )
+						[[ $slink ]] && curl -s -b "$PR_DIR"/tmpcookie --connect-timeout $timeout -m $timeout --user-agent "" -o "$cachefile".mp3 http://ru.forvo.com"$slink"
+						rm "$PR_DIR"/tmpcookie 2>/dev/null
+					else
+						echo fail to get sound from forvo.com
 					fi
 				fi
-				[[ $(ls "$cachefile" | wc -l) -gt $words_buffer ]] && find "$PR_DIR"/cache -mtime +20 -delete #cache cleaning
+			fi
+			[[ $(ls "$cachefile" | wc -l) -gt $words_buffer ]] && find "$PR_DIR"/cache -mtime +20 -delete #cache cleaning
 		else
 			js "$PR_DIR"/tmpjsobj #google dictionary and translated text output
 			[[ $fl ]] && echo $fl #google fixed text output
@@ -184,7 +184,7 @@ else
 	fi
 	#sound output
 	if [[ $sound == 1 && -e "$cachefile".mp3 ]]; then 
-		stat=$(playsound --loop 1 "$cachefile".mp3 2>&1 | grep -o 'Couldn')
+		stat=$(playsound --loop 0 "$cachefile".mp3 2>&1 | grep -o 'Couldn')
 		[[ $stat ]] && rm "$cachefile".mp3
 	fi
 fi
