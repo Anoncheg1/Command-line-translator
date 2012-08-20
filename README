@@ -12,5 +12,8 @@ for convenience:
 ~/.bash_aliases
 alias t="/home/user/translate"
 alias ts="/home/user/translate -s"
+alias ts2="/home/user/translate -s2"
+alias ts3="/home/user/translate -s3"
+
 
 You can thank me with Webmoney: wmz Z253207064534, wmr R327158221146, wme E282089965215
