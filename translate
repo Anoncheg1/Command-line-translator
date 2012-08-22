@@ -69,14 +69,15 @@ for (var c = 0; c < arr.length; c++){ //testing
 
 request=($*) #get array
 sound=0
+volume=0.7
 if [[ $1 = -h || $1 = --help ]]; then #help
 	echo "$help"
 	exit
 fi
 if [[ $1 == -s || $1 == -s2 || $1 == -s3 || $1 == --sound ]];then #sound varibles
 	sound=1
-	[[ $1 == -s2 ]] && volume=2
-	[[ $1 == -s3 ]] && volume=4
+	[[ $1 == -s2 ]] && volume=1.5
+	[[ $1 == -s3 ]] && volume=2.5
 	request[0]="" #remove first parameter
 fi
 request=${request[*]} #to string
