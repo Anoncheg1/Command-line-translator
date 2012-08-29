@@ -18,8 +18,8 @@ target=en 			#target for all languages except english
 flogin=121212 			#forvo.com login and pass REQUIRED!
 fpass=121212
 words_buffer=3000
-httpproxy=""			#proxy for long string
-httpsproxy=""			#socks5
+#httpproxy="127.0.0.1:4444" #"14.139.225.90:3128" #"127.0.0.1:4444"			#proxy for long string
+#httpsproxy="--socks5 127.0.0.1:9050"	#socks5
 timeout=10
 PR_DIR="/home/$USER/.translate"
 useragent="Mozilla/5.0 (X11; Linux i686) AppleWebKit/534.34 (KHTML, like Gecko) QupZilla/1.3.1 Safari/534.34"
@@ -96,7 +96,7 @@ fi
 [ ! -d "$PR_DIR"/cache ] && mkdir "$PR_DIR"/cache
 
 if [[ ${#request} -gt 300 ]]; then
-	result=$(curl -s -i --user-agent "$useragent" --socks5 "$httpsproxy" -x "$httpproxy" -d "sl=$source" -d "tl=$target" --data-urlencode "text=$request" http://translate.google.com)
+	result=$(curl -s -i --user-agent "$useragent" "$httpsproxy" -x "$httpproxy" -d "sl=$source" -d "tl=$target" --data-urlencode "text=$request" http://translate.google.com)
 	encoding=$(awk '/Content-Type: .* charset=/ {sub(/^.*charset=["'\'']?/,""); sub(/[ "'\''].*$/,""); print}' <<<"$result")
 	#iconv -f $encoding <<<"$result" | awk 'BEGIN {RS="<div"};/<span[^>]* id=["'\'']?result_box["'\'']?/ {sub(/^.*id=["'\'']?result_box["'\'']?(>| [^>]*>)([ \n\t]*<[^>]*>)*/,"");sub(/<.*$/,"");print}' | html2text -utf8
 	echo -e "\033[32;1m"$(iconv -f $encoding <<<"$result" |  awk 'BEGIN {RS="</div>"};/<span[^>]* id=["'\'']?result_box["'\'']?/' | html2text -utf8)"\033[0m"
@@ -106,7 +106,7 @@ else
 	r_words_count=$(echo "$request"  |wc -w)
 	if [[ ! -e "$cachefile" || (( $sound == 1 && ! -e "$cachefile".mp3 )) ]]; then
 		[[ $r_words_count -le 4 ]] && { httpproxy="" ; httpsproxy="" ; } #don't wanna proxy for 4 words.
-		grespond=$(curl -s -i --user-agent "$useragent" --socks5 "$httpsproxy" -x "$httpproxy" -m $timeout --data-urlencode "text=$request" "http://translate.google.com/translate_a/t?client=t&hl=$target&sl=$source&tl=$target&ie=UTF-8&oe=UTF-8&multires=1&ssel=0&tsel=0&sc=1") #getting google respond for short sentence
+		grespond=$(curl -s -i --user-agent "$useragent" "$httpsproxy" -x "$httpproxy" -m $timeout --data-urlencode "text=$request" "http://translate.google.com/translate_a/t?client=t&hl=$target&sl=$source&tl=$target&ie=UTF-8&oe=UTF-8&multires=1&ssel=0&tsel=0&sc=1") #getting google respond for short sentence
 		[[ ! $(echo $grespond | grep -o '\[.*\]') ]] && { echo "can't connect" ; exit; } #small connection check
 
 		#echo -n "var myJSONObject = " > "$PR_DIR"/tmpjsobj2
@@ -135,7 +135,7 @@ else
 
 			js "$PR_DIR"/tmpjsobj > "$cachefile" #google translated text and dictionary to cache
 
-			raw_phras=$(curl -s --user-agent "$useragent" --socks5 "$httpsproxy" -x "$httpproxy" http://www.macmillandictionary.com/dictionary/american/"$(echo $request | tr ' ' - )" | grep -o '<li ID.*End of DIV SENSE--></li>' | sed 's/<.\?span[^>]*>//g' )
+			raw_phras=$(curl -s --user-agent "$useragent" "$httpsproxy" -x "$httpproxy" http://www.macmillandictionary.com/dictionary/american/"$(echo $request | tr ' ' - )" | grep -o '<li ID.*End of DIV SENSE--></li>' | sed 's/<.\?span[^>]*>//g' )
 			phras=$(echo $raw_phras |  sed 's/End of DIV SENSE--><\/li>/End of DIV SENSE--><\/li>\n/g' | grep -n -o '"h2">[^>]*<' | sed 's/^\([^:]*\):.*>\([^<]*\).*/\1 \2\./') #getting phrases
 			phras2=$(echo $raw_phras |  sed 's/End of DIV SENSE--><\/li>/End of DIV SENSE--><\/li>\n/g' | grep -n -o '"EXAMPLE">[^>]*<' | sed 's/^\([^:]*\):.*>\([^<]*\).*/\1 \2/') #getting examples
 			if [[ $phras ]]; then
@@ -146,7 +146,7 @@ else
 #				echo -e "\033[34m"http://www.macmillandictionary.com/dictionary/american/"$request"$(tput sgr0) >> "$cachefile"
 			fi
 
-			trans=$(curl -s --user-agent "$useragent" --socks5 "$httpsproxy" -x "$httpproxy" http://lingvopro.abbyyonline.com/en/Translate/en-ru/"$request" | grep -o '"[^"]*Handlers/TranscriptionHandler\.ashx[^"]*"' | sed 's/.*=\(.*\)"/\1/'| echo -n -e $(sed 's/+/ /g; s/%/\\x/g')) #getting transcription
+			trans=$(curl -s --user-agent "$useragent" "$httpsproxy" -x "$httpproxy" http://lingvopro.abbyyonline.com/en/Translate/en-ru/"$request" | grep -o '"[^"]*Handlers/TranscriptionHandler\.ashx[^"]*"' | sed 's/.*=\(.*\)"/\1/'| echo -n -e $(sed 's/+/ /g; s/%/\\x/g')) #getting transcription
 			[[ $trans ]] && echo "[$trans]" >> "$cachefile"
 
 			cat "$cachefile" 2>/dev/null #output
@@ -162,10 +162,10 @@ else
 
 				#getting sound (always) from forvo.com
 				if [[ ! -e "$cachefile".mp3 ]]; then
-					curl -s -c "$PR_DIR"/tmpcookie --connect-timeout $timeout -m $timeout --user-agent "$useragent" --socks5 "$httpsproxy" -x "$httpproxy" -d "login=$flogin&password=$fpass" http://ru.forvo.com/login/ -o/dev/null
+					curl -s -c "$PR_DIR"/tmpcookie --connect-timeout $timeout -m $timeout --user-agent "$useragent" "$httpsproxy" -x "$httpproxy" -d "login=$flogin&password=$fpass" http://ru.forvo.com/login/ -o/dev/null
 					if [[ -e "$PR_DIR"/tmpcookie ]]; then
-						slink=$(curl -s -b $PR_DIR/tmpcookie --connect-timeout $timeout -m $timeout --user-agent "$useragent" --socks5 "$httpsproxy" -x "$httpproxy" http://ru.forvo.com/word/"$request"/ | grep -o '[^"]*/download/mp3/'"$request"'/en/[^"]*' |head -n 1 )
-						[[ $slink ]] && curl -s -b "$PR_DIR"/tmpcookie --connect-timeout $timeout -m $timeout --user-agent "$useragent" --socks5 "$httpsproxy" -x "$httpproxy" -o "$cachefile".mp3 http://ru.forvo.com"$slink"
+						slink=$(curl -s -b $PR_DIR/tmpcookie --connect-timeout $timeout -m $timeout --user-agent "$useragent" "$httpsproxy" -x "$httpproxy" http://ru.forvo.com/word/"$request"/ | grep -o '[^"]*/download/mp3/'"$request"'/en/[^"]*' |head -n 1 )
+						[[ $slink ]] && curl -s -b "$PR_DIR"/tmpcookie --connect-timeout $timeout -m $timeout --user-agent "$useragent" "$httpsproxy" -x "$httpproxy" -o "$cachefile".mp3 http://ru.forvo.com"$slink"
 						rm "$PR_DIR"/tmpcookie 2>/dev/null
 					else
 						echo fail to get sound from forvo.com
@@ -178,7 +178,7 @@ else
 			[[ $fl ]] && echo $fl #google fixed text output
 
 			if [[ $r_words_count -gt 1 && $r_words_count -le 3 && $source == en && ! $fl && $(echo "$request" | tr '[:upper:]' '[:lower:]') !=  $(echo "$res" | tr '[:upper:]' '[:lower:]') ]]; then #phrases for 2 3 words of phrasal verbs
-				raw_phras=$(curl -s --user-agent "$useragent" --socks5 "$httpsproxy" -x "$httpproxy" http://www.macmillandictionary.com/dictionary/american/"$(echo $request | tr ' ' - )" | grep -o '<li.*End of DIV SENSE--></li>' | sed 's/<.\?span[^>]*>//g' )
+				raw_phras=$(curl -s --user-agent "$useragent" "$httpsproxy" -x "$httpproxy" http://www.macmillandictionary.com/dictionary/american/"$(echo $request | tr ' ' - )" | grep -o '<li.*End of DIV SENSE--></li>' | sed 's/<.\?span[^>]*>//g' )
 				phras=$(echo $raw_phras |  sed 's/End of DIV SENSE--><\/li>/End of DIV SENSE--><\/li>\n/g' | grep -n -o '"h2">[^>]*<' | sed 's/^\([^:]*\):.*>\([^<]*\).*/\1 \2\./') #getting phrases
 				phras2=$(echo $raw_phras |  sed 's/End of DIV SENSE--><\/li>/End of DIV SENSE--><\/li>\n/g' | grep -n -o '"EXAMPLE">[^>]*<' | sed 's/^\([^:]*\):.*>\([^<]*\).*/\1 \2/') #getting examples
 				if [[ $phras2 ]]; then
