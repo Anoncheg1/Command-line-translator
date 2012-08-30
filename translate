@@ -20,7 +20,7 @@ fpass=121212
 words_buffer=3000
 #httpproxy="127.0.0.1:4444" #"14.139.225.90:3128" #"127.0.0.1:4444"			#proxy for long string
 #httpsproxy="--socks5 127.0.0.1:9050"	#socks5
-timeout=10
+timeout=6
 PR_DIR="/home/$USER/.translate"
 useragent="Mozilla/5.0 (X11; Linux i686) AppleWebKit/534.34 (KHTML, like Gecko) QupZilla/1.3.1 Safari/534.34"
 #
@@ -154,7 +154,7 @@ else
 
 			if [[ $trans ]] ; then
 
-				#saving words
+			echo aa	#saving words
 				if [[ ${#request} -gt 2 && ! $(grep "$request" "$PR_DIR"/translated_words 2>/dev/null) ]]; then
 					#echo -e "$request \t\t\t\t\t\t\t\t\t\t [$trans]" >> "$PR_DIR"/translated_words
 					echo -e "$request" >> "$PR_DIR"/translated_words
@@ -165,7 +165,7 @@ else
 					curl -s -c "$PR_DIR"/tmpcookie --connect-timeout $timeout -m $timeout --user-agent "$useragent" "$httpsproxy" -x "$httpproxy" -d "login=$flogin&password=$fpass" http://ru.forvo.com/login/ -o/dev/null
 					if [[ -e "$PR_DIR"/tmpcookie ]]; then
 						slink=$(curl -s -b $PR_DIR/tmpcookie --connect-timeout $timeout -m $timeout --user-agent "$useragent" "$httpsproxy" -x "$httpproxy" http://ru.forvo.com/word/"$request"/ | grep -o '[^"]*/download/mp3/'"$request"'/en/[^"]*' |head -n 1 )
-						[[ $slink ]] && curl -s -b "$PR_DIR"/tmpcookie --connect-timeout $timeout -m $timeout --user-agent "$useragent" "$httpsproxy" -x "$httpproxy" -o "$cachefile".mp3 http://ru.forvo.com"$slink"
+						[[ $slink ]] && curl -s -b "$PR_DIR"/tmpcookie --connect-timeout $timeout -m $timeout --user-agent "$useragent" "$httpsproxy" -x "$httpproxy" http://ru.forvo.com"$slink" > "$cachefile".mp3
 						rm "$PR_DIR"/tmpcookie 2>/dev/null
 					else
 						echo fail to get sound from forvo.com
