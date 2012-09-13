@@ -96,7 +96,7 @@ fi
 [ ! -d "$PR_DIR"/cache ] && mkdir "$PR_DIR"/cache
 
 if [[ ${#request} -gt 300 ]]; then
-	if ! result=$(curl -s -i --user-agent "$useragent" $httpsproxy -x "$httpproxy" -d "sl=$source" -d "tl=$target" --data-urlencode "text=$request" http://translate.google.com) && $httpproxy != "" #getting google respond for short sentence
+	if ! result=$(curl -s -i --user-agent "$useragent" $httpsproxy -x "$httpproxy" -d "sl=$source" -d "tl=$target" --data-urlencode "text=$request" http://translate.google.com) && [[ $httpproxy != "" ]] #getting google respond for short sentence
 	then	# second attempt without https proxy
 		httpsproxy=""
 		result=$(curl -s -i --user-agent "$useragent" $httpsproxy -x "$httpproxy" -d "sl=$source" -d "tl=$target" --data-urlencode "text=$request" http://translate.google.com)
@@ -111,7 +111,7 @@ else
 	if [[ ! -e "$cachefile" || (( $sound == 1 && ! -e "$cachefile".mp3 )) ]]; then
 		[[ $r_words_count -le 4 ]] && { httpproxy="" ; httpsproxy="" ; } #don't wanna proxy for 4 words.
 
-		if ! grespond=$(curl -s -i --user-agent "$useragent" $httpsproxy -x "$httpproxy" -m $timeout --data-urlencode "text=$request" "http://translate.google.com/translate_a/t?client=t&hl=$target&sl=$source&tl=$target&ie=UTF-8&oe=UTF-8&multires=1&ssel=0&tsel=0&sc=1") && $httpproxy != "" #getting google respond for short sentence
+		if ! grespond=$(curl -s -i --user-agent "$useragent" $httpsproxy -x "$httpproxy" -m $timeout --data-urlencode "text=$request" "http://translate.google.com/translate_a/t?client=t&hl=$target&sl=$source&tl=$target&ie=UTF-8&oe=UTF-8&multires=1&ssel=0&tsel=0&sc=1") && [[ "$httpproxy" != "" ]] #getting google respond for short sentence
 		then	# second attempt without https proxy
 			#echo https proxy not working. using http proxy.
 			httpsproxy=""
