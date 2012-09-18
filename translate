@@ -3,7 +3,7 @@
 # mirror https://github.com/Anoncheg1/Command-line-translator
 # mirror http://pastebin.com/kPTYjY6W
 # requirements: curl, Mozilla js shell, forvo.com account
-# + output: translated text, fixed text with highlight, dictionary, phrases, transcription, audio pronunciation
+# + output: translated text, fixed text with highlight, dictionary, phrases, ideom, transcription, audio pronunciation
 # + cache for all words
 # + saving words to file for learning
 
@@ -145,6 +145,7 @@ else
 
 			js "$PR_DIR"/tmpjsobj > "$cachefile" #google translated text and dictionary to cache
 
+			#phrases
 			raw_phras=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://www.macmillandictionary.com/dictionary/american/"$(echo $request | tr ' ' - )" | grep -o '<li ID.*End of DIV SENSE--></li>' | sed 's/<.\?span[^>]*>//g' )
 			phras=$(echo $raw_phras |  sed 's/End of DIV SENSE--><\/li>/End of DIV SENSE--><\/li>\n/g' | grep -n -o '"h2">[^>]*<' | sed 's/^\([^:]*\):.*>\([^<]*\).*/\1 \2\./') #getting phrases
 			phras2=$(echo $raw_phras |  sed 's/End of DIV SENSE--><\/li>/End of DIV SENSE--><\/li>\n/g' | grep -n -o '"EXAMPLE">[^>]*<' | sed 's/^\([^:]*\):.*>\([^<]*\).*/\1 \2/') #getting examples
@@ -187,15 +188,24 @@ else
 			js "$PR_DIR"/tmpjsobj #google dictionary and translated text output
 			[[ $fl ]] && echo $fl #google fixed text output
 
-			if [[ $r_words_count -gt 1 && $r_words_count -le 3 && $source == en && ! $fl && $(echo "$request" | tr '[:upper:]' '[:lower:]') !=  $(echo "$res" | tr '[:upper:]' '[:lower:]') ]]; then #phrases for 2 3 words of phrasal verbs
+			#phrases for 2 3 words of phrasal verbs
+			if [[ $r_words_count -gt 1 && $r_words_count -le 3 && $source == en && ! $fl && $(echo "$request" | tr '[:upper:]' '[:lower:]') !=  $(echo "$res" | tr '[:upper:]' '[:lower:]') ]]; then 
 				raw_phras=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://www.macmillandictionary.com/dictionary/american/"$(echo $request | tr ' ' - )" | grep -o '<li.*End of DIV SENSE--></li>' | sed 's/<.\?span[^>]*>//g' )
 				phras=$(echo $raw_phras |  sed 's/End of DIV SENSE--><\/li>/End of DIV SENSE--><\/li>\n/g' | grep -n -o '"h2">[^>]*<' | sed 's/^\([^:]*\):.*>\([^<]*\).*/\1 \2\./') #getting phrases
 				phras2=$(echo $raw_phras |  sed 's/End of DIV SENSE--><\/li>/End of DIV SENSE--><\/li>\n/g' | grep -n -o '"EXAMPLE">[^>]*<' | sed 's/^\([^:]*\):.*>\([^<]*\).*/\1 \2/') #getting examples
 				if [[ $phras2 ]]; then
 					echo -e "\033[1;35m"PHRASES:$(tput sgr0)
 					join --nocheck-order -a 1 -a 2 <(echo "$phras") <(echo "$phras2") | sed '/^$/d'
+				else #search for ideoms
+					raw_ideoms=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://idioms.thefreedictionary.com/"$(echo $request | tr ' ' + )" | grep -o 'div class="ds-single".*</div><div')
+					ideom=$(echo $raw_ideoms | sed 's/.*ds-single\">\([^<]*\)<.*/\1/')
+					illustration=$(echo $raw_ideoms | sed 's/.*class=illustration>\([^<]*\)<.*/\1/')
+					[[ $ideom ]] && echo -e "\033[1;35m"Ideoms:$(tput sgr0)
+					echo $ideom
+					echo $illustration
 				fi
 			fi
+
 		fi
 	else #cache output
 		cat "$cachefile" #output
