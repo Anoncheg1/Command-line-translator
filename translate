@@ -198,10 +198,10 @@ else
 					join --nocheck-order -a 1 -a 2 <(echo "$phras") <(echo "$phras2") | sed '/^$/d'
 				else #search for ideoms
 					raw_ideoms=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://idioms.thefreedictionary.com/"$(echo $request | tr ' ' + )" | grep -o 'div class="ds-single".*</div><div')
-					ideom=$(echo $raw_ideoms | sed 's/.*ds-single\">\([^<]*\)<.*/\1/')
+					ideom=$(echo $raw_ideoms | sed 's/<i>//' | sed 's/<\/i>//' | sed 's/.*ds-single\">\([^<]*\)<.*/\1/')
 					illustration=$(echo $raw_ideoms | sed 's/.*class=illustration>\([^<]*\)<.*/\1/')
 					if [[ $ideom ]]; then
-						echo -e "\033[1;35m"Ideoms:$(tput sgr0)
+						echo -e "\033[1;35m"Ideom:$(tput sgr0)
 						echo $ideom
 						echo $illustration
 					fi
