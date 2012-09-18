@@ -17,7 +17,7 @@ ENGLISH_TARGET_LANG=ru		#target language for english request
 target=en 			#target for all languages except english
 flogin=121212 			#forvo.com login and pass REQUIRED!
 fpass=121212
-words_buffer=3000
+words_buffer=$((2000*2))
 #httpproxy="127.0.0.1:4444"		#proxy for long string
 #httpsproxy="--socks5 127.0.0.1:9050"	#socks5
 timeout=6
@@ -183,12 +183,12 @@ else
 					fi
 				fi
 			fi
-			[[ $(ls "$cachefile" | wc -l) -gt $words_buffer ]] && find "$PR_DIR"/cache -mtime +20 -delete #cache cleaning
+			[[ $(ls "$PR_DIR/cache/" | wc -l) -gt $words_buffer ]] && find "$PR_DIR"/cache -mtime +20 -delete #cache cleaning. remove words older than 20 days.
 		else
 			js "$PR_DIR"/tmpjsobj #google dictionary and translated text output
 			[[ $fl ]] && echo $fl #google fixed text output
 
-			#phrases for 2 3 words of phrasal verbs
+			#phrases and ideom for 2 3 words
 			if [[ $r_words_count -gt 1 && $r_words_count -le 3 && $source == en && ! $fl && $(echo "$request" | tr '[:upper:]' '[:lower:]') !=  $(echo "$res" | tr '[:upper:]' '[:lower:]') ]]; then 
 				raw_phras=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://www.macmillandictionary.com/dictionary/american/"$(echo $request | tr ' ' - )" | grep -o '<li.*End of DIV SENSE--></li>' | sed 's/<.\?span[^>]*>//g' )
 				phras=$(echo $raw_phras |  sed 's/End of DIV SENSE--><\/li>/End of DIV SENSE--><\/li>\n/g' | grep -n -o '"h2">[^>]*<' | sed 's/^\([^:]*\):.*>\([^<]*\).*/\1 \2\./') #getting phrases
