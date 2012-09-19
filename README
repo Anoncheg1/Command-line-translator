@@ -5,7 +5,7 @@ requirements: curl, Mozilla js shell, forvo.com account
 
 features:
 output: translated text, fixed text with highlight, dictionary, phrases, ideom, transcription, audio pronunciation
-cache for all words
+cache for english words
 saving words to file for learning
 
 for convenience:
