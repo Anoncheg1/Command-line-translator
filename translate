@@ -174,8 +174,8 @@ else
 					echo -e "$request" >> "$PR_DIR"/translated_words
 				fi
 
-				#getting sound (always) from forvo.com
-				if [[ ! -e "$cachefile".mp3 ]]; then
+				#getting sound from forvo.com
+				if [[ $sound == 1 && ! -e "$cachefile".mp3 ]]; then
 					curl -s -c "$PR_DIR"/tmpcookie --connect-timeout $timeout -m $timeout --user-agent "$useragent" $httpsproxy -x "$httpproxy" -d "login=$flogin&password=$fpass" http://ru.forvo.com/login/ -o/dev/null
 					if [[ -e "$PR_DIR"/tmpcookie ]]; then
 						slink=$(curl -s -b $PR_DIR/tmpcookie --connect-timeout $timeout -m $timeout --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://ru.forvo.com/word/"$request"/ | grep -o '[^"]*/download/mp3/'"$request"'/en/[^"]*' |head -n 1 )
