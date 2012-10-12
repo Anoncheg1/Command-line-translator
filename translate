@@ -17,7 +17,7 @@ ENGLISH_TARGET_LANG=ru		#target language for english request
 target=en 			#target for all languages except english
 flogin=121212 			#forvo.com login and pass REQUIRED!
 fpass=121212
-words_buffer=$((2000*2))	#4000 files max. there is removeing all files older than 20 days.
+words_buffer=4000	#4000 files max. there is removeing all files older than 20 days.
 #httpproxy="127.0.0.1:4444"		#proxy for long string
 #httpsproxy="--socks5 127.0.0.1:9050"	#socks5
 timeout=6
@@ -44,28 +44,29 @@ if(typeof googlearr[0] !== 'undefined' && googlearr[0] !== null){  //summing sen
 print(\"\033[1;32m\"+rsum+\"\033[0m\");
 function dictionary(arr){ //dictionary output
 	if(typeof arr[1] !== 'undefined' && arr[1] !== null){
-		for (var i = 0; i < arr[1].length; i++){
-			if(typeof arr[1][i][0] !== 'undefined' && arr[1][i][0] !== null){
-				print(\"\033[1;34m\"+arr[1][i][0]+\"\033[0m\");
-				for (var e = 0; e < arr[1][i][2].length; e++){
-					print(arr[1][i][2][e]);
+		for (var a = 0; a < arr[1].length; a++){
+			if(typeof arr[1][a][0] !== 'undefined' && arr[1][a][0] !== null){
+				print(\"\033[1;34m\"+arr[1][a][0]+\"\033[0m\");//part of speach
+				for (var b = 0; b < arr[1][a][2].length; b++){//words
+					print(arr[1][a][2][b][0]+' '+arr[1][a][2][b][1]);//word + variant of speach
 				}
 			}
 		}
 	}
 }"
-comment="/*arr=googlearr;
+comment="arr=googlearr;
 for (var c = 0; c < arr.length; c++){ //testing
 	if(typeof arr[c] !== 'undefined' && arr[c] !== null){ //dictionary output
 		for (var i = 0; i < arr[c].length; i++){
 			if(typeof arr[c][i] !== 'undefined' && arr[c][i] !== null){
 				for (var e = 0; e < arr[c][i].length; e++){
+					print(i);
 					print(arr[c][i][e]);
 				}
 			}
 		}
 	}
-}*/"
+}"
 
 
 request=($*) #get array
@@ -109,6 +110,7 @@ else
 	cachefile="$PR_DIR/cache/$request"
 	r_words_count=$(echo "$request"  |wc -w)
 	if [[ ! -e "$cachefile" || (( $sound == 1 && ! -e "$cachefile".mp3 )) ]]; then
+
 		[[ $r_words_count -le 4 ]] && { httpproxy="" ; httpsproxy="" ; } #don't wanna proxy for 4 words.
 
 		if ! grespond=$(curl -s -i --user-agent "$useragent" $httpsproxy -x "$httpproxy" -m $timeout --data-urlencode "text=$request" "http://translate.google.com/translate_a/t?client=t&hl=$target&sl=$source&tl=$target&ie=UTF-8&oe=UTF-8&multires=1&ssel=0&tsel=0&sc=1") && [[ "$httpproxy" != "" ]] #getting google respond for short sentence
@@ -149,7 +151,7 @@ else
 			js "$PR_DIR"/tmpjsobj > "$cachefile" #google translated text and dictionary to cache
 
 			#phrases
-			raw_phras=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://www.macmillandictionary.com/dictionary/american/"$(echo $request | tr ' ' - )" | grep -o '<li ID.*End of DIV SENSE--></li>' | sed 's/<.\?span[^>]*>//g' )
+			raw_phras=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" -m $timeout http://www.macmillandictionary.com/dictionary/american/"$(echo $request | tr ' ' - )" | grep -o '<li ID.*End of DIV SENSE--></li>' | sed 's/<.\?span[^>]*>//g' )
 			phras=$(echo $raw_phras |  sed 's/End of DIV SENSE--><\/li>/End of DIV SENSE--><\/li>\n/g' | grep -n -o '"h2">[^>]*<' | sed 's/^\([^:]*\):.*>\([^<]*\).*/\1 \2\./') #getting phrases
 			phras2=$(echo $raw_phras |  sed 's/End of DIV SENSE--><\/li>/End of DIV SENSE--><\/li>\n/g' | grep -n -o '"EXAMPLE">[^>]*<' | sed 's/^\([^:]*\):.*>\([^<]*\).*/\1 \2/') #getting examples
 			if [[ $phras ]]; then
@@ -194,7 +196,7 @@ else
 			if [[ $source == en && ! $fl && $(echo "$request" | tr '[:upper:]' '[:lower:]') !=  $(echo "$res" | tr '[:upper:]' '[:lower:]') ]]; then 
 				#phrases for 2 words
 				if [[ $r_words_count -le 2 ]]; then
-					raw_phras=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://www.macmillandictionary.com/dictionary/american/"$(echo $request | tr ' ' - )" | grep -o '<li.*End of DIV SENSE--></li>' | sed 's/<.\?span[^>]*>//g' )
+					raw_phras=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" -m $timeout http://www.macmillandictionary.com/dictionary/american/"$(echo $request | tr ' ' - )" | grep -o '<li.*End of DIV SENSE--></li>' | sed 's/<.\?span[^>]*>//g' )
 					phras=$(echo $raw_phras |  sed 's/End of DIV SENSE--><\/li>/End of DIV SENSE--><\/li>\n/g' | grep -n -o '"h2">[^>]*<' | sed 's/^\([^:]*\):.*>\([^<]*\).*/\1 \2\./') #getting phrases
 					phras2=$(echo $raw_phras |  sed 's/End of DIV SENSE--><\/li>/End of DIV SENSE--><\/li>\n/g' | grep -n -o '"EXAMPLE">[^>]*<' | sed 's/^\([^:]*\):.*>\([^<]*\).*/\1 \2/') #getting examples
 					if [[ $phras2 ]]; then
@@ -204,7 +206,7 @@ else
 				fi
 				#search for ideom for 2-4 words
 				if [[ ! $phras2 && $r_words_count -le 4 ]]; then
-					raw_ideoms=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://idioms.thefreedictionary.com/"$(echo $request | tr ' ' + )" | grep -o 'div class="ds-single".*</div><div')
+					raw_ideoms=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" -m $timeout http://idioms.thefreedictionary.com/"$(echo $request | tr ' ' + )" | grep -o 'div class="ds-single".*</div><div')
 					ideom=$(echo $raw_ideoms | sed 's/<i>//' | sed 's/<\/i>//' | sed 's/.*ds-single\">\([^<]*\)<.*/\1/')
 					illustration=$(echo $raw_ideoms | sed 's/.*class=illustration>\([^<]*\)<.*/\1/')
 					if [[ $ideom ]]; then
