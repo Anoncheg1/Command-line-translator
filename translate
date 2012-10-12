@@ -49,12 +49,12 @@ function dictionary(arr){ //dictionary output
 				print(\"\033[1;34m\"+arr[1][a][0]+\"\033[0m\");//part of speach
 				for (var b = 0; b < arr[1][a][2].length; b++){//words
 					num=parseFloat(arr[1][a][2][b][3]); //frequency
-					whitespace=' ' //for x.1 and xxx format
+					whitespace=' ' //for x.x and xxx format
 					num2=Math.round(num*10000)/10;
 					if (num2 < 10 && num2%1 == 0){
 						whitespace='   '; //for x format
 					}
-					if (num2 > 10){
+					if (num2 >= 10){
 						num2=Math.round(num2/10)*10;
 						if (num2 < 100){
 							whitespace='  '; //for xx format
