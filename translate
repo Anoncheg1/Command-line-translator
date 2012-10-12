@@ -51,7 +51,7 @@ function dictionary(arr){ //dictionary output
 					num=parseFloat(arr[1][a][2][b][3]); //frequency
 					whitespace=' ' //for x.1 and xxx format
 					num2=Math.round(num*10000)/10;
-					if (num2%1 == 0){
+					if (num2 < 10 && num2%1 == 0){
 						whitespace='   '; //for x format
 					}
 					if (num2 > 10){
