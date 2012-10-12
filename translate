@@ -48,7 +48,18 @@ function dictionary(arr){ //dictionary output
 			if(typeof arr[1][a][0] !== 'undefined' && arr[1][a][0] !== null){
 				print(\"\033[1;34m\"+arr[1][a][0]+\"\033[0m\");//part of speach
 				for (var b = 0; b < arr[1][a][2].length; b++){//words
-					print(arr[1][a][2][b][0]+' '+arr[1][a][2][b][1]);//word + variant of speach
+					num=parseFloat(arr[1][a][2][b][3]); //frequency
+					num2=Math.round(num*10000)/10;
+					whitespace=' '
+					if (num2 > 10){
+						num2=Math.round(num2/10);
+						if (num2 < 10){
+							whitespace='   '
+						}else if (num2 < 100){
+							whitespace='  '
+						}
+					}
+					print(num2+whitespace+arr[1][a][2][b][0]+' '+arr[1][a][2][b][1]);//frequency+ word + variant of speach
 				}
 			}
 		}
