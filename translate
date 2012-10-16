@@ -204,7 +204,7 @@ if [[ ${#request} -gt 300 ]]; then
 	echo -e "\033[32;1m"$(iconv -f $encoding <<<"$result" |  awk 'BEGIN {RS="</div>"};/<span[^>]* id=["'\'']?result_box["'\'']?/' | html2text -utf8)"\033[0m"
 
 else
-	cachefile="$PR_DIR/cache/$source_$request" #may be source=auto I will check it hereafter when I made language detection
+	cachefile="$PR_DIR/cache/$source"_"$request" #may be source=auto I will check it hereafter when I made language detection
 	r_words_count=$(echo "$request"  |wc -w)
 	if [[ ! -e "$cachefile" || (( $sound == 1 && ! -e "$cachefile".mp3 )) ]]; then
 
@@ -248,19 +248,18 @@ else
 		det_language=$(js "$PR_DIR"/tmpjsobj2 | tail -c 3)
 		[[ $det_language != $source && $det_language != $ENGLISH_TARGET_LANG ]] && echo -e "$(tput bold)$(tput setaf 3)$det_language ${ln_arr[$det_language]}$(tput sgr0) detected"
 
-		res_for_check=$(echo "$grespond" | grep -o '\[.*\]' | sed 's/.*\[\[\[\"\([^\"]*\)".*/\1/')
-		if [[ $(echo "$request" | tr '[:upper:]' '[:lower:]') !=  $(echo $res_for_check | tr '[:upper:]' '[:lower:]') ]];then
-			echo -n "dictionary(googlearr);" >> "$PR_DIR"/tmpjsobj
-		elif [[ $source != "auto" && $source != $det_language ]]; then #second attempt to translate with detected language
-			js "$PR_DIR"/tmpjsobj
+		if [[ $source != "auto" && $source != $det_language ]]; then #second attempt to translate with detected language
 			export TLSOURCE=$det_language #TLTARGET=en #source and target language for second attempt
 			if [[ $sound == 1 ]]; then $0 -s $request ; else $0 $request ;fi #second attemt to translate with detected language  #sound will be quiet...
 			exit
 		fi
+		
+		echo -n "dictionary(googlearr);" >> "$PR_DIR"/tmpjsobj
 
 		[[ $source == "auto" ]] && { source=$det_language; cachefile="$PR_DIR/cache/$source_$request"; } #auto in cachefile fix
 	
-		#for english only. but it may be altered
+		#"Dictionary part" for english only. but it can be extended for every required language
+		res_for_check=$(echo "$grespond" | grep -o '\[.*\]' | sed 's/.*\[\[\[\"\([^\"]*\)".*/\1/')
 		if [[ $r_words_count -eq 1 && ${#request} -gt 1 && $source == en && $(echo "$request" | tr '[:upper:]' '[:lower:]') !=  $(echo "$res_for_check" | tr '[:upper:]' '[:lower:]') ]]; then #dictionary
 
 			js "$PR_DIR"/tmpjsobj > "$cachefile" #google translated text and dictionary to cache
