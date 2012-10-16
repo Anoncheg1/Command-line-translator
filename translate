@@ -3,14 +3,17 @@
 # mirror https://github.com/Anoncheg1/Command-line-translator
 # mirror http://pastebin.com/kPTYjY6W
 # requirements: curl, Mozilla js shell, forvo.com account
-# + output: translated text, fixed text with highlight, dictionary, phrases, ideom, transcription, audio pronunciation
+# + output: translated text, fixed text with highlight, language detection, dictionary, phrases, ideom, transcription, audio pronunciation
 # + cache for all words
 # + saving words to file for learning
 
 help='translate [-s] <text>
 if text is english, target language is ENGLISH_TARGET_LANG
 otherwise, "target" language is english
--s, --sound Enable sound for one word'
+-s, --sound Enable sound for one word
+You can set language with environment varibles by command:
+export TLSOURCE=en TLTARGET=ru; will set language source English and target Russian language
+'
 
 # adjust to taste
 ENGLISH_TARGET_LANG=ru		#target language for english request
@@ -18,12 +21,81 @@ target=en 			#target for all languages except english
 flogin=121212 			#forvo.com login and pass REQUIRED!
 fpass=121212
 words_buffer=4000	#4000 files max. there is removeing all files older than 20 days.
-#httpproxy="127.0.0.1:4444"		#proxy for long string
+#httpproxy="127.0.0.1:4444"		#proxy for long strings
 #httpsproxy="--socks5 127.0.0.1:9050"	#socks5
 timeout=6
 PR_DIR="/home/$USER/.translate"
 useragent="Mozilla/5.0 (X11; Linux i686) AppleWebKit/534.34 (KHTML, like Gecko) QupZilla/1.3.1 Safari/534.34"
 #
+declare -A ln_arr
+ln_arr["af"]="Afrikaans"
+ln_arr["sq"]="Albanian"
+ln_arr["am"]="Amharic"
+ln_arr["ar"]="Arabic"
+ln_arr["hy"]="Armenian"
+ln_arr["az"]="Azerbaijani"
+ln_arr["eu"]="Basque"
+ln_arr["be"]="Belarusian"
+ln_arr["bn"]="Bengali"
+ln_arr["bg"]="Bulgarian"
+ln_arr["ca"]="Catalan"
+ln_arr["zh-CN"]="Chinese (Simplified)"
+ln_arr["hr"]="Croatian"
+ln_arr["cs"]="Czech"
+ln_arr["da"]="Danish"
+ln_arr["nl"]="Dutch"
+ln_arr["en"]="English"
+ln_arr["eo"]="Esperanto"
+ln_arr["et"]="Estonian"
+ln_arr["fo"]="Faroese"
+ln_arr["tl"]="Filipino"
+ln_arr["fi"]="Finnish"
+ln_arr["fr"]="French"
+ln_arr["gl"]="Galician"
+ln_arr["ka"]="Georgian"
+ln_arr["de"]="German"
+ln_arr["el"]="Greek"
+ln_arr["gu"]="Gujarati"
+ln_arr["ht"]="Haitian Creole"
+ln_arr["iw"]="Hebrew"
+ln_arr["hi"]="Hindi"
+ln_arr["hu"]="Hungarian"
+ln_arr["is"]="Icelandic"
+ln_arr["id"]="Indonesian"
+ln_arr["ga"]="Irish"
+ln_arr["it"]="Italian"
+ln_arr["ja"]="Japanese"
+ln_arr["kn"]="Kannada"
+ln_arr["ko"]="Korean"
+ln_arr["lo"]="Laothian"
+ln_arr["la"]="Latin"
+ln_arr["lv"]="Latvian"
+ln_arr["lt"]="Lithuanian"
+ln_arr["mk"]="Macedonian"
+ln_arr["ms"]="Malay"
+ln_arr["mt"]="Maltese"
+ln_arr["no"]="Norwegian"
+ln_arr["fa"]="Persian"
+ln_arr["pl"]="Polish"
+ln_arr["pt"]="Portuguese"
+ln_arr["ro"]="Romanian"
+ln_arr["ru"]="Russian"
+ln_arr["sr"]="Serbian"
+ln_arr["sk"]="Slovak"
+ln_arr["sl"]="Slovenian"
+ln_arr["es"]="Spanish"
+ln_arr["sw"]="Swahili"
+ln_arr["sv"]="Swedish"
+ln_arr["ta"]="Tamil"
+ln_arr["te"]="Telugu"
+ln_arr["th"]="Thai"
+ln_arr["tr"]="Turkish"
+ln_arr["uk"]="Ukrainian"
+ln_arr["ur"]="Urdu"
+ln_arr["vi"]="Vietnamese"
+ln_arr["cy"]="Welsh"
+ln_arr["yi"]="Yiddish"
+
 trap bashtrap INT
 bashtrap()
 {
@@ -55,21 +127,27 @@ function dictionary(arr){ //dictionary output
 			}
 		}
 	}
-}"
+}
+function language_identification(arr){ //dictionary output
+	if(typeof arr[8] !== 'undefined' && arr[8] !== null && typeof arr[8][0] !== 'undefined' && arr[8][0] !== null && typeof arr[8][0][0] !== 'undefined' && arr[8][0][0] !== null){
+		print('Detected language: '+arr[8][0][0]); //detected language
+	}
+}
+"
 comment="arr=googlearr;
 for (var c = 0; c < arr.length; c++){ //testing
 	if(typeof arr[c] !== 'undefined' && arr[c] !== null){ //dictionary output
 		for (var i = 0; i < arr[c].length; i++){
 			if(typeof arr[c][i] !== 'undefined' && arr[c][i] !== null){
 				for (var e = 0; e < arr[c][i].length; e++){
-					print(i);
+					print(c);
 					print(arr[c][i][e]);
+					//print(arr[8][0][1]);
 				}
 			}
 		}
 	}
 }
-
 	TOO COMPLEX... it was bad idea	whitespace=' ' //for x.x and xxx format
 					num2=Math.round(num*10000)/10;
 					if (num2 < 10 && num2%1 == 0){
@@ -81,7 +159,8 @@ for (var c = 0; c < arr.length; c++){ //testing
 							whitespace='  '; //for xx format
 						}
 					}
-					print(num2+whitespace+arr[1][a][2][b][0]+' '+arr[1][a][2][b][1]);//frequency + word + variant of speach"
+					print(num2+whitespace+arr[1][a][2][b][0]+' '+arr[1][a][2][b][1]);//frequency + word + variant of speach
+"
 
 
 request=($*) #get array
@@ -101,12 +180,15 @@ request=${request[*]} #to string
 [[ ${#request} -eq 0 ]] && exit
 
 source=auto
-tchar=${request:0:1} #language detection by first character
+tchar=${request:0:1} #language detection by the first character
 tcharnum=$(printf "%d" "'${tchar}")
 if [[ $tcharnum -ge 65 && $tcharnum -le 122 ]]; then #if request is A-Za-z then it is english...
 	source=en #english
 	target="$ENGLISH_TARGET_LANG" #if text is english, target language is ENGLISH_TARGET_LANG
 fi
+
+[[ $TLSOURCE ]] && source=$TLSOURCE; 
+[[ $TLTARGET ]] && target=$TLTARGET; # export TLSOURCE=en TLTARGET=ru; will set language
 
 [ ! -d "$PR_DIR" ] && mkdir "$PR_DIR"
 [ ! -d "$PR_DIR"/cache ] && mkdir "$PR_DIR"/cache
@@ -122,7 +204,7 @@ if [[ ${#request} -gt 300 ]]; then
 	echo -e "\033[32;1m"$(iconv -f $encoding <<<"$result" |  awk 'BEGIN {RS="</div>"};/<span[^>]* id=["'\'']?result_box["'\'']?/' | html2text -utf8)"\033[0m"
 
 else
-	cachefile="$PR_DIR/cache/$request"
+	cachefile="$PR_DIR/cache/$source_$request" #may be source=auto I will check it hereafter when I made language detection
 	r_words_count=$(echo "$request"  |wc -w)
 	if [[ ! -e "$cachefile" || (( $sound == 1 && ! -e "$cachefile".mp3 )) ]]; then
 
@@ -152,16 +234,34 @@ else
 		else
 			fl=$(echo "$grespond" | grep -o '[^"]*/i[^"]*' | sed 's/\\u003cb\\u003e\\u003ci\\u003e/'$(tput bold)$(tput setaf 3)'/g' | sed 's/\\u003c\/i\\u003e\\u003c\/b\\u003e/'$(tput sgr0)'/g' | sed 's/\\u0026//g' | sed "s/\#39;/'/g" ) #google fixed text
 		fi
+
 #		echo $grespond | grep -o '\[.*\]' 
 
 		echo -n "var myJSONObject = " > "$PR_DIR"/tmpjsobj
 		echo -n "$grespond" | grep -o '\[.*\]' >> "$PR_DIR"/tmpjsobj
 		echo ";">> "$PR_DIR"/tmpjsobj
 		echo -n "$jsout_dictionary" >> "$PR_DIR"/tmpjsobj
-		[[ ! $fl ]] &&  echo -n "dictionary(googlearr);" >> "$PR_DIR"/tmpjsobj
+
+		#Language detection
+		cp -f "$PR_DIR"/tmpjsobj "$PR_DIR"/tmpjsobj2
+		echo -n "language_identification(googlearr);" >> "$PR_DIR"/tmpjsobj2
+		det_language=$(js "$PR_DIR"/tmpjsobj2 | tail -c 3)
+		[[ $det_language != $source && $det_language != $ENGLISH_TARGET_LANG ]] && echo -e "$(tput bold)$(tput setaf 3)$det_language ${ln_arr[$det_language]}$(tput sgr0) detected"
+
+		res_for_check=$(echo "$grespond" | grep -o '\[.*\]' | sed 's/.*\[\[\[\"\([^\"]*\)".*/\1/')
+		if [[ $(echo "$request" | tr '[:upper:]' '[:lower:]') !=  $(echo $res_for_check | tr '[:upper:]' '[:lower:]') ]];then
+			echo -n "dictionary(googlearr);" >> "$PR_DIR"/tmpjsobj
+		elif [[ $source != "auto" && $source != $det_language ]]; then #second attempt to translate with detected language
+			js "$PR_DIR"/tmpjsobj
+			export TLSOURCE=$det_language #TLTARGET=en #source and target language for second attempt
+			if [[ $sound == 1 ]]; then $0 -s $request ; else $0 $request ;fi #second attemt to translate with detected language  #sound will be quiet...
+			exit
+		fi
+
+		[[ $source == "auto" ]] && { source=$det_language; cachefile="$PR_DIR/cache/$source_$request"; } #auto in cachefile fix
 	
 		#for english only. but it may be altered
-		if [[ $r_words_count -eq 1 && ${#request} -gt 1 && $source == en && ! $fl && $(echo "$request" | tr '[:upper:]' '[:lower:]') !=  $(echo "$res" | tr '[:upper:]' '[:lower:]') ]]; then #dictionary
+		if [[ $r_words_count -eq 1 && ${#request} -gt 1 && $source == en && $(echo "$request" | tr '[:upper:]' '[:lower:]') !=  $(echo "$res_for_check" | tr '[:upper:]' '[:lower:]') ]]; then #dictionary
 
 			js "$PR_DIR"/tmpjsobj > "$cachefile" #google translated text and dictionary to cache
 
@@ -172,12 +272,10 @@ else
 			if [[ $phras ]]; then
 				echo -e "\033[1;35m"PHRASES:$(tput sgr0) >> "$cachefile"
 				join --nocheck-order -a 1 -a 2 <(echo "$phras") <(echo "$phras2")  | sed '/^$/d' >> "$cachefile"
-#				echo "$phras" > tm1
-#				echo "$phras2" >tm2
-#				echo -e "\033[34m"http://www.macmillandictionary.com/dictionary/american/"$request"$(tput sgr0) >> "$cachefile"
+				#echo -e "\033[34m"http://www.macmillandictionary.com/dictionary/american/"$request"$(tput sgr0) >> "$cachefile"
 			fi
 
-			trans=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://lingvopro.abbyyonline.com/en/Translate/en-ru/"$request" | grep -o '"[^"]*Handlers/TranscriptionHandler\.ashx[^"]*"' | sed 's/.*=\(.*\)"/\1/'| echo -n -e $(sed 's/+/ /g; s/%/\\x/g')) #getting transcription
+			trans=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://lingvopro.abbyyonline.com/en/Translate/en-"$target"/"$request" | grep -o '"[^"]*Handlers/TranscriptionHandler\.ashx[^"]*"' | sed 's/.*=\(.*\)"/\1/'| echo -n -e $(sed 's/+/ /g; s/%/\\x/g')) #getting transcription
 			[[ $trans ]] && echo "[$trans]" >> "$cachefile"
 
 			cat "$cachefile" 2>/dev/null #output
@@ -205,10 +303,11 @@ else
 			fi
 			[[ $(ls "$PR_DIR"/cache | wc -l) -gt $words_buffer ]] && find "$PR_DIR"/cache -mtime +20 -delete #cache cleaning. remove words older than 20 days.
 		else
+			
 			js "$PR_DIR"/tmpjsobj #google dictionary and translated text output
 			[[ $fl ]] && echo $fl #google fixed text output
 
-			if [[ $source == en && ! $fl && $(echo "$request" | tr '[:upper:]' '[:lower:]') !=  $(echo "$res" | tr '[:upper:]' '[:lower:]') ]]; then 
+			if [[ $source == en && $(echo "$request" | tr '[:upper:]' '[:lower:]') !=  $(echo "$res_for_check" | tr '[:upper:]' '[:lower:]') ]]; then 
 				#phrases for 2 words
 				if [[ $r_words_count -le 2 ]]; then
 					raw_phras=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://www.macmillandictionary.com/dictionary/american/"$(echo $request | tr ' ' - )" | grep -o '<li.*End of DIV SENSE--></li>' | sed 's/<.\?span[^>]*>//g' )
@@ -242,6 +341,94 @@ else
 		stat=$(playsound --loop 0 --volume "$volume" "$cachefile".mp3 2>&1 | grep -o 'Couldn')
 		[[ $stat ]] && rm "$cachefile".mp3
 	fi
+	[[ $sound == 1 ]] && sleep 1 #to be able Ctrl+C and delete files
 fi
 
 exit
+
+
+#rest languages for interface. not in list of source language
+#hl=ak          Akan
+#hl=bem         Bemba
+#hl=bh          Bihari
+#hl=xx-bork     Bork, bork, bork!
+#hl=bs          Bosnian
+#hl=br          Breton
+#hl=km          Cambodian
+#hl=chr         Cherokee
+#hl=ny          Chichewa
+#hl=zh-TW       Chinese (Traditional)
+#hl=co          Corsican
+#hl=xx-elmer    Elmer Fudd
+#hl=ee          Ewe
+#hl=fy          Frisian
+#hl=gaa         Ga
+#hl=gn          Guarani
+#hl=xx-hacker   Hacker
+#hl=ha          Hausa
+#hl=haw         Hawaiian
+#hl=ig          Igbo
+#hl=ia          Interlingua
+#hl=jw          Javanese
+#hl=kk          Kazakh
+#hl=rw          Kinyarwanda
+#hl=rn          Kirundi
+#hl=xx-klingon  Klingon
+#hl=kg          Kongo
+#hl=kri         Krio (Sierra Leone)
+#hl=ku          Kurdish
+#hl=ckb         Kurdish (Soranî)
+#hl=ky          Kyrgyz
+#hl=ln          Lingala
+#hl=loz         Lozi
+#hl=lg          Luganda
+#hl=ach         Luo
+#hl=mg          Malagasy
+#hl=ml          Malayalam
+#hl=mi          Maori
+#hl=mr          Marathi
+#hl=mfe         Mauritian Creole
+#hl=mo          Moldavian
+#hl=mn          Mongolian
+#hl=sr-ME       Montenegrin
+#hl=ne          Nepali
+#hl=pcm         Nigerian Pidgin
+#hl=nso         Northern Sotho
+#hl=nn          Norwegian (Nynorsk)
+#hl=oc          Occitan
+#hl=or          Oriya
+#hl=om          Oromo
+#hl=ps          Pashto
+#hl=xx-pirate   Pirate
+#hl=pt-BR       Portuguese (Brazil)
+#hl=pt-PT       Portuguese (Portugal)
+#hl=pa          Punjabi
+#hl=qu          Quechua
+#hl=rm          Romansh
+#hl=nyn         Runyakitara
+#hl=gd          Scots Gaelic
+#hl=sh          Serbo-Croatian
+#hl=st          Sesotho
+#hl=tn          Setswana
+#hl=crs         Seychellois Creole
+#hl=sn          Shona
+#hl=sd          Sindhi
+#hl=si          Sinhalese
+#hl=so          Somali
+#hl=es-419      Spanish (Latin American)
+#hl=su          Sundanese
+#hl=tg          Tajik
+#hl=tt          Tatar
+#hl=ti          Tigrinya
+#hl=to          Tonga
+#hl=lua         Tshiluba
+#hl=tum         Tumbuka
+#hl=tk          Turkmen
+#hl=tw          Twi
+#hl=ug          Uighur
+#hl=uz          Uzbek
+#hl=wo          Wolof
+#hl=xh          Xhosa
+#hl=yo          Yoruba
+#hl=zu          Zulu
+

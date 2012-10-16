@@ -4,7 +4,7 @@ mirror http://pastebin.com/kPTYjY6W
 requirements: curl, Mozilla js shell, forvo.com account
 
 features:
-output: translated text, fixed text with highlight, dictionary, phrases, ideom, transcription, audio pronunciation
+output: translated text, fixed text with highlight, language detection, dictionary, phrases, ideom, transcription, audio pronunciation
 cache for english words
 saving words to file for learning
 
@@ -15,5 +15,7 @@ alias ts="/home/user/translate -s"
 alias ts2="/home/user/translate -s2"
 alias ts3="/home/user/translate -s3"
 
+source and target language can be set by command:
+export TLSOURCE=en TLTARGET=ru
 
 You can thank me with Webmoney: wmz Z253207064534, wmr R327158221146, wme E282089965215
