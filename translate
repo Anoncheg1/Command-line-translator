@@ -333,7 +333,7 @@ else
 		fi #english dictionary
 	else #cache output
 		cat "$cachefile" #output
-		echo -e "\033[34m"http://oxforddictionaries.com/definition/english/"$request"$(tput sgr0)
+		[[ $source == en ]] && echo -e "\033[34m"http://oxforddictionaries.com/definition/english/"$request"$(tput sgr0)
 	fi
 	#sound output
 	if [[ $sound == 1 && -e "$cachefile".mp3 ]]; then 
