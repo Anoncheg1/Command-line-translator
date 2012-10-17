@@ -223,8 +223,9 @@ else
 		#echo [$(echo "$grespond" | grep -o '[^"]*/i[^"]*')"];"
 		#echo -e "var googlearr = eval(JSON.stringify(myJSONObject));\n print(googlearr);" >> "$PR_DIR"/tmpjsobj2
 		#js "$PR_DIR"/tmpjsobj2
-		if [[ $r_words_count -le 2 ]];then #getting google fixed text from $grespond
-			fl=$(echo "$grespond" | grep -o '[^"]*/i[^"]*' | sed 's/\\u003cb\\u003e\\u003ci\\u003e//g' | sed 's/\\u003c\/i\\u003e\\u003c\/b\\u003e//g' | sed 's/\\u0026//g' | sed "s/\#39;/'/g")
+		fl_raw=$(echo "$grespond" | grep -o '[^"]*/i[^"]*') #google correction from $grespond
+		if [[ $r_words_count -le 2 ]];then #getting google fixed text
+			fl=$(echo "$fl_raw" | sed 's/\\u003cb\\u003e\\u003ci\\u003e//g' | sed 's/\\u003c\/i\\u003e\\u003c\/b\\u003e//g' | sed 's/\\u0026//g' | sed "s/\#39;/'/g")
 			difftest="$(cmp -l <(echo -n $request) <(echo -n $fl) 2>/dev/null)"
 			diffnum=$(echo "$difftest" | head -n 1 | sed 's/\([0-9][0-9]\?\).*/\1/') 
 			if [[ $diffnum > 0 ]];then
@@ -232,10 +233,10 @@ else
 				fl="$(tput bold)$(tput setaf 3)${fl:0:$diffnum-1}$(tput bold)$(tput setaf 1)${fl:$diffnum-1:1}$(tput bold)$(tput setaf 3)${fl:$diffnum}$(tput sgr0) :$(tput setaf 3)"$(echo "$difftest" | wc -l)"$(tput sgr0)" #highlight difference in one word
 			fi
 		else
-			fl=$(echo "$grespond" | grep -o '[^"]*/i[^"]*' | sed 's/\\u003cb\\u003e\\u003ci\\u003e/'$(tput bold)$(tput setaf 3)'/g' | sed 's/\\u003c\/i\\u003e\\u003c\/b\\u003e/'$(tput sgr0)'/g' | sed 's/\\u0026//g' | sed "s/\#39;/'/g" ) #google fixed text
+			fl=$(echo "$fl_raw" | sed 's/\\u003cb\\u003e\\u003ci\\u003e/'$(tput bold)$(tput setaf 3)'/g' | sed 's/\\u003c\/i\\u003e\\u003c\/b\\u003e/'$(tput sgr0)'/g' | sed 's/\\u0026//g' | sed "s/\#39;/'/g" ) #google fixed text
 		fi
 
-#		echo $grespond | grep -o '\[.*\]' 
+		#echo $grespond | grep -o '\[.*\]'
 
 		echo -n "var myJSONObject = " > "$PR_DIR"/tmpjsobj
 		echo -n "$grespond" | grep -o '\[.*\]' >> "$PR_DIR"/tmpjsobj
@@ -248,7 +249,7 @@ else
 		det_language=$(js "$PR_DIR"/tmpjsobj2 | tail -c 3)
 		[[ $det_language != $source && $det_language != $ENGLISH_TARGET_LANG ]] && echo -e "$(tput bold)$(tput setaf 3)$det_language ${ln_arr[$det_language]}$(tput sgr0) detected"
 
-		if [[ $source != "auto" && $source != $det_language ]]; then #second attempt to translate with detected language
+		if [[ $source != "auto" && $source != $det_language && ! $fl_raw ]]; then #second attempt to translate with detected language
 			echo -e trying again
 			export TLSOURCE=$det_language #TLTARGET=en #source and target language for second attempt
 			if [[ $sound == 1 ]]; then $0 -s $request ; else $0 $request ;fi #second attemt to translate with detected language  #sound will be quiet...
@@ -260,8 +261,8 @@ else
 		[[ $source == "auto" ]] && { source=$det_language; cachefile="$PR_DIR/cache/$source_$request"; } #auto in cachefile fix
 	
 		#"Dictionary part" for english only. but it can be extended for every required language
-		res_for_check=$(echo "$grespond" | grep -o '\[.*\]' | sed 's/.*\[\[\[\"\([^\"]*\)".*/\1/')
-		if [[ $r_words_count -eq 1 && ${#request} -gt 1 && $source == en && $(echo "$request" | tr '[:upper:]' '[:lower:]') !=  $(echo "$res_for_check" | tr '[:upper:]' '[:lower:]') ]]; then #dictionary
+		#res_for_check=$(echo "$grespond" | grep -o '\[.*\]' | sed 's/.*\[\[\[\"\([^\"]*\)".*/\1/')
+		if [[ $r_words_count -eq 1 && ${#request} -gt 1 && $source == en && ! $fl_raw ]]; then #dictionary
 
 			js "$PR_DIR"/tmpjsobj > "$cachefile" #google translated text and dictionary to cache
 
@@ -307,7 +308,7 @@ else
 			js "$PR_DIR"/tmpjsobj #google dictionary and translated text output
 			[[ $fl ]] && echo $fl #google fixed text output
 
-			if [[ $source == en && $(echo "$request" | tr '[:upper:]' '[:lower:]') !=  $(echo "$res_for_check" | tr '[:upper:]' '[:lower:]') ]]; then 
+			if [[ $source == en && ! $fl_raw ]]; then 
 				#phrases for 2 words
 				if [[ $r_words_count -le 2 ]]; then
 					raw_phras=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://www.macmillandictionary.com/dictionary/american/"$(echo $request | tr ' ' - )" | grep -o '<li.*End of DIV SENSE--></li>' | sed 's/<.\?span[^>]*>//g' )
