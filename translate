@@ -225,11 +225,11 @@ else
 		#js "$PR_DIR"/tmpjsobj2
 		if [[ $r_words_count -le 2 ]];then #getting google fixed text from $grespond
 			fl=$(echo "$grespond" | grep -o '[^"]*/i[^"]*' | sed 's/\\u003cb\\u003e\\u003ci\\u003e//g' | sed 's/\\u003c\/i\\u003e\\u003c\/b\\u003e//g' | sed 's/\\u0026//g' | sed "s/\#39;/'/g")
-			diffnum=$(cmp -l <(echo -n $request) <(echo -n $fl) 2>/dev/null | head -n 1 | sed 's/\([0-9][0-9]\?\).*/\1/') 
-#			echo $diffnum
+			difftest="$(cmp -l <(echo -n $request) <(echo -n $fl) 2>/dev/null)"
+			diffnum=$(echo "$difftest" | head -n 1 | sed 's/\([0-9][0-9]\?\).*/\1/') 
 			if [[ $diffnum > 0 ]];then
 				[[ $source != en ]]&& diffnum=$(($diffnum/2+$diffnum%2))   #MUST BE CHECKED FOR REQUIRED LANGUAGES
-				fl="$(tput bold)$(tput setaf 3)${fl:0:$diffnum-1}$(tput bold)$(tput setaf 1)${fl:$diffnum-1:1}$(tput bold)$(tput setaf 3)${fl:$diffnum}$(tput sgr0)" #highlight difference in one word
+				fl="$(tput bold)$(tput setaf 3)${fl:0:$diffnum-1}$(tput bold)$(tput setaf 1)${fl:$diffnum-1:1}$(tput bold)$(tput setaf 3)${fl:$diffnum}$(tput sgr0) :$(tput setaf 3)"$(echo "$difftest" | wc -l)"$(tput sgr0)" #highlight difference in one word
 			fi
 		else
 			fl=$(echo "$grespond" | grep -o '[^"]*/i[^"]*' | sed 's/\\u003cb\\u003e\\u003ci\\u003e/'$(tput bold)$(tput setaf 3)'/g' | sed 's/\\u003c\/i\\u003e\\u003c\/b\\u003e/'$(tput sgr0)'/g' | sed 's/\\u0026//g' | sed "s/\#39;/'/g" ) #google fixed text
@@ -249,6 +249,7 @@ else
 		[[ $det_language != $source && $det_language != $ENGLISH_TARGET_LANG ]] && echo -e "$(tput bold)$(tput setaf 3)$det_language ${ln_arr[$det_language]}$(tput sgr0) detected"
 
 		if [[ $source != "auto" && $source != $det_language ]]; then #second attempt to translate with detected language
+			echo -e trying again
 			export TLSOURCE=$det_language #TLTARGET=en #source and target language for second attempt
 			if [[ $sound == 1 ]]; then $0 -s $request ; else $0 $request ;fi #second attemt to translate with detected language  #sound will be quiet...
 			exit
