@@ -1,5 +1,5 @@
 #!/bin/bash
-# AMESOME GOOGLE TRANSLATE. It checks http proxies.
+# AMESOME GOOGLE TRANSLATE. This tool for access translate.google.com from terminal and additional English features.
 
 #    Copyright (C) 2012 Vasilij Vasiljevich Ubijtca.
 
@@ -19,7 +19,6 @@
 # You can contact me there: 
 # http://www.unix.com/                       654321 - profile name
 
-# This tool for access translate.google.com from terminal and to have English dictionary.
 # main mirror https://github.com/Anoncheg1/Command-line-translator
 # mirror http://pastebin.com/kPTYjY6W
 # write to me there: http://www.unix.com/shell-programming-scripting/196823-completed-command-line-google-translation-tool.html
