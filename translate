@@ -37,7 +37,7 @@ otherwise, "target" language is english
 -s, -s2, -s3, --sound Enable sound for one word
 You can force set language with environment varibles by command:
 export TLSOURCE=en TLTARGET=ru; will set language source English and target Russian language
-but better make it in script!
+but better make it in script of itself!
 '
 
 # adjust to taste
