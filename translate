@@ -1,9 +1,31 @@
 #!/bin/bash
+# AMESOME GOOGLE TRANSLATE. It checks http proxies.
+
+#    Copyright (C) 2012 Vasilij Vasiljevich Ubijtca.
+
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+# You can contact me there: 
+# http://www.unix.com/                       654321 - profile name
+
 # This tool for access translate.google.com from terminal and to have English dictionary.
 # main mirror https://github.com/Anoncheg1/Command-line-translator
 # mirror http://pastebin.com/kPTYjY6W
 # write to me there: http://www.unix.com/shell-programming-scripting/196823-completed-command-line-google-translation-tool.html
-# requirements: curl, Mozilla js shell (spidermonkey), forvo.com account
+# requirements: curl >= 7.21.0,
+# 	Mozilla js shell (spidermonkey) >= 1.8.0, 
+#	forvo.com account
 #features:
 #- translated text, fixed text with highlight, language detection, dictionary
 #- for english:  phrases, ideom, transcription, audio pronunciation
@@ -13,7 +35,7 @@
 help='translate [-s] <text>
 if text is english, target language is ENGLISH_TARGET_LANG
 otherwise, "target" language is english
--s, --sound Enable sound for one word
+-s, -s2, -s3, --sound Enable sound for one word
 You can set language with environment varibles by command:
 export TLSOURCE=en TLTARGET=ru; will set language source English and target Russian language
 '
@@ -102,7 +124,7 @@ ln_arr["yi"]="Yiddish"
 trap bashtrap INT
 bashtrap()
 {
-	echo "CTRL+C Detected"
+	echo "Exit signal detected"
 	rm "$cachefile" 2> /dev/null
 	exit
 }
@@ -168,7 +190,7 @@ for (var c = 0; c < arr.length; c++){ //testing
 
 request=($*) #get array
 sound=0
-volume=0.7
+volume=0.8
 if [[ $1 = -h || $1 = --help ]]; then #help
 	echo "$help"
 	exit
@@ -239,7 +261,6 @@ else
 		else
 			fl=$(echo "$fl_raw" | sed 's/\\u003cb\\u003e\\u003ci\\u003e/'$(tput bold)$(tput setaf 3)'/g' | sed 's/\\u003c\/i\\u003e\\u003c\/b\\u003e/'$(tput sgr0)'/g' | sed 's/\\u0026//g' | sed "s/\#39;/'/g" ) #google fixed text
 		fi
-
 		#echo $grespond | grep -o '\[.*\]'
 
 		echo -n "var myJSONObject = " > "$PR_DIR"/tmpjsobj
@@ -272,6 +293,7 @@ else
 
 			#phrases
 			raw_phras=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" -m $timeout http://www.macmillandictionary.com/dictionary/american/"$(echo $request | tr ' ' - )" | grep -o '<li ID.*End of DIV SENSE--></li>' | sed 's/<.\?span[^>]*>//g' )
+			[[ $? != 0 ]] && bashtrap
 			phras=$(echo $raw_phras |  sed 's/End of DIV SENSE--><\/li>/End of DIV SENSE--><\/li>\n/g' | grep -n -o '"h2">[^>]*<' | sed 's/^\([^:]*\):.*>\([^<]*\).*/\1 \2\./') #getting phrases
 			phras2=$(echo $raw_phras |  sed 's/End of DIV SENSE--><\/li>/End of DIV SENSE--><\/li>\n/g' | grep -n -o '"EXAMPLE">[^>]*<' | sed 's/^\([^:]*\):.*>\([^<]*\).*/\1 \2/') #getting examples
 			if [[ $phras ]]; then
@@ -281,6 +303,7 @@ else
 			fi
 
 			trans=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://lingvopro.abbyyonline.com/en/Translate/en-"$target"/"$request" | grep -o '"[^"]*Handlers/TranscriptionHandler\.ashx[^"]*"' | sed 's/.*=\(.*\)"/\1/'| echo -n -e $(sed 's/+/ /g; s/%/\\x/g')) #getting transcription
+			[[ $? != 0 ]] && bashtrap
 			[[ $trans ]] && echo "[$trans]" >> "$cachefile"
 
 			cat "$cachefile" 2>/dev/null #output
@@ -316,6 +339,7 @@ else
 				#phrases for 2 words
 				if [[ $r_words_count -le 2 ]]; then
 					raw_phras=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://www.macmillandictionary.com/dictionary/american/"$(echo $request | tr ' ' - )" | grep -o '<li.*End of DIV SENSE--></li>' | sed 's/<.\?span[^>]*>//g' )
+					[[ $? != 0 ]] && bashtrap
 					phras=$(echo $raw_phras |  sed 's/End of DIV SENSE--><\/li>/End of DIV SENSE--><\/li>\n/g' | grep -n -o '"h2">[^>]*<' | sed 's/^\([^:]*\):.*>\([^<]*\).*/\1 \2\./') #getting phrases
 					phras2=$(echo $raw_phras |  sed 's/End of DIV SENSE--><\/li>/End of DIV SENSE--><\/li>\n/g' | grep -n -o '"EXAMPLE">[^>]*<' | sed 's/^\([^:]*\):.*>\([^<]*\).*/\1 \2/') #getting examples
 					if [[ $phras2 ]]; then
@@ -326,6 +350,7 @@ else
 				#search for ideom for 2-4 words
 				if [[ ! $phras2 && $r_words_count -le 4 ]]; then
 					raw_ideoms=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://idioms.thefreedictionary.com/"$(echo $request | tr ' ' + )" | grep -o 'div class="ds-single".*</div><div')
+					[[ $? != 0 ]] && bashtrap
 					ideom=$(echo $raw_ideoms | sed 's/<i>//' | sed 's/<\/i>//' | sed 's/.*ds-single\">\([^<]*\)<.*/\1/')
 					illustration=$(echo $raw_ideoms | sed 's/.*class=illustration>\([^<]*\)<.*/\1/')
 					if [[ $ideom ]]; then
