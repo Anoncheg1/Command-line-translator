@@ -139,6 +139,7 @@ if(typeof googlearr[0] !== 'undefined' && googlearr[0] !== null){  //summing sen
 	for (var i = 0; i < googlearr[0].length; i++){
 		if(typeof googlearr[0][i][0] !== 'undefined' && googlearr[0][i][0] !== null){
 			rsum=rsum+googlearr[0][i][0];
+			print(googlearr[5][0][2][1]);
 		}
 	}
 }
@@ -265,7 +266,7 @@ else
 		else
 			fl=$(echo "$fl_raw" | sed 's/\\u003cb\\u003e\\u003ci\\u003e/'$(tput bold)$(tput setaf 3)'/g' | sed 's/\\u003c\/i\\u003e\\u003c\/b\\u003e/'$(tput sgr0)'/g' | sed 's/\\u0026//g' | sed "s/\#39;/'/g" ) #google fixed text
 		fi
-		#echo $grespond | grep -o '\[.*\]'
+		echo $grespond | grep -o '\[.*\]'
 
 		echo -n "var myJSONObject = " > "$PR_DIR"/tmpjsobj
 		echo -n "$grespond" | grep -o '\[.*\]' >> "$PR_DIR"/tmpjsobj
@@ -297,7 +298,7 @@ else
 
 			#phrases
 			raw_phras=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" -m $timeout http://www.macmillandictionary.com/dictionary/american/"$(echo $request | tr ' ' - )" | grep -o '<li ID.*End of DIV SENSE--></li>' | sed 's/<.\?span[^>]*>//g' )
-			[[ $? != 0 ]] && bashtrap
+			[[ $? != 0 ]] && { echo cant get phrases; bashtrap; }
 			phras=$(echo $raw_phras |  sed 's/End of DIV SENSE--><\/li>/End of DIV SENSE--><\/li>\n/g' | grep -n -o '"h2">[^>]*<' | sed 's/^\([^:]*\):.*>\([^<]*\).*/\1 \2\./') #getting phrases
 			phras2=$(echo $raw_phras |  sed 's/End of DIV SENSE--><\/li>/End of DIV SENSE--><\/li>\n/g' | grep -n -o '"EXAMPLE">[^>]*<' | sed 's/^\([^:]*\):.*>\([^<]*\).*/\1 \2/') #getting examples
 			if [[ $phras ]]; then
@@ -307,7 +308,7 @@ else
 			fi
 
 			trans=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://lingvopro.abbyyonline.com/en/Translate/en-"$target"/"$request" | grep -o '"[^"]*Handlers/TranscriptionHandler\.ashx[^"]*"' | sed 's/.*=\(.*\)"/\1/'| echo -n -e $(sed 's/+/ /g; s/%/\\x/g')) #getting transcription
-			[[ $? != 0 ]] && bashtrap
+			[[ $? != 0 ]] &&  { echo cant get transcription; bashtrap; }
 			[[ $trans ]] && echo "[$trans]" >> "$cachefile"
 
 			cat "$cachefile" 2>/dev/null #output
@@ -343,7 +344,7 @@ else
 				#phrases for 2 words
 				if [[ $r_words_count -le 2 ]]; then
 					raw_phras=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://www.macmillandictionary.com/dictionary/american/"$(echo $request | tr ' ' - )" | grep -o '<li.*End of DIV SENSE--></li>' | sed 's/<.\?span[^>]*>//g' )
-					[[ $? != 0 ]] && bashtrap
+					[[ $? != 0 ]] &&  { echo "cant get phrases for string" ; bashtrap; }
 					phras=$(echo $raw_phras |  sed 's/End of DIV SENSE--><\/li>/End of DIV SENSE--><\/li>\n/g' | grep -n -o '"h2">[^>]*<' | sed 's/^\([^:]*\):.*>\([^<]*\).*/\1 \2\./') #getting phrases
 					phras2=$(echo $raw_phras |  sed 's/End of DIV SENSE--><\/li>/End of DIV SENSE--><\/li>\n/g' | grep -n -o '"EXAMPLE">[^>]*<' | sed 's/^\([^:]*\):.*>\([^<]*\).*/\1 \2/') #getting examples
 					if [[ $phras2 ]]; then
@@ -354,7 +355,6 @@ else
 				#search for ideom for 2-4 words
 				if [[ ! $phras2 && $r_words_count -le 4 ]]; then
 					raw_ideoms=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://idioms.thefreedictionary.com/"$(echo $request | tr ' ' + )" | grep -o 'div class="ds-single".*</div><div')
-					[[ $? != 0 ]] && bashtrap
 					ideom=$(echo $raw_ideoms | sed 's/<i>//' | sed 's/<\/i>//' | sed 's/.*ds-single\">\([^<]*\)<.*/\1/')
 					illustration=$(echo $raw_ideoms | sed 's/.*class=illustration>\([^<]*\)<.*/\1/')
 					if [[ $ideom ]]; then
