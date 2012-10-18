@@ -45,8 +45,8 @@ target=en 			#target for all languages except english
 flogin=121212 			#forvo.com login and pass REQUIRED!
 fpass=121212
 words_buffer=4000	#4000 files max. there is removeing all files older than 20 days.
-#httpproxy="127.0.0.1:4444"		#proxy for long strings
-#httpsproxy="--socks5 127.0.0.1:9050"	#socks5
+httpproxy="127.0.0.1:4444"		#proxy for long strings
+httpsproxy="--socks5 127.0.0.1:9050"	#socks5
 timeout=6
 PR_DIR="/home/$USER/.translate"
 useragent="Mozilla/5.0 (X11; Linux i686) AppleWebKit/534.34 (KHTML, like Gecko) QupZilla/1.3.1 Safari/534.34"
@@ -123,7 +123,7 @@ ln_arr["yi"]="Yiddish"
 trap bashtrap INT
 bashtrap()
 {
-	echo "Exit signal detected"
+	echo "Exit signal detected. Cache file deleting."
 	rm "$cachefile" 2> /dev/null
 	exit
 }
@@ -370,7 +370,7 @@ else
 		stat=$(playsound --loop 0 --volume "$volume" "$cachefile".mp3 2>&1 | grep -o 'Couldn')
 		[[ $stat ]] && rm "$cachefile".mp3
 	fi
-	[[ $sound == 1 ]] && sleep 1 #to be able Ctrl+C and delete files
+	[[ $sound == 1 && ! -e "$cachefile".mp3 ]] && sleep 1 #to be able Ctrl+C to delete cache file
 fi
 
 exit
