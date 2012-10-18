@@ -19,7 +19,8 @@ alias ts="/home/user/translate -s"
 alias ts2="/home/user/translate -s2"
 alias ts3="/home/user/translate -s3"
 
-source and target language can be set by command:
+You can force set language with environment varibles by command:
 export TLSOURCE=en TLTARGET=ru
+but better make that in script!
 
 You can thank me with Webmoney: wmz Z253207064534, wmr R327158221146, wme E282089965215
