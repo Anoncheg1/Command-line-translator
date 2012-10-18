@@ -48,7 +48,7 @@ words_buffer=4000	#4000 files max. there is removeing all files older than 20 da
 #httpproxy="127.0.0.1:4444"		#proxy for long strings
 #httpsproxy="--socks5 127.0.0.1:9050"	#socks5
 timeout=6
-PR_DIR="/home/$USER/.translate"
+[ $(whoami) == "root" ] && PR_DIR="/root/.translate/" || PR_DIR="/home/$USER/.translate"
 useragent="Mozilla/5.0 (X11; Linux i686) AppleWebKit/534.34 (KHTML, like Gecko) QupZilla/1.3.1 Safari/534.34"
 #
 declare -A ln_arr
@@ -270,7 +270,7 @@ else
 		#Language detection
 		cp -f "$PR_DIR"/tmpjsobj "$PR_DIR"/tmpjsobj2
 		echo -n "language_identification(googlearr);" >> "$PR_DIR"/tmpjsobj2
-		det_language=$(js "$PR_DIR"/tmpjsobj2 | tail -c 3)
+		det_language=$(js "$PR_DIR"/tmpjsobj2 | tail -c3)
 		[[ $det_language != $source && $det_language != $ENGLISH_TARGET_LANG ]] && echo -e "$(tput bold)$(tput setaf 3)$det_language ${ln_arr[$det_language]}$(tput sgr0) detected"
 
 		if [[ $source != "auto" && $source != $det_language && ! $fl_raw ]]; then #second attempt to translate with detected language
