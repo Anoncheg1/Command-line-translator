@@ -1,5 +1,5 @@
 #!/bin/bash
-# AMESOME GOOGLE TRANSLATE. This tool for access translate.google.com from terminal and additional English features.
+# AWESOME GOOGLE TRANSLATE. This tool for access translate.google.com from terminal and additional English features.
 
 #    Copyright (C) 2012 Vasilij Vasiljevich Ubijtca.
 
@@ -49,6 +49,7 @@ words_buffer=4000	#4000 files max. there is removeing all files older than 20 da
 timeout=6
 #httpproxy="127.0.0.1:4444"		#proxy for long strings
 #httpsproxy="--socks5 127.0.0.1:9050"	#socks5
+#
 if [[ $USER == "root" ]];then
 	PR_DIR="/root/.translate"
 else
@@ -163,34 +164,6 @@ function language_identification(arr){ //dictionary output
 	}
 }
 "
-comment="arr=googlearr;
-for (var c = 0; c < arr.length; c++){ //testing
-	if(typeof arr[c] !== 'undefined' && arr[c] !== null){ //dictionary output
-		for (var i = 0; i < arr[c].length; i++){
-			if(typeof arr[c][i] !== 'undefined' && arr[c][i] !== null){
-				for (var e = 0; e < arr[c][i].length; e++){
-					print(c);
-					print(arr[c][i][e]);
-					//print(arr[8][0][1]);
-				}
-			}
-		}
-	}
-}
-	TOO COMPLEX... it was bad idea	whitespace=' ' //for x.x and xxx format
-					num2=Math.round(num*10000)/10;
-					if (num2 < 10 && num2%1 == 0){
-						whitespace='   '; //for x format
-					}
-					if (num2 >= 10){
-						num2=Math.round(num2/10)*10;
-						if (num2 < 100){
-							whitespace='  '; //for xx format
-						}
-					}
-					print(num2+whitespace+arr[1][a][2][b][0]+' '+arr[1][a][2][b][1]);//frequency + word + variant of speach
-"
-
 
 request=($*) #get array
 sound=0
@@ -217,7 +190,7 @@ if [[ $tcharnum -ge 65 && $tcharnum -le 122 ]]; then #if request is A-Za-z then 
 fi
 
 [[ $TLSOURCE ]] && source=$TLSOURCE; 
-[[ $TLTARGET ]] && target=$TLTARGET; # export TLSOURCE=en TLTARGET=ru; will set language
+[[ $TLTARGET ]] && target=$TLTARGET; # export TLSOURCE=en TLTARGET=ru; will force the language
 
 [ ! -d "$PR_DIR" ] && mkdir "$PR_DIR"
 [ ! -d "$PR_DIR"/cache ] && mkdir "$PR_DIR"/cache
@@ -466,4 +439,32 @@ exit
 #hl=xh          Xhosa
 #hl=yo          Yoruba
 #hl=zu          Zulu
+
+#comment="arr=googlearr;
+#for (var c = 0; c < arr.length; c++){ //testing
+#	if(typeof arr[c] !== 'undefined' && arr[c] !== null){ //dictionary output
+#		for (var i = 0; i < arr[c].length; i++){
+#			if(typeof arr[c][i] !== 'undefined' && arr[c][i] !== null){
+#				for (var e = 0; e < arr[c][i].length; e++){
+#					print(c);
+#					print(arr[c][i][e]);
+#					//print(arr[8][0][1]);
+#				}
+#			}
+#		}
+#	}
+#}
+#	TOO COMPLEX... it was bad idea	whitespace=' ' //for x.x and xxx format
+#					num2=Math.round(num*10000)/10;
+#					if (num2 < 10 && num2%1 == 0){
+#						whitespace='   '; //for x format
+#					}
+#					if (num2 >= 10){
+#						num2=Math.round(num2/10)*10;
+#						if (num2 < 100){
+#							whitespace='  '; //for xx format
+#						}
+#					}
+#					print(num2+whitespace+arr[1][a][2][b][0]+' '+arr[1][a][2][b][1]);//frequency + word + variant of speach
+#"
 

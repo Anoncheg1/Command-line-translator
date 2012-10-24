@@ -2,15 +2,15 @@ This tool for access translate.google.com from terminal and to have English dict
 mirror https://github.com/Anoncheg1/Command-line-translator
 mirror http://pastebin.com/kPTYjY6W
 requirements: 
-- curl
-- Mozilla js shell (program included in the SpiderMonkey)
+- curl >= 7.21.0
+- Mozilla js shell (program included in the SpiderMonkey) >= 1.8.0
 - forvo.com account for audio pronunciation 
 
 features:
 - translated text, fixed text with highlight, language detection, dictionary
 for english:  phrases, ideom, transcription, audio pronunciation
 - cache for words
-- saving words to file for learning
+- saving english words to file for learning
 
 for convenience:
 ~/.bash_aliases
@@ -19,7 +19,7 @@ alias ts="/home/user/translate -s"
 alias ts2="/home/user/translate -s2"
 alias ts3="/home/user/translate -s3"
 
-You can force set language with environment varibles by command:
+You can force the language with environment varibles by command:
 export TLSOURCE=en TLTARGET=ru
 but better make it in script of itself!
 
