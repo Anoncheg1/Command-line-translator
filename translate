@@ -21,7 +21,6 @@
 
 # main mirror https://github.com/Anoncheg1/Command-line-translator
 # mirror http://pastebin.com/kPTYjY6W
-# write to me there: http://www.unix.com/shell-programming-scripting/196823-completed-command-line-google-translation-tool.html
 # requirements: curl >= 7.21.0,
 # 	Mozilla js shell (spidermonkey) >= 1.8.0, 
 #	forvo.com account
