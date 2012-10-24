@@ -49,11 +49,7 @@ timeout=6
 #httpproxy="127.0.0.1:4444"		#proxy for long strings
 #httpsproxy="--socks5 127.0.0.1:9050"	#socks5
 #
-if [[ $USER == "root" ]];then
-	PR_DIR="/root/.translate"
-else
-	PR_DIR="/home/$USER/.translate"
-fi
+[ $(whoami) == "root" ] && PR_DIR="/root/.translate" || PR_DIR="/home/$USER/.translate"
 useragent="Mozilla/5.0 (X11; Linux i686) AppleWebKit/534.34 (KHTML, like Gecko) QupZilla/1.3.1 Safari/534.34"
 #
 declare -A ln_arr
