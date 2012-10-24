@@ -150,8 +150,8 @@ function dictionary(arr){ //dictionary output
 				print(\"\033[1;34m\"+arr[1][a][0]+\"\033[0m\");//part of speach
 				for (var b = 0; b < arr[1][a][2].length; b++){//words
 					num=parseFloat(arr[1][a][2][b][3]); //frequency
-					//not working again :( print(arr[1][a][2][b][0]+' '+arr[1][a][2][b][1]+' '+Math.round(num*1000000)/1000000);//word + variant of speach + frequency
-					print(arr[1][a][2][b][0]+' '+arr[1][a][2][b][1]);//word + variant of speach
+					print(arr[1][a][2][b][0]+' '+arr[1][a][2][b][1]+' '+Math.round(num*1000000)/1000000);//word + variant of speach + frequency
+					//old print(arr[1][a][2][b][0]+' '+arr[1][a][2][b][1]);//word + variant of speach
 				}
 			}
 		}
