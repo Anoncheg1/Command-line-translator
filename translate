@@ -147,9 +147,8 @@ function dictionary(arr){ //dictionary output
 				for (var b = 0; b < arr[1][a][2].length; b++){//words
 					num=parseFloat(arr[1][a][2][b][3]); //frequency
 					num2=Math.round(num*100000)/10;//round
-					if (num2 >= 10){
-					 num2=Math.round(num2/10)*10
-					}
+					if (num2 >= 10)
+						num2=Math.round(num2/10)*10;
 					print(arr[1][a][2][b][0]+' '+arr[1][a][2][b][1]+' '+num2);//word + variant of speach + frequency
 					//variant1 print(arr[1][a][2][b][0]+' '+arr[1][a][2][b][1]+' '+Math.round(num*1000000)/1000000);//word + variant of speach + frequency
 					//old print(arr[1][a][2][b][0]+' '+arr[1][a][2][b][1]);//word + variant of speach
