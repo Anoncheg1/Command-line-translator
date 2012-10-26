@@ -255,7 +255,7 @@ else
 
 		res_for_check=$(echo "$grespond" | grep -o '\[.*\]' | sed 's/.*\[\[\[\"\([^\"]*\)".*/\1/')
 		if [[ $source != $det_language && ! $fl_raw && $(echo "$request" | tr '[:upper:]' '[:lower:]') ==  $(echo "$res_for_check" | tr '[:upper:]' '[:lower:]') ]]; then #second attempt to translate with detected language
-			[[ $source != "auto" ]] && echo -e trying again # I guess google "auto" is not working then we will do it by yourself mutely
+			[[ $source != "auto" ]] && echo -e "trying with detected language" # I guess google "auto" is not working then we will do it by yourself mutely
 			export TLSOURCE=$det_language #TLTARGET=en #source and target language for second attempt
 			if [[ $sound == 1 ]]; then $0 -s $request ; else $0 $request ;fi #second attemt to translate with detected language  #sound will be quiet...
 			exit
