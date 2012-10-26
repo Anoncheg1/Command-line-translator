@@ -21,6 +21,6 @@ alias ts3="/home/user/translate -s3"
 
 You can force the language with environment varibles by command:
 export TLSOURCE=en TLTARGET=ru
-but better make it in script of itself!
+but better configure "ENGLISH_TARGET_LANG" and "target" in script!
 
 You can thank me with Webmoney: wmz Z253207064534, wmr R327158221146, wme E282089965215

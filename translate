@@ -183,7 +183,7 @@ request=${request[*]} #to string
 source=auto
 tchar=${request:0:1} #language detection by the first character
 tcharnum=$(printf "%d" "'${tchar}")
-if [[ $tcharnum -ge 65 && $tcharnum -le 122 ]]; then #if request is A-Za-z then it is english...
+if [[ $tcharnum -ge 65 && $tcharnum -le 122 || (( $TLSOURCE == "en" && ! $TLTARGET )) ]]; then #if request is A-Za-z then it is english...
 	source=en #english
 	target="$ENGLISH_TARGET_LANG" #if text is english, target language is ENGLISH_TARGET_LANG
 fi
@@ -249,10 +249,10 @@ else
 		cp -f "$PR_DIR"/tmpjsobj "$PR_DIR"/tmpjsobj2
 		echo -n "language_identification(googlearr);" >> "$PR_DIR"/tmpjsobj2
 		det_language=$(js "$PR_DIR"/tmpjsobj2 | tail -c3)
-		[[ $det_language != $source && $det_language != $ENGLISH_TARGET_LANG ]] && echo -e "$(tput bold)$(tput setaf 3)$det_language ${ln_arr[$det_language]}$(tput sgr0) detected"
+		[[ $det_language != $source && (( $TLSOURCE || $det_language != $ENGLISH_TARGET_LANG )) ]] && echo -e "$(tput bold)$(tput setaf 3)$det_language ${ln_arr[$det_language]}$(tput sgr0) detected"
 
-		if [[ $source != "auto" && $source != $det_language && ! $fl_raw ]]; then #second attempt to translate with detected language
-			echo -e trying again
+		if [[ $source != $det_language && ! $fl_raw ]]; then #second attempt to translate with detected language
+			[[ $source != "auto" ]] && echo -e trying again # I guess google "auto" is not working then we will do it by yourself in silent
 			export TLSOURCE=$det_language #TLTARGET=en #source and target language for second attempt
 			if [[ $sound == 1 ]]; then $0 -s $request ; else $0 $request ;fi #second attemt to translate with detected language  #sound will be quiet...
 			exit
