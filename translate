@@ -34,6 +34,7 @@ help='translate [-s] <text>
 if text is english, target language is ENGLISH_TARGET_LANG
 otherwise, "target" language is english
 -s, -s2, -s3, --sound Enable sound for one word
+-l, --list List of languages
 You can force set language with environment varibles by command:
 export TLSOURCE=en TLTARGET=ru; will set language source English and target Russian language
 but better make it in script of itself!
@@ -159,7 +160,7 @@ function dictionary(arr){ //dictionary output
 		}
 	}
 }
-function language_identification(arr){ //dictionary output
+function language_identification(arr){ //get detected languages
 	if(typeof arr[8] !== 'undefined' && arr[8] !== null && typeof arr[8][0] !== 'undefined' && arr[8][0] !== null && typeof arr[8][0][0] !== 'undefined' && arr[8][0][0] !== null){
 		print('Detected language: '+arr[8][0][0]); //detected language
 	}
@@ -178,6 +179,12 @@ if [[ $1 == -s || $1 == -s2 || $1 == -s3 || $1 == --sound ]];then #sound varible
 	[[ $1 == -s2 ]] && volume=1.5
 	[[ $1 == -s3 ]] && volume=2.5
 	request[0]="" #remove first parameter
+fi
+if [[ $1 = -l || $1 = --list ]]; then #help
+	for i in "${!ln_arr[@]}" ;do
+		echo -e "$i\t${ln_arr[$i]}"
+	done | sort -k2
+	exit
 fi
 request=${request[*]} #to string
 [[ ${#request} -eq 0 ]] && exit
@@ -257,7 +264,7 @@ else
 		if [[ $source != $det_language && ! $fl_raw && $(echo "$request" | tr '[:upper:]' '[:lower:]') ==  $(echo "$res_for_check" | tr '[:upper:]' '[:lower:]') ]]; then #second attempt to translate with detected language
 			[[ $source != "auto" ]] && echo -e "trying with detected language" # I guess google "auto" is not working then we will do it by yourself mutely
 			export TLSOURCE=$det_language #TLTARGET=en #source and target language for second attempt
-			if [[ $sound == 1 ]]; then $0 -s $request ; else $0 $request ;fi #second attemt to translate with detected language  #sound will be quiet...
+			if [[ $sound == 1 ]]; then $0 -s $request ; else $0 $request ;fi #second attempt to translate with detected language  #sound will be quiet...
 			exit
 		fi
 
