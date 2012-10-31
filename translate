@@ -41,8 +41,8 @@ but better make it in script of itself!
 '
 
 # adjust to taste
-ENGLISH_TARGET_LANG=ru		#target language for english request
-target=en 			#target for all languages except english
+FIRST_LANGUAGE=ru		#target language for SECOND_LANGUAGE request		both languages can't be in A-z alphabet
+SECOND_LANGUAGE=en		#target for all languages except FIRST_LANGUAGE		both languages can't be in A-z alphabet
 flogin=121212 			#forvo.com login and pass REQUIRED!
 fpass=121212
 words_buffer=4000	#4000 files max. there is removeing all files older than 20 days.
@@ -189,12 +189,15 @@ fi
 request=${request[*]} #to string
 [[ ${#request} -eq 0 ]] && exit
 
-source=auto
+
 tchar=${request:0:1} #language detection by the first character
 tcharnum=$(printf "%d" "'${tchar}")
-if [[ $tcharnum -ge 65 && $tcharnum -le 122 || (( $TLSOURCE == "en" && ! $TLTARGET )) ]]; then #if request is A-Za-z then it is english...
-	source=en #english
-	target="$ENGLISH_TARGET_LANG" #if text is english, target language is ENGLISH_TARGET_LANG
+if [[ $tcharnum -ge 65 && $tcharnum -le 122 || (( $TLSOURCE == "en" && ! $TLTARGET )) ]]; then #if request is A-Za-z then it is english... (Replace english with german, italian etc. but "en,it" will not be detected here idk how to make it for now)
+	source="$SECOND_LANGUAGE" #english
+	target="$FIRST_LANGUAGE" #if text is english target language is FIRST_LANGUAGE
+else
+	source="$FIRST_LANGUAGE"  # NOT english
+	target="$SECOND_LANGUAGE" # english
 fi
 
 [[ $TLSOURCE ]] && source=$TLSOURCE; 
