@@ -41,8 +41,8 @@ but better configure "FIRST_LANGUAGE" and "SECOND_LANGUAGE" in script for auto d
 '
 
 # adjust to taste
-FIRST_LANGUAGE=ru		#target language for SECOND_LANGUAGE request		both languages can't be in A-z alphabet
-SECOND_LANGUAGE=en		#target for all languages except FIRST_LANGUAGE		both languages can't be in A-z alphabet
+FIRST_LANGUAGE=ru		#target language for request in SECOND_LANGUAGE		NOT in A-z latin alphabet
+SECOND_LANGUAGE=en		#target for all not A-z latin requests			A-z latin alphabet will be detected!
 flogin=121212 			#forvo.com login and pass REQUIRED!
 fpass=121212
 words_buffer=4000	#4000 files max. there is removeing all files older than 20 days.
@@ -167,7 +167,6 @@ function language_identification(arr){ //get detected languages
 }
 "
 
-request=("$*") #get array
 sound=0
 volume=0.8
 if [[ $1 = -h || $1 = --help ]]; then #help
@@ -178,7 +177,11 @@ if [[ $1 == -s || $1 == -s2 || $1 == -s3 || $1 == --sound ]];then #sound varible
 	sound=1
 	[[ $1 == -s2 ]] && volume=1.5
 	[[ $1 == -s3 ]] && volume=2.5
+	request=($*) #get array
 	request[0]="" #remove first parameter
+	request=${request[*]} #to string
+else
+	request="$*"
 fi
 if [[ $1 = -l || $1 = --list ]]; then #list
 	for i in "${!ln_arr[@]}" ;do
@@ -186,16 +189,15 @@ if [[ $1 = -l || $1 = --list ]]; then #list
 	done | sort -k2
 	exit
 fi
-request="$request" #to string 		#request=${request[*]} #to string
 [[ ${#request} -eq 0 ]] && exit
 
 tchar=${request:0:1} #language detection by the first character
 tcharnum=$(printf "%d" "'${tchar}")
-if [[ $tcharnum -ge 65 && $tcharnum -le 122 || (( $TLSOURCE == "en" && ! $TLTARGET )) ]]; then #if request is A-Za-z then it is english... (Replace english with german, italian etc. but "en,it" will not be detected here idk how to make it for now)
-	source="$SECOND_LANGUAGE" #english
+if [[ $tcharnum -ge 65 && $tcharnum -le 122 || (( $TLSOURCE == "en" && ! $TLTARGET )) ]]; then #if request is A-Za-z then it is SECOND_LANGUAGE... ("en,it" will not be detected here idk how to make it for now)
+	source="$SECOND_LANGUAGE" #english or latin alphabet
 	target="$FIRST_LANGUAGE" #if text is english target language is FIRST_LANGUAGE
 else
-	source="$FIRST_LANGUAGE"  # NOT english
+	source="$FIRST_LANGUAGE"  # NOT english (just set for all not latin alphabet)
 	target="$SECOND_LANGUAGE" # english
 fi
 
