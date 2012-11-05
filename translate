@@ -30,14 +30,14 @@
 #- cache for words
 #- saving words to file for learning
 
-help='translate [-s] <text>
-if text is english, target language is ENGLISH_TARGET_LANG
-otherwise, "target" language is english
+help='translate [-s[2,3]] [-l] [-h] <text>
+if text is SECOND_LANGUAGE, then target language is FIRST_LANGUAGE
+otherwise, target language is SECOND_LANGUAGE
 -s, -s2, -s3, --sound Enable sound for one word
 -l, --list List of languages
-You can force set language with environment varibles by command:
-export TLSOURCE=en TLTARGET=ru; will set language source English and target Russian language
-but better make it in script of itself!
+You can force the language with environment varibles by command:
+export TLSOURCE=en TLTARGET=ru
+but better configure "FIRST_LANGUAGE" and "SECOND_LANGUAGE" in script for auto detection of direction by the first character!
 '
 
 # adjust to taste
@@ -167,7 +167,7 @@ function language_identification(arr){ //get detected languages
 }
 "
 
-request=($*) #get array
+request=("$*") #get array
 sound=0
 volume=0.8
 if [[ $1 = -h || $1 = --help ]]; then #help
@@ -180,15 +180,14 @@ if [[ $1 == -s || $1 == -s2 || $1 == -s3 || $1 == --sound ]];then #sound varible
 	[[ $1 == -s3 ]] && volume=2.5
 	request[0]="" #remove first parameter
 fi
-if [[ $1 = -l || $1 = --list ]]; then #help
+if [[ $1 = -l || $1 = --list ]]; then #list
 	for i in "${!ln_arr[@]}" ;do
 		echo -e "$i\t${ln_arr[$i]}"
 	done | sort -k2
 	exit
 fi
-request=${request[*]} #to string
+request="$request" #to string 		#request=${request[*]} #to string
 [[ ${#request} -eq 0 ]] && exit
-
 
 tchar=${request:0:1} #language detection by the first character
 tcharnum=$(printf "%d" "'${tchar}")
@@ -323,7 +322,7 @@ else
 		else
 			
 			js "$PR_DIR"/tmpjsobj #google dictionary and translated text output
-			[[ $fl ]] && echo $fl #google fixed text output
+			[[ $fl ]] && echo -e "$fl" #google fixed text output
 
 			if [[ $source == en && ! $fl_raw ]]; then 
 				#phrases for 2 words
