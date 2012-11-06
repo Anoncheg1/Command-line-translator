@@ -21,6 +21,6 @@ alias ts3="/home/user/translate -s3"
 
 You can force the language with environment varibles by command:
 export TLSOURCE=en TLTARGET=ru
-but better configure "FIRST_LANGUAGE" and "SECOND_LANGUAGE" in script for auto detection of direction by the first character!
+but better configure "FIRST_LANG" and "LATIN_LANG" in script for auto detection of direction by the first character!
 
 You can thank me with Webmoney: wmz Z253207064534, wmr R327158221146, wme E282089965215

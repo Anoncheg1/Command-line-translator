@@ -31,18 +31,18 @@
 #- saving words to file for learning
 
 help='translate [-s[2,3]] [-l] [-h] <text>
-if text is SECOND_LANGUAGE, then target language is FIRST_LANGUAGE
-otherwise, target language is SECOND_LANGUAGE
+if text is LATIN_LANG, then target language is FIRST_LANG
+otherwise, target language is LATIN_LANG
 -s, -s2, -s3, --sound Enable sound for one word
 -l, --list List of languages
 You can force the language with environment varibles by command:
 export TLSOURCE=en TLTARGET=ru
-but better configure "FIRST_LANGUAGE" and "SECOND_LANGUAGE" in script for auto detection of direction by the first character!
+but better configure "FIRST_LANG" and "LATIN_LANG" in script for auto detection of direction by the first character!
 '
 
 # adjust to taste
-FIRST_LANGUAGE=ru		#target language for request in SECOND_LANGUAGE		NOT in A-z latin alphabet
-SECOND_LANGUAGE=en		#target for all not A-z latin requests			A-z latin alphabet will be detected!
+FIRST_LANG=ru			#target language for request in LATIN_LANG		NOT in A-z latin alphabet
+LATIN_LANG=en			#target for all not A-z latin requests			A-z latin alphabet will be detected!
 flogin=121212 			#forvo.com login and pass REQUIRED!
 fpass=121212
 words_buffer=4000	#4000 files max. there is removeing all files older than 20 days.
@@ -66,6 +66,7 @@ ln_arr["bn"]="Bengali"
 ln_arr["bg"]="Bulgarian"
 ln_arr["ca"]="Catalan"
 ln_arr["zh-CN"]="Chinese (Simplified)"
+ln_arr["zh"]="Chinese"
 ln_arr["hr"]="Croatian"
 ln_arr["cs"]="Czech"
 ln_arr["da"]="Danish"
@@ -193,12 +194,13 @@ fi
 
 tchar=${request:0:1} #language detection by the first character
 tcharnum=$(printf "%d" "'${tchar}")
-if [[ $tcharnum -ge 65 && $tcharnum -le 122 || (( $TLSOURCE == "en" && ! $TLTARGET )) ]]; then #if request is A-Za-z then it is SECOND_LANGUAGE... ("en,it" will not be detected here idk how to make it for now)
-	source="$SECOND_LANGUAGE" #english or latin alphabet
-	target="$FIRST_LANGUAGE" #if text is english target language is FIRST_LANGUAGE
-else
-	source="$FIRST_LANGUAGE"  # NOT english (just set for all not latin alphabet)
-	target="$SECOND_LANGUAGE" # english
+if [[ $tcharnum -ge 65 && $tcharnum -le 122 || (( $TLSOURCE == $LATIN_LANG && ! $TLTARGET )) ]]; then #if request is A-Za-z then it is LATIN_LANG... ("en,it" will not be detected here idk how to make it for now)
+	# latin to first
+	source="$LATIN_LANG" #english or latin alphabet
+	target="$FIRST_LANG" #if text is english target language is FIRST_LANG
+else 	# ANY language to latin
+	source="$FIRST_LANG"
+	target="$LATIN_LANG"
 fi
 
 [[ $TLSOURCE ]] && source=$TLSOURCE; 
