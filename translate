@@ -243,11 +243,13 @@ else
 		if [[ $r_words_count -le 2 ]];then #getting google fixed text
 			fl=$(echo "$fl_raw" | sed 's/\\u003cb\\u003e\\u003ci\\u003e//g' | sed 's/\\u003c\/i\\u003e\\u003c\/b\\u003e//g' | sed 's/\\u0026//g' | sed "s/\#39;/'/g")
 			difftest="$(cmp -l <(echo -n $request) <(echo -n $fl) 2>/dev/null)"
-			diffnum=$(echo "$difftest" | head -n 1 | sed 's/\([0-9][0-9]\?\).*/\1/') 
+			diffnum=$(echo "$difftest" | head -n 1 | sed 's/\([0-9][0-9]\?\).*/\1/')
 			if [[ $diffnum > 0 ]];then
 				[[ $source != en ]]&& diffnum=$(($diffnum/2+$diffnum%2))   #MUST BE CHECKED FOR REQUIRED LANGUAGES
 				[[ ${fl:$diffnum-1:1} == ' ' ]] && let diffnum-- #white space correction
 				fl="$(tput bold)$(tput setaf 3)${fl:0:$diffnum-1}$(tput bold)$(tput setaf 1)${fl:$diffnum-1:1}$(tput bold)$(tput setaf 3)${fl:$diffnum}$(tput sgr0) :$(tput setaf 3)"$(echo "$difftest" | wc -l)"$(tput sgr0)" #highlight difference in one word
+			else
+				fl="$(tput bold)$(tput setaf 3)$fl$(tput sgr0)"
 			fi
 		else
 			fl=$(echo "$fl_raw" | sed 's/\\u003cb\\u003e\\u003ci\\u003e/'$(tput bold)$(tput setaf 3)'/g' | sed 's/\\u003c\/i\\u003e\\u003c\/b\\u003e/'$(tput sgr0)'/g' | sed 's/\\u0026//g' | sed "s/\#39;/'/g" ) #google fixed text
@@ -264,7 +266,7 @@ else
 		cp -f "$PR_DIR"/tmpjsobj "$PR_DIR"/tmpjsobj2
 		echo -n "language_identification(googlearr);" >> "$PR_DIR"/tmpjsobj2
 		det_language=$(js "$PR_DIR"/tmpjsobj2 | tail -c3)
-		[[ $det_language != $source && (( $TLSOURCE || $det_language != $ENGLISH_TARGET_LANG )) ]] && echo -e "$(tput bold)$(tput setaf 3)$det_language ${ln_arr[$det_language]}$(tput sgr0) detected"
+		[[ $det_language != $source && (( $TLSOURCE || $det_language != $ENGLISH_TARGET_LANG )) ]] && echo -e "$(tput sgr0)$(tput setaf 7)*	$det_language ${ln_arr[$det_language]}$(tput sgr0)"
 
 		res_for_check=$(echo "$grespond" | grep -o '\[.*\]' | sed 's/.*\[\[\[\"\([^\"]*\)".*/\1/')
 		if [[ $source != $det_language && ! $fl_raw && $(echo "$request" | tr '[:upper:]' '[:lower:]') ==  $(echo "$res_for_check" | tr '[:upper:]' '[:lower:]') ]]; then #second attempt to translate with detected language
