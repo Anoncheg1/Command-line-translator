@@ -240,20 +240,21 @@ else
 		#echo -e "var googlearr = eval(JSON.stringify(myJSONObject));\n print(googlearr);" >> "$PR_DIR"/tmpjsobj2
 		#js "$PR_DIR"/tmpjsobj2
 		fl_raw=$(echo "$grespond" | grep -o '[^"]*/i[^"]*') #google correction from $grespond
-		if [[ $r_words_count -le 2 ]];then #getting google fixed text
-			fl=$(echo "$fl_raw" | sed 's/\\u003cb\\u003e\\u003ci\\u003e//g' | sed 's/\\u003c\/i\\u003e\\u003c\/b\\u003e//g' | sed 's/\\u0026//g' | sed "s/\#39;/'/g")
-			difftest="$(cmp -l <(echo -n $request) <(echo -n $fl) 2>/dev/null)"
-			diffnum=$(echo "$difftest" | head -n 1 | sed 's/\([0-9][0-9]\?\).*/\1/')
-			if [[ $diffnum > 0 ]];then
-				[[ $source != en ]]&& diffnum=$(($diffnum/2+$diffnum%2))   #MUST BE CHECKED FOR REQUIRED LANGUAGES
-				[[ ${fl:$diffnum-1:1} == ' ' ]] && let diffnum-- #white space correction
-				fl="$(tput bold)$(tput setaf 3)${fl:0:$diffnum-1}$(tput bold)$(tput setaf 1)${fl:$diffnum-1:1}$(tput bold)$(tput setaf 3)${fl:$diffnum}$(tput sgr0) :$(tput setaf 3)"$(echo "$difftest" | wc -l)"$(tput sgr0)" #highlight difference in one word
+		[[ $fl_raw ]] &&
+			if [[ $r_words_count -le 2 ]];then #getting google fixed text
+				fl=$(echo "$fl_raw" | sed 's/\\u003cb\\u003e\\u003ci\\u003e//g' | sed 's/\\u003c\/i\\u003e\\u003c\/b\\u003e//g' | sed 's/\\u0026//g' | sed "s/\#39;/'/g")
+				difftest="$(cmp -l <(echo -n $request) <(echo -n $fl) 2>/dev/null)"
+				diffnum=$(echo "$difftest" | head -n 1 | sed 's/\([0-9][0-9]\?\).*/\1/')
+				if [[ $diffnum > 0 ]];then
+					[[ $source != en ]]&& diffnum=$(($diffnum/2+$diffnum%2))   #MUST BE CHECKED FOR REQUIRED LANGUAGES
+					[[ ${fl:$diffnum-1:1} == ' ' ]] && let diffnum-- #white space correction
+					fl="$(tput bold)$(tput setaf 3)${fl:0:$diffnum-1}$(tput bold)$(tput setaf 1)${fl:$diffnum-1:1}$(tput bold)$(tput setaf 3)${fl:$diffnum}$(tput sgr0) :$(tput setaf 3)"$(echo "$difftest" | wc -l)"$(tput sgr0)" #highlight difference in one word
+				else
+					fl="$(tput bold)$(tput setaf 3)$fl$(tput sgr0)"
+				fi
 			else
-				fl="$(tput bold)$(tput setaf 3)$fl$(tput sgr0)"
+				fl=$(echo "$fl_raw" | sed 's/\\u003cb\\u003e\\u003ci\\u003e/'$(tput bold)$(tput setaf 3)'/g' | sed 's/\\u003c\/i\\u003e\\u003c\/b\\u003e/'$(tput sgr0)'/g' | sed 's/\\u0026//g' | sed "s/\#39;/'/g" ) #google fixed text
 			fi
-		else
-			fl=$(echo "$fl_raw" | sed 's/\\u003cb\\u003e\\u003ci\\u003e/'$(tput bold)$(tput setaf 3)'/g' | sed 's/\\u003c\/i\\u003e\\u003c\/b\\u003e/'$(tput sgr0)'/g' | sed 's/\\u0026//g' | sed "s/\#39;/'/g" ) #google fixed text
-		fi
 
 #		echo $grespond | grep -o '\[.*\]'
 
@@ -280,7 +281,7 @@ else
 		echo -n "dictionary(googlearr);" >> "$PR_DIR"/tmpjsobj
 
 		[[ $source == "auto" ]] && { source=$det_language; cachefile="$PR_DIR/cache/$source-$target"_"$request"; } #auto in cachefile fix
-	
+
 		#"Dictionary part" for english only. but it can be extended for every required language
 		if [[ $r_words_count -eq 1 && ${#request} -gt 1 && $source == en && ! $fl_raw ]]; then #dictionary
 
@@ -326,7 +327,6 @@ else
 			fi
 			[[ $(ls "$PR_DIR"/cache | wc -l) -gt $words_buffer ]] && find "$PR_DIR"/cache -mtime +20 -delete #cache cleaning. remove words older than 20 days.
 		else
-			
 			js "$PR_DIR"/tmpjsobj #google dictionary and translated text output
 			[[ $fl ]] && echo -e "$fl" #google fixed text output
 
