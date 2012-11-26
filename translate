@@ -41,18 +41,23 @@ but better configure "FIRST_LANG" and "LATIN_LANG" in script for auto detection 
 '
 
 # adjust to taste
-FIRST_LANG=ru			#target language for request in LATIN_LANG		NOT in A-z latin alphabet
-LATIN_LANG=en			#target for all not A-z latin requests			A-z latin alphabet will be detected!
-flogin=121212 			#forvo.com login and pass REQUIRED!
-fpass=121212
-words_buffer=4000	#4000 files max. there is removeing all files older than 20 days.
-timeout=6
-#httpproxy="127.0.0.1:4444"		#proxy for long strings
-#httpsproxy="--socks5 127.0.0.1:9050"	#socks5
+declare -r FIRST_LANG=ru			#target language for request in LATIN_LANG		NOT in A-z latin alphabet
+declare -r LATIN_LANG=en			#target for all not A-z latin requests			A-z latin alphabet will be detected!
+declare -r flogin=121212 			#forvo.com login and pass REQUIRED!
+declare -r fpass=121212
+declare -r words_buffer=4000	#4000 files max. there is removeing all files older than 20 days.
+declare -r timeout=6
+httpproxy="127.0.0.1:4444"		#proxy for long strings
+httpsproxy="--socks5 127.0.0.1:9050"	#socks5
+#
+declare -r useragent="Mozilla/5.0 (X11; Linux i686) AppleWebKit/534.34 (KHTML, like Gecko) QupZilla/1.3.1 Safari/534.34"
 #
 [ $(whoami) == "root" ] && PR_DIR="/root/.translate" || PR_DIR="/home/$USER/.translate"
-useragent="Mozilla/5.0 (X11; Linux i686) AppleWebKit/534.34 (KHTML, like Gecko) QupZilla/1.3.1 Safari/534.34"
-#
+[ ! -d "$PR_DIR" ] && mkdir "$PR_DIR"
+[ ! -d "$PR_DIR"/cache ] && mkdir "$PR_DIR"/cache
+
+declare -r TR_ENG_WORDS="$PR_DIR"/translated_words
+
 declare -A ln_arr
 ln_arr["af"]="Afrikaans"
 ln_arr["sq"]="Albanian"
@@ -206,9 +211,6 @@ fi
 [[ $TLSOURCE ]] && source=$TLSOURCE; 
 [[ $TLTARGET ]] && target=$TLTARGET; # export TLSOURCE=en TLTARGET=ru; will force the language
 
-[ ! -d "$PR_DIR" ] && mkdir "$PR_DIR"
-[ ! -d "$PR_DIR"/cache ] && mkdir "$PR_DIR"/cache
-
 if [[ ${#request} -gt 300 ]]; then
 	if ! result=$(curl -s -i --user-agent "$useragent" $httpsproxy -x "$httpproxy" -d "sl=$source" -d "tl=$target" --data-urlencode "text=$request" http://translate.google.com) && [[ $httpproxy != "" ]] #getting google respond for short sentence
 	then	# second attempt without https proxy
@@ -220,7 +222,7 @@ if [[ ${#request} -gt 300 ]]; then
 	echo -e "\033[32;1m"$(iconv -f $encoding <<<"$result" |  awk 'BEGIN {RS="</div>"};/<span[^>]* id=["'\'']?result_box["'\'']?/' | html2text -utf8)"\033[0m"
 
 else
-	cachefile="$PR_DIR/cache/$source-$target"_"$request" #may be source=auto I will check it hereafter when I made language detection
+	cachefile="$PR_DIR/cache/$source-$target"_"$request"
 	r_words_count=$(echo "$request"  |wc -w)
 	if [[ ! -e "$cachefile" || (( $sound == 1 && ! -e "$cachefile".mp3 )) ]]; then
 
@@ -256,36 +258,42 @@ else
 				fl=$(echo "$fl_raw" | sed 's/\\u003cb\\u003e\\u003ci\\u003e/'$(tput bold)$(tput setaf 3)'/g' | sed 's/\\u003c\/i\\u003e\\u003c\/b\\u003e/'$(tput sgr0)'/g' | sed 's/\\u0026//g' | sed "s/\#39;/'/g" ) #google fixed text
 			fi
 
-#		echo $grespond | grep -o '\[.*\]'
+#echo $grespond | grep -o '\[.*\]'
 
 		echo -n "var myJSONObject = " > "$PR_DIR"/tmpjsobj
 		echo -n "$grespond" | grep -o '\[.*\]' >> "$PR_DIR"/tmpjsobj
 		echo ";">> "$PR_DIR"/tmpjsobj
 		echo -n "$jsscript" >> "$PR_DIR"/tmpjsobj
 
-		#Language detection
 		cp -f "$PR_DIR"/tmpjsobj "$PR_DIR"/tmpjsobj2
 		echo -n "language_identification(googlearr);" >> "$PR_DIR"/tmpjsobj2
 		det_language=$(js "$PR_DIR"/tmpjsobj2 | tail -c3)
+		cp -f "$PR_DIR"/tmpjsobj "$PR_DIR"/tmpjsobj2
+		echo -n "translated_result(googlearr);" >> "$PR_DIR"/tmpjsobj2
+		t_result=$(js "$PR_DIR"/tmpjsobj2)
+		cp -f "$PR_DIR"/tmpjsobj "$PR_DIR"/tmpjsobj2
+		echo -n "dictionary(googlearr);" >> "$PR_DIR"/tmpjsobj2
+		dictionary=$(js "$PR_DIR"/tmpjsobj2)
+
+		#Language detection
 		[[ $det_language != $source && (( $TLSOURCE || $det_language != $ENGLISH_TARGET_LANG )) ]] && echo -e "$(tput sgr0)$(tput setaf 7)*	$det_language ${ln_arr[$det_language]}$(tput sgr0)"
 
-		res_for_check=$(echo "$grespond" | grep -o '\[.*\]' | sed 's/.*\[\[\[\"\([^\"]*\)".*/\1/')
-		if [[ $source != $det_language && ! $fl_raw && $(echo "$request" | tr '[:upper:]' '[:lower:]') ==  $(echo "$res_for_check" | tr '[:upper:]' '[:lower:]') ]]; then #second attempt to translate with detected language
+		#res_for_check=$(echo "$grespond" | grep -o '\[.*\]' | sed 's/.*\[\[\[\"\([^\"]*\)".*/\1/')
+
+		#second attempt to translate with detected language
+		if [[ $source != $det_language && ! $fl_raw && $(echo -e "\033[1;32m$request\033[0m" | tr '[:upper:]' '[:lower:]') ==  $(echo $t_result | tr '[:upper:]' '[:lower:]') && ! $dictionary ]]; then
 			[[ $source != "auto" ]] && echo -e "trying with detected language" # I guess google "auto" is not working then we will do it by yourself mutely
 			export TLSOURCE=$det_language #TLTARGET=en #source and target language for second attempt
 			if [[ $sound == 1 ]]; then $0 -s $request ; else $0 $request ;fi #second attempt to translate with detected language  #sound will be quiet...
 			exit
 		fi
 
-		echo -n "translated_result(googlearr);" >> "$PR_DIR"/tmpjsobj		
-		echo -n "dictionary(googlearr);" >> "$PR_DIR"/tmpjsobj
-
 		[[ $source == "auto" ]] && { source=$det_language; cachefile="$PR_DIR/cache/$source-$target"_"$request"; } #auto in cachefile fix
 
 		#"Dictionary part" for english only. but it can be extended for every required language
 		if [[ $r_words_count -eq 1 && ${#request} -gt 1 && $source == en && ! $fl_raw ]]; then #dictionary
 
-			js "$PR_DIR"/tmpjsobj > "$cachefile" #google translated text and dictionary to cache
+			echo -e "$t_result\n$dictionary" > "$cachefile" #google translated text and dictionary to cache
 
 			#phrases
 			raw_phras=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" -m $timeout http://www.macmillandictionary.com/dictionary/american/"$(echo $request | tr ' ' - )" | grep -o '<li ID.*End of DIV SENSE--></li>' | sed 's/<.\?span[^>]*>//g' )
@@ -308,9 +316,9 @@ else
 			if [[ $trans ]] ; then
 
 				#saving words
-				if [[ ${#request} -gt 2 && ! $(grep "$request" "$PR_DIR"/translated_words 2>/dev/null) ]]; then
-					#echo -e "$request \t\t\t\t\t\t\t\t\t\t [$trans]" >> "$PR_DIR"/translated_words
-					echo -e "$request" >> "$PR_DIR"/translated_words
+				if [[ ${#request} -gt 2 && ! $(grep "$request" "$TR_ENG_WORDS" 2>/dev/null) ]]; then
+					#echo -e "$request \t\t\t\t\t\t\t\t\t\t [$trans]" >> "$TR_ENG_WORDS"
+					echo -e "$request" >> "$TR_ENG_WORDS"
 				fi
 
 				#getting sound from forvo.com
@@ -327,8 +335,9 @@ else
 			fi
 			[[ $(ls "$PR_DIR"/cache | wc -l) -gt $words_buffer ]] && find "$PR_DIR"/cache -mtime +20 -delete #cache cleaning. remove words older than 20 days.
 		else
-			js "$PR_DIR"/tmpjsobj #google dictionary and translated text output
-			[[ $fl ]] && echo -e "$fl" #google fixed text output
+			echo -e "$t_result" 				#google translated text output
+			[[ $dictionary ]] && echo -e "\n$dictionary"  	#google dictionary output
+			[[ $fl ]] && echo -e "$fl" 			#google fixed text output
 
 			if [[ $source == en && ! $fl_raw ]]; then 
 				#phrases for 2 words
