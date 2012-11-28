@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # AWESOME GOOGLE TRANSLATE. This tool for access translate.google.com from terminal and additional English features.
 
 #    Copyright (C) 2012 Vasilij Vasiljevich Ubijtca.
