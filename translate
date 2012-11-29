@@ -26,7 +26,7 @@
 #	forvo.com account
 #features:
 #- translated text, fixed text with highlight, language detection, dictionary
-#- for english:  phrases, ideom, transcription, audio pronunciation
+#- for english:  phrases, ideom, word forms, transcription, audio pronunciation
 #- cache for words
 #- saving words to file for learning
 
@@ -295,8 +295,9 @@ else
 
 			echo -e "$t_result\n$dictionary" > "$cachefile" #google translated text and dictionary to cache
 
-			#phrases
-			raw_phras=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" -m $timeout http://www.macmillandictionary.com/dictionary/american/"$(echo $request | tr ' ' - )" | grep -o '<li ID.*End of DIV SENSE--></li>' | sed 's/<.\?span[^>]*>//g' )
+			#phrases and forms
+			macmill=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" -m $timeout http://www.macmillandictionary.com/dictionary/american/"$(echo $request | tr ' ' - )" )
+			raw_phras=$(echo $macmill | grep -o '<li ID.*End of DIV SENSE--></li>' | sed 's/<.\?span[^>]*>//g')
 			[[ $? != 0 ]] && { echo cant get phrases; bashtrap; }
 			phras=$(echo $raw_phras |  sed 's/End of DIV SENSE--><\/li>/End of DIV SENSE--><\/li>\n/g' | grep -n -o '"h2">[^>]*<' | sed 's/^\([^:]*\):.*>\([^<]*\).*/\1 \2\./') #getting phrases
 			phras2=$(echo $raw_phras |  sed 's/End of DIV SENSE--><\/li>/End of DIV SENSE--><\/li>\n/g' | grep -n -o '"EXAMPLE">[^>]*<' | sed 's/^\([^:]*\):.*>\([^<]*\).*/\1 \2/') #getting examples
@@ -304,7 +305,15 @@ else
 				echo -e "\033[1;35m"PHRASES:$(tput sgr0) >> "$cachefile"
 				join --nocheck-order -a 1 -a 2 <(echo "$phras") <(echo "$phras2")  | sed '/^$/d' >> "$cachefile"
 				#echo -e "\033[34m"http://www.macmillandictionary.com/dictionary/american/"$request"$(tput sgr0) >> "$cachefile"
+			else
+				phrases_2=$(echo $macmill | grep -o '<strong>[^<]*<' | sed 's/.*>\([^<]*\)<.*/\1/')
+				if [[ $phrases_2 ]];then
+					echo -e "\033[1;35m"PHRASES:$(tput sgr0) >> "$cachefile"
+					echo -e "$phrases_2" >> "$cachefile"
+				fi
 			fi
+			forms=$(echo $macmill | grep -o '"INFLECTION-ENTRY">[^<]*<' | sed 's/.*\">\([^<]*\)<.*/\1/')
+			[[ $(echo "$forms" | wc -l) -ge 3 && $(echo "$forms" | tail -n 2 | head -n 1) != $(echo "$forms" | tail -n 1) ]] && echo -e "\033[1;36m"f:$(tput sgr0) $forms >> "$cachefile"
 
 			trans=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://lingvopro.abbyyonline.com/en/Translate/en-"$target"/"$request" | grep -o '"[^"]*Handlers/TranscriptionHandler\.ashx[^"]*"' | sed 's/.*=\(.*\)"/\1/'| echo -n -e $(sed 's/+/ /g; s/%/\\x/g')) #getting transcription
 			[[ $? != 0 ]] &&  { echo cant get transcription; bashtrap; }
