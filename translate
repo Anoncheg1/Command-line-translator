@@ -234,7 +234,7 @@ else
 			httpsproxy=""
 			grespond=$(curl -s -i --user-agent "$useragent" $httpsproxy -x "$httpproxy" -m $timeout --data-urlencode "text=$request" "http://translate.google.com/translate_a/t?client=t&hl=$target&sl=$source&tl=$target&ie=UTF-8&oe=UTF-8&multires=1&ssel=0&tsel=0&sc=1") #getting google respond for short sentence
 		fi
-		[[ ! $(echo $grespond | grep -o '\[.*\]') ]] && { echo "can't connect" ; exit; } #small connection check
+		[[ ! $(echo "$grespond" | grep -o '\[.*\]') ]] && { echo "can't connect" ; exit; } #small connection check
 
 		#echo -n "var myJSONObject = " > "$PR_DIR"/tmpjsobj2
 		#echo [$(echo "$grespond" | grep -o '"[^"]*/i[^"]*"')"];" >> "$PR_DIR"/tmpjsobj2
@@ -288,7 +288,9 @@ else
 			exit
 		fi
 
-		[[ $source == "auto" ]] && { source=$det_language; cachefile="$PR_DIR/cache/$source-$target"_"$request"; } #auto in cachefile fix
+		[[ $source == "auto" ]] && { source=$det_language; cachefile="$PR_DIR/cache/$source-$target"_"$request"; } #auto in cachefile fix #not necessary
+
+
 
 		#"Dictionary part" for english only. but it can be extended for every required language
 		if [[ $r_words_count -eq 1 && ${#request} -gt 1 && $source == en && ! $fl_raw ]]; then #dictionary
@@ -297,24 +299,26 @@ else
 
 			#phrases and forms
 			macmill=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" -m $timeout http://www.macmillandictionary.com/dictionary/american/"$(echo $request | tr ' ' - )" )
-			raw_phras=$(echo $macmill | grep -o '<li ID.*End of DIV SENSE--></li>' | sed 's/<.\?span[^>]*>//g')
+			forms=$(echo $macmill | grep -o '"INFLECTION-ENTRY">[^<]*<' | sed 's/.*\">\([^<]*\)<.*/\1/')
+			[[ $(echo "$forms" | wc -l) -ge 3 ]] && echo -e "\033[1;36m"f:$(tput sgr0) $forms >> "$cachefile"
+			raw_phras=$(echo "$macmill" | grep -o '<li ID.*End of DIV SENSE--></li>' | sed 's/<.\?span[^>]*>//g')
 			[[ $? != 0 ]] && { echo cant get phrases; bashtrap; }
+			#echo $raw_phras |  sed 's/End of DIV SENSE--><\/li>/End of DIV SENSE--><\/li>\n/g' | grep -n ".*" | sed 's/^.:/&\n/' | grep '"h2">[^>]*<\|"EXAMPLE">[^>]*<' | sed 's/^\([0-9][0-9]\?\).*\"h2\">\([^<]*\)<.*/\1 \2/g'
 			phras=$(echo $raw_phras |  sed 's/End of DIV SENSE--><\/li>/End of DIV SENSE--><\/li>\n/g' | grep -n -o '"h2">[^>]*<' | sed 's/^\([^:]*\):.*>\([^<]*\).*/\1 \2\./') #getting phrases
 			phras2=$(echo $raw_phras |  sed 's/End of DIV SENSE--><\/li>/End of DIV SENSE--><\/li>\n/g' | grep -n -o '"EXAMPLE">[^>]*<' | sed 's/^\([^:]*\):.*>\([^<]*\).*/\1 \2/') #getting examples
-			if [[ $phras ]]; then
+			if [[ $phras ]]; then 	#phrases
 				echo -e "\033[1;35m"PHRASES:$(tput sgr0) >> "$cachefile"
 				join --nocheck-order -a 1 -a 2 <(echo "$phras") <(echo "$phras2")  | sed '/^$/d' >> "$cachefile"
 				#echo -e "\033[34m"http://www.macmillandictionary.com/dictionary/american/"$request"$(tput sgr0) >> "$cachefile"
-			else
-				phrases_2=$(echo $macmill | grep -o '<strong>[^<]*<' | sed 's/.*>\([^<]*\)<.*/\1/')
+			else 			#second attempt examples
+				phrases_2=$(echo "$macmill" | grep -o 'div class="SENSE".*End of DIV SENSE--' | sed 's/End of DIV SENSE--/\n/g' | grep -n ".*" | sed 's/^.:/&\n/' | sed 's/End of DIV EXAMPLES/\n/g' | sed '/^[0-9]:/{h;d;};G; s/^\(.*\)\n\([0-9]:\)/\2 \1/' | grep "<strong>" | sed 's/^\([0-9]\).*<strong>\([^<]*\)<.*class=\"EXAMPLE\">\([^<]*\)<.*/\1 \2. \3/')
 				if [[ $phrases_2 ]];then
-					echo -e "\033[1;35m"PHRASES:$(tput sgr0) >> "$cachefile"
+					echo -e "\033[1;35m"EXAMPLES:$(tput sgr0) >> "$cachefile"
 					echo -e "$phrases_2" >> "$cachefile"
 				fi
 			fi
-			forms=$(echo $macmill | grep -o '"INFLECTION-ENTRY">[^<]*<' | sed 's/.*\">\([^<]*\)<.*/\1/')
-			[[ $(echo "$forms" | wc -l) -ge 3 && $(echo "$forms" | tail -n 2 | head -n 1) != $(echo "$forms" | tail -n 1) ]] && echo -e "\033[1;36m"f:$(tput sgr0) $forms >> "$cachefile"
 
+			#transcription
 			trans=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://lingvopro.abbyyonline.com/en/Translate/en-"$target"/"$request" | grep -o '"[^"]*Handlers/TranscriptionHandler\.ashx[^"]*"' | sed 's/.*=\(.*\)"/\1/'| echo -n -e $(sed 's/+/ /g; s/%/\\x/g')) #getting transcription
 			[[ $? != 0 ]] &&  { echo cant get transcription; bashtrap; }
 			[[ $trans ]] && echo "[$trans]" >> "$cachefile"
@@ -353,8 +357,8 @@ else
 				if [[ $r_words_count -le 2 ]]; then
 					raw_phras=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://www.macmillandictionary.com/dictionary/american/"$(echo $request | tr ' ' - )" | grep -o '<li.*End of DIV SENSE--></li>' | sed 's/<.\?span[^>]*>//g' )
 					[[ $? != 0 ]] &&  { echo "cant get phrases for string" ; bashtrap; }
-					phras=$(echo $raw_phras |  sed 's/End of DIV SENSE--><\/li>/End of DIV SENSE--><\/li>\n/g' | grep -n -o '"h2">[^>]*<' | sed 's/^\([^:]*\):.*>\([^<]*\).*/\1 \2\./') #getting phrases
-					phras2=$(echo $raw_phras |  sed 's/End of DIV SENSE--><\/li>/End of DIV SENSE--><\/li>\n/g' | grep -n -o '"EXAMPLE">[^>]*<' | sed 's/^\([^:]*\):.*>\([^<]*\).*/\1 \2/') #getting examples
+					phras=$(echo "$raw_phras" |  sed 's/End of DIV SENSE--><\/li>/End of DIV SENSE--><\/li>\n/g' | grep -n -o '"h2">[^>]*<' | sed 's/^\([^:]*\):.*>\([^<]*\).*/\1 \2\./') #getting phrases
+					phras2=$(echo "$raw_phras" |  sed 's/End of DIV SENSE--><\/li>/End of DIV SENSE--><\/li>\n/g' | grep -n -o '"EXAMPLE">[^>]*<' | sed 's/^\([^:]*\):.*>\([^<]*\).*/\1 \2/') #getting examples
 					if [[ $phras2 ]]; then
 						echo -e "\033[1;35m"PHRASES:$(tput sgr0)
 						join --nocheck-order -a 1 -a 2 <(echo "$phras") <(echo "$phras2") | sed '/^$/d'
@@ -363,8 +367,8 @@ else
 				#search for ideom for 2-4 words
 				if [[ ! $phras2 && $r_words_count -le 4 ]]; then
 					raw_ideoms=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://idioms.thefreedictionary.com/"$(echo $request | tr ' ' + )" | grep -o 'div class="ds-single".*</div><div')
-					ideom=$(echo $raw_ideoms | sed 's/<i>//' | sed 's/<\/i>//' | sed 's/.*ds-single\">\([^<]*\)<.*/\1/')
-					illustration=$(echo $raw_ideoms | sed 's/.*class=illustration>\([^<]*\)<.*/\1/')
+					ideom=$(echo "$raw_ideoms" | sed 's/<i>//' | sed 's/<\/i>//' | sed 's/.*ds-single\">\([^<]*\)<.*/\1/')
+					illustration=$(echo "$raw_ideoms" | sed 's/.*class=illustration>\([^<]*\)<.*/\1/')
 					if [[ $ideom ]]; then
 						echo -e "\033[1;35m"Ideom:$(tput sgr0)
 						echo $ideom
@@ -382,7 +386,7 @@ else
 	if [[ $sound == 1 && -e "$cachefile".mp3 ]]; then 
 		stat=$(playsound --loop 0 --volume "$volume" "$cachefile".mp3 2>&1)
 		echo "$stat"
-		[[ $(echo $stat | grep -o 'Couldn') ]] && rm "$cachefile".mp3
+		[[ $(echo "$stat" | grep -o 'Couldn') ]] && rm "$cachefile".mp3
 	fi
 	[[ $sound == 1 && ! -e "$cachefile".mp3 ]] && sleep 1 #to be able Ctrl+C to delete cache file
 fi
