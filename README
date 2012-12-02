@@ -7,7 +7,7 @@ REQUIREMENTS:
 - Mozilla js shell (program included in the SpiderMonkey) >= 1.8.0
 - forvo.com account for audio pronunciation 
 
-FEATURESfeatures:
+FEATURES:
 - translated text, fixed text with highlight, language detection, dictionary
 for english:  phrases, ideom, transcription, audio pronunciation
 - cache for words
