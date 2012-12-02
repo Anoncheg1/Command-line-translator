@@ -30,7 +30,7 @@
 #- cache for words
 #- saving words to file for learning
 
-help='translate [-s[2,3]] [-l] [-h] <text>
+help='$(basename $0) [-s[2,3]] [-l] [-h] <text>
 if text is LATIN_LANG, then target language is FIRST_LANG
 otherwise, target language is LATIN_LANG
 -s, -s2, -s3, --sound Enable sound for one word
@@ -52,7 +52,7 @@ declare -r timeout=6
 #
 declare -r useragent="Mozilla/5.0 (X11; Linux i686) AppleWebKit/534.34 (KHTML, like Gecko) QupZilla/1.3.1 Safari/534.34"
 #
-[ $(whoami) == "root" ] && PR_DIR="/root/.translate" || PR_DIR="/home/$USER/.translate"
+PR_DIR="$HOME/.translate"
 [ ! -d "$PR_DIR" ] && mkdir "$PR_DIR"
 [ ! -d "$PR_DIR"/cache ] && mkdir "$PR_DIR"/cache
 
