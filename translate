@@ -299,6 +299,7 @@ else
 
 			#phrases and forms
 			macmill=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" -m $timeout http://www.macmillandictionary.com/dictionary/british/"$(echo $request | tr '[:upper:]' '[:lower:]' | tr ' ' - )" )
+			[[ $? != 0 ]] && { echo "cant get phrases" ; bashtrap; }
 			forms=$(echo $macmill | grep -o '"INFLECTION-ENTRY">[^<]*<' | sed 's/.*\">\([^<]*\)<.*/\1/')
 			firstf=$(echo "$forms" | head -n 1)
 			lastf=$(echo "$forms" | tail -n 1)
@@ -307,17 +308,17 @@ else
 			raw_phras=$(echo "$macmill" | grep -o '<li ID.*End of DIV SENSE--></li>' | sed 's/<.\?span[^>]*>//g')
 			[[ $? != 0 ]] && { echo cant get phrases; bashtrap; }
 			phras=$(echo $raw_phras | sed -e 's/<a[^>]*>//g' -e 's/<\/a>//g' | sed 's/End of DIV SENSE--><\/li>/End of DIV SENSE--><\/li>\n/g' \
-			| sed -e 's/.*\"h2\">\([^<]*\).*\"EXAMPLE\">\([^<]*\).*\"EXAMPLE\">\([^<]*\).*/\\033[1;37m\1\\033[0m\. \2<FUCKINGSHIT>\t\3/' \
-			-e 's/.*\"EXAMPLE\">\([^<]*\).*\"EXAMPLE\">\([^<]*\).*/\1<FUCKINGSHIT>\t\2/' \
-			-e 's/.*\"h2\">\([^<]*\).*\"EXAMPLE\">\([^<]*\).*/\\033[1;37m\1\\033[0m\. \2/' \
-			-e 's/.*\"h2\">\([^<]*\).*class=\"SENSE-BODY\">\([^<]*\).*/\\033[1;37m\1\\033[0m\. \2/' \
-			-e 's/.*\"EXAMPLE\">\([^<]*\).*/\1/' | nl -s ' ' | sed -e 's/<FUCKINGSHIT>/\n/' -e 's/^ *//' )
+			| sed -e 's/.*\"h2\">\([^<]*\).*\"EXAMPLE\">\([^<]*\).*\"EXAMPLE\">\([^<]*\).*/**\\033[1;37m\1\\033[0m\. \2<FUCKINGSHIT>\t\3/' \
+			-e 's/.*\"EXAMPLE\">\([^<]*\).*\"EXAMPLE\">\([^<]*\).*/**\1<FUCKINGSHIT>\t\2/' \
+			-e 's/.*\"h2\">\([^<]*\).*\"EXAMPLE\">\([^<]*\).*/**\\033[1;37m\1\\033[0m\. \2/' \
+			-e 's/.*\"h2\">\([^<]*\).*class=\"SENSE-BODY\">\([^<]*\).*/**\\033[1;37m\1\\033[0m\. \2/' \
+			-e 's/.*\"EXAMPLE\">\([^<]*\).*/**\1/' | grep -o "^\*\*.*" | sed 's/^\*\*//' | nl -s ' ' | sed -e 's/<FUCKINGSHIT>/\n/' -e 's/^ *//')
 			if [[ $phras ]]; then 	#phrases
 				echo -e "\033[1;35m"PHRASES:$(tput sgr0) >> "$cachefile"
 				echo -e "$phras" >> "$cachefile"
 				#echo -e "\033[34m"http://www.macmillandictionary.com/dictionary/american/"$request"$(tput sgr0) >> "$cachefile"
 			else 			#second attempt examples
-				phrases_2=$(echo "$macmill" | grep -o 'div class="SENSE".*End of DIV SENSE--' | sed 's/End of DIV SENSE--/\n/g' | grep -n ".*" | sed 's/^.:/&\n/' | sed 's/End of DIV EXAMPLES/\n/g' | sed '/^[0-9]:/{h;d;};G; s/^\(.*\)\n\([0-9]:\)/\2 \1/' | grep "<strong>" | sed 's/^\([0-9]\).*<strong>\([^<]*\)<.*class=\"EXAMPLE\">\([^<]*\)<.*/\1 \2. \3/')
+				phrases_2=$(echo "$macmill" | grep -o 'div class="SENSE".*End of DIV SENSE--' | sed 's/End of DIV SENSE--/\n/g' | grep -n . | sed 's/^.:/&\n/' | sed 's/End of DIV EXAMPLES/\n/g' | sed '/^[0-9]:/{h;d;};G; s/^\(.*\)\n\([0-9]:\)/\2 \1/' | grep "<strong>" | sed 's/^\([0-9]\).*<strong>\([^<]*\)<.*class=\"EXAMPLE\">\([^<]*\)<.*/\1 \2. \3/')
 				if [[ $phrases_2 ]];then
 					echo -e "\033[1;35m"EXAMPLES:$(tput sgr0) >> "$cachefile"
 					echo -e "$phrases_2" >> "$cachefile"
