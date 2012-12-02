@@ -30,7 +30,7 @@
 #- cache for words
 #- saving words to file for learning
 
-help='$(basename $0) [-s[2,3]] [-l] [-h] <text>
+help='$(basename "$0") [-s[2,3]] [-l] [-h] <text>
 if text is LATIN_LANG, then target language is FIRST_LANG
 otherwise, target language is LATIN_LANG
 -s, -s2, -s3, --sound Enable sound for one word
