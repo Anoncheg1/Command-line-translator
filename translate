@@ -365,7 +365,7 @@ else
 				examples=$macmill
 				if [[ $examples ]];then
 					echo -e "\033[1;35m"EXAMPLES:$(tput sgr0)
-					echo -e "$phrases_2"
+					echo -e "$examples"
 				fi
 
 				#search for ideom for 2-4 words
