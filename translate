@@ -222,11 +222,13 @@ if [[ ${#request} -gt 300 ]]; then
 	echo -e "\033[32;1m"$(iconv -f $encoding <<<"$result" |  awk 'BEGIN {RS="</div>"};/<span[^>]* id=["'\'']?result_box["'\'']?/' | html2text -utf8)"\033[0m"
 
 else
-	cachefile="$PR_DIR/cache/$source-$target"_"$(echo $request | tr '[:upper:]' '[:lower:]')"
+	if [[ $r_words_count -le 4 ]];then 
+		httpproxy="" ; httpsproxy=""  #don't wanna proxy for 4 words.
+		request=$(echo $request | tr '[:upper:]' '[:lower:]')
+	fi
+	cachefile="$PR_DIR/cache/$source-$target"_"$request"
 	r_words_count=$(echo "$request"  |wc -w)
 	if [[ ! -e "$cachefile" || (( $sound == 1 && ! -e "$cachefile".mp3 )) ]]; then
-
-		[[ $r_words_count -le 4 ]] && { httpproxy="" ; httpsproxy="" ; } #don't wanna proxy for 4 words.
 
 		if ! grespond=$(curl -s -i --user-agent "$useragent" $httpsproxy -x "$httpproxy" -m $timeout --data-urlencode "text=$request" "http://translate.google.com/translate_a/t?client=t&hl=$target&sl=$source&tl=$target&ie=UTF-8&oe=UTF-8&multires=1&ssel=0&tsel=0&sc=1") && [[ "$httpproxy" != "" ]] #getting google respond for short sentence
 		then	# second attempt without https proxy
@@ -288,7 +290,7 @@ else
 			exit
 		fi
 
-		[[ $source == "auto" ]] && { source=$det_language; cachefile="$PR_DIR/cache/$source-$target"_"$(echo $request | tr '[:upper:]' '[:lower:]')"; } #auto in cachefile fix #not necessary
+		[[ $source == "auto" ]] && { source=$det_language; cachefile="$PR_DIR/cache/$source-$target"_"$request"; } #auto in cachefile fix #not necessary
 
 
 
