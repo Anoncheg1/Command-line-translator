@@ -222,7 +222,7 @@ if [[ ${#request} -gt 300 ]]; then
 	echo -e "\033[32;1m"$(iconv -f $encoding <<<"$result" |  awk 'BEGIN {RS="</div>"};/<span[^>]* id=["'\'']?result_box["'\'']?/' | html2text -utf8)"\033[0m"
 
 else
-	cachefile="$PR_DIR/cache/$source-$target"_"$request"
+	cachefile="$PR_DIR/cache/$source-$target"_"$(echo $request | tr '[:upper:]' '[:lower:]')"
 	r_words_count=$(echo "$request"  |wc -w)
 	if [[ ! -e "$cachefile" || (( $sound == 1 && ! -e "$cachefile".mp3 )) ]]; then
 
@@ -288,7 +288,7 @@ else
 			exit
 		fi
 
-		[[ $source == "auto" ]] && { source=$det_language; cachefile="$PR_DIR/cache/$source-$target"_"$request"; } #auto in cachefile fix #not necessary
+		[[ $source == "auto" ]] && { source=$det_language; cachefile="$PR_DIR/cache/$source-$target"_"$(echo $request | tr '[:upper:]' '[:lower:]')"; } #auto in cachefile fix #not necessary
 
 
 
@@ -298,7 +298,7 @@ else
 			echo -e "$t_result\n$dictionary" > "$cachefile" #google translated text and dictionary to cache
 
 			#phrases and forms
-			macmill=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" -m $timeout http://www.macmillandictionary.com/dictionary/british/"$(echo $request | tr ' ' - )" )
+			macmill=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" -m $timeout http://www.macmillandictionary.com/dictionary/british/"$(echo $request | tr '[:upper:]' '[:lower:]' | tr ' ' - )" )
 			forms=$(echo $macmill | grep -o '"INFLECTION-ENTRY">[^<]*<' | sed 's/.*\">\([^<]*\)<.*/\1/')
 			[[ $(echo "$forms" | wc -l) -ge 3 ]] && echo -e "\033[1;36m"f:$(tput sgr0) $forms >> "$cachefile"
 			raw_phras=$(echo "$macmill" | grep -o '<li ID.*End of DIV SENSE--></li>' | sed 's/<.\?span[^>]*>//g')

@@ -1,19 +1,20 @@
 This tool for access translate.google.com from terminal and to have English dictionary.
 mirror https://github.com/Anoncheg1/Command-line-translator
 mirror http://pastebin.com/kPTYjY6W
-requirements: 
+
+REQUIREMENTS: 
 - curl >= 7.21.0
 - Mozilla js shell (program included in the SpiderMonkey) >= 1.8.0
 - forvo.com account for audio pronunciation 
 
-features:
+FEATURESfeatures:
 - translated text, fixed text with highlight, language detection, dictionary
 for english:  phrases, ideom, transcription, audio pronunciation
 - cache for words
 - saving english words to file for learning
 
 for convenience:
-~/.bash_aliases
+in ~/.bash_aliases
 alias t="/home/user/translate"
 alias ts="/home/user/translate -s"
 alias ts2="/home/user/translate -s2"
@@ -22,5 +23,12 @@ alias ts3="/home/user/translate -s3"
 You can force the language with environment varibles by command:
 export TLSOURCE=en TLTARGET=ru
 but better configure "FIRST_LANG" and "LATIN_LANG" in script for auto detection of direction by the first character!
+
+for auto-Tab-completion:
+in /etc/bash_completion.d/translate
+# t completion
+TR_ENG_WORDS="$HOME"/.translate/translated_words
+have t &&
+complete -W "$(cat $TR_ENG_WORDS)" t ts ts2 ts3 #autocompletion
 
 You can thank me with Webmoney: wmz Z253207064534, wmr R327158221146, wme E282089965215
