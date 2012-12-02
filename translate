@@ -308,7 +308,7 @@ else
 			-e 's/.*\"EXAMPLE\">\([^<]*\).*\"EXAMPLE\">\([^<]*\).*/\1<FUCKINGSHIT>\t\2/' \
 			-e 's/.*\"h2\">\([^<]*\).*\"EXAMPLE\">\([^<]*\).*/\\033[1;37m\1\\033[0m\. \2/' \
 			-e 's/.*\"h2\">\([^<]*\).*class=\"SENSE-BODY\">\([^<]*\).*/\\033[1;37m\1\\033[0m\. \2/' \
-			-e 's/.*\"EXAMPLE\">\([^<]*\).*/\1/' | grep -n . | sed 's/<FUCKINGSHIT>/\n/' )
+			-e 's/.*\"EXAMPLE\">\([^<]*\).*/\1/' | nl -s ' ' | sed -e 's/<FUCKINGSHIT>/\n/' -e 's/^ *//' )
 			if [[ $phras ]]; then 	#phrases
 				echo -e "\033[1;35m"PHRASES:$(tput sgr0) >> "$cachefile"
 				echo -e "$phras" >> "$cachefile"
