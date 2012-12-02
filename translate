@@ -298,7 +298,7 @@ else
 			echo -e "$t_result\n$dictionary" > "$cachefile" #google translated text and dictionary to cache
 
 			#phrases and forms
-			macmill=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" -m $timeout http://www.macmillandictionary.com/dictionary/american/"$(echo $request | tr ' ' - )" )
+			macmill=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" -m $timeout http://www.macmillandictionary.com/dictionary/british/"$(echo $request | tr ' ' - )" )
 			forms=$(echo $macmill | grep -o '"INFLECTION-ENTRY">[^<]*<' | sed 's/.*\">\([^<]*\)<.*/\1/')
 			[[ $(echo "$forms" | wc -l) -ge 3 ]] && echo -e "\033[1;36m"f:$(tput sgr0) $forms >> "$cachefile"
 			raw_phras=$(echo "$macmill" | grep -o '<li ID.*End of DIV SENSE--></li>' | sed 's/<.\?span[^>]*>//g')
@@ -358,14 +358,14 @@ else
 			if [[ $source == en && ! $fl_raw && $r_words_count -le 4 ]]; then
 				#phrases for 2 words
 				if [[ $r_words_count -le 2 ]];then
-					raw_phras=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://www.macmillandictionary.com/dictionary/american/"$(echo $request | tr ' ' - )" | grep -o '<li.*End of DIV SENSE--></li>' | sed 's/<.\?span[^>]*>//g' )
+					macmill=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://www.macmillandictionary.com/dictionary/british/"$(echo $request | tr ' ' - )" )
 					[[ $? != 0 ]] && { echo "cant get phrases for string" ; bashtrap; }
+					macmill=$(echo "$macmill" | grep -o 'div class="SENSE".*End of DIV SENSE--' | sed -e 's/<a[^>]*>//g' -e 's/<\/a>//g' | sed 's/End of DIV SENSE--/\n/g' | grep -n . | sed 's/^.:/&\n/' | sed 's/End of DIV EXAMPLES/\n/g' | sed '/^[0-9]:/{h;d;};G; s/^\(.*\)\n\([0-9]:\)/\2 \1/' | sed -e's/^\([0-9]\).*p id=\"EXAMPLE\" class=\"EXAMPLE\">\([^<]*\)<.*/*\1 \2/' -e 's/^\([0-9]\).*span class=\"BASE\">\([^<]*\).*context=\"DEFINITION-before\"> <\/span>\([^<]*\).*/*\1 \\033[1;37m\2\\033[0m\. \3/' | grep -o "^\*[0-9].*" | sed 's/^*//')
 				fi
-				phras=$(echo "$raw_phras" | sed 's/End of DIV SENSE--><\/li>/End of DIV SENSE--><\/li>\n/g' | grep -n -o '"h2">[^>]*<' | sed 's/^\([^:]*\):.*>\([^<]*\).*/\1 \2\./') #getting phrases
-				phras2=$(echo "$raw_phras" | sed 's/End of DIV SENSE--><\/li>/End of DIV SENSE--><\/li>\n/g' | grep -n -o '"EXAMPLE">[^>]*<' | sed 's/^\([^:]*\):.*>\([^<]*\).*/\1 \2/') #getting examples
-				if [[ $phras2 ]]; then
-					echo -e "\033[1;35m"PHRASES:$(tput sgr0)
-					join --nocheck-order -a 1 -a 2 <(echo "$phras") <(echo "$phras2") | sed '/^$/d'
+				examples=$macmill
+				if [[ $examples ]];then
+					echo -e "\033[1;35m"EXAMPLES:$(tput sgr0)
+					echo -e "$phrases_2"
 				fi
 
 				#search for ideom for 2-4 words
