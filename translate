@@ -303,11 +303,11 @@ else
 			macmill=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" -m $timeout http://www.macmillandictionary.com/dictionary/british/"$(echo $request | tr '[:upper:]' '[:lower:]' | tr ' ' - )" )
 			[[ $? != 0 ]] && { echo "cant get phrases" ; bashtrap; }
 			#forms
-			forms=$(echo $macmill | grep -o '"INFLECTION-ENTRY">[^<]*<' | sed 's/.*\">\([^<]*\)<.*/\1/')
+			forms=$(echo $macmill | grep -o "id=\"wordsformslayer-head\".*End of DIV wordforms" | sed 's/INFLECTION-CONTENT/\n/g' | sed -e 's/.*INFLECTION-ENTRY\">\([^<]*\)<.*I-VARIANT-before\">\([^<]*\).*INFLECTION-ENTRY\">\([^<]*\).*/666\1\2\3,/' -e 's/.*INFLECTION-ENTRY\">\([^<]*\)<.*/666\1,/' | grep 666 | cut -c 4-)
 			firstf=$(echo "$forms" | head -n 1)
 			lastf=$(echo "$forms" | tail -n 1)
 			last1f=$(echo "$forms" | tail -n 2 | head -n 1)
-			[[ $(echo "$forms" | wc -l) -ge 3 && (( $firstf"ed" != $lastf || $firstf"ed" != $last1f || $lastf != $last1f )) ]] && echo -e "\033[1;36m"f:$(tput sgr0) $forms >> "$cachefile"
+			[[ $(echo "$forms" | wc -l) -ge 3 && (( $firstf"ed" != $lastf || $firstf"ed" != $last1f || $lastf != $last1f )) ]] && echo -e "\033[1;36m"forms:$(tput sgr0) ${forms%?} >> "$cachefile"
 			#vform
 			vform=$(echo "$macmill" | grep "span class=\"GREF-TYPE\"" | sed 's/.*span class=\"GREF-TYPE\">\([^<]*\)<.*>\([^<]*\)<sup>[0-9]*<\/sup>.*/\1 \\033[1;34m\2\\033[0m/')
 			[[ $vform ]] && echo -e "$vform" >> "$cachefile"
