@@ -308,9 +308,10 @@ else
 			firstf=$(echo "$forms" | head -n 1) #1
 			last1f=$(echo "$forms" | tail -n 2 | head -n 1) #end-1
 			lastf=$(echo "$forms" | tail -n 1) #end
-			[[ (( fwc -eq 5 && (( ${firstf%?}"ed," != $lastf || ${firstf%?}"ed," != $last1f || $lastf != $last1f )) )) || 
-			   (( fwc -eq 3 && (( ${firstf%?}"er," != $last1f  || ${firstf%?}"est," != $lastf )) )) || 
-			   (( fwc -eq 4 || fwc -le 2 )) ]] && echo -e "\033[1;36m"forms:$(tput sgr0) ${forms%?} >> "$cachefile"
+			[[ (( fwc -eq 5 && (( ${firstf%?}"ed," != $lastf || ${firstf%?}"ed," != $last1f || $lastf != $last1f )) )) ||
+			   (( fwc -eq 3 && (( ${firstf%?}"er," != $last1f  || ${firstf%?}"est," != $lastf )) )) ||
+			   (( fwc -eq 2 && (( ${firstf%?}"s," != $lastf )) )) ||
+			   (( fwc -eq 4 || fwc -eq 1 )) ]] && echo -e "\033[1;36m"forms:$(tput sgr0) ${forms%?} >> "$cachefile"
 			#vform
 			vform=$(echo "$macmill" | grep -o "GREF-ENTRY-before.*</a>" | sed 's/<\/a>/<\/a>\n/g' | head -n 1 | sed 's/.*<a[^>]*>\([^<]*\).*/\1/')
 			vform_desc=$(echo "$macmill" | grep "span class=\"GREF-TYPE\"" | sed 's/.*<span class=\"GREF-TYPE\">\([^<]*\)<.*/\1/')
