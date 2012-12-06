@@ -52,7 +52,7 @@ declare -r timeout=6
 #
 declare -r useragent="Mozilla/5.0 (X11; Linux i686) AppleWebKit/534.34 (KHTML, like Gecko) QupZilla/1.3.1 Safari/534.34"
 #
-PR_DIR="$HOME/.translate"
+declare -r PR_DIR="$HOME/.translate"
 [ ! -d "$PR_DIR" ] && mkdir "$PR_DIR"
 [ ! -d "$PR_DIR"/cache ] && mkdir "$PR_DIR"/cache
 
@@ -310,7 +310,7 @@ else
 			lastf=$(echo "$forms" | tail -n 1) #end
 			[[ (( fwc -eq 5 && (( ${firstf%?}"ed," != $lastf || ${firstf%?}"ed," != $last1f || $lastf != $last1f )) )) || 
 			   (( fwc -eq 3 && (( ${firstf%?}"er," != $last1f  || ${firstf%?}"est," != $lastf )) )) || 
-			   (( fwc -eq 4 || fwc -le 2 ]] && echo -e "\033[1;36m"forms:$(tput sgr0) ${forms%?} >> "$cachefile"
+			   (( fwc -eq 4 || fwc -le 2 )) ]] && echo -e "\033[1;36m"forms:$(tput sgr0) ${forms%?} >> "$cachefile"
 			#vform
 			vform=$(echo "$macmill" | grep -o "GREF-ENTRY-before.*</a>" | sed 's/<\/a>/<\/a>\n/g' | head -n 1 | sed 's/.*<a[^>]*>\([^<]*\).*/\1/')
 			vform_desc=$(echo "$macmill" | grep "span class=\"GREF-TYPE\"" | sed 's/.*<span class=\"GREF-TYPE\">\([^<]*\)<.*/\1/')
