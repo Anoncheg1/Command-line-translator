@@ -366,7 +366,7 @@ else
 			[[ $(ls "$PR_DIR"/cache | wc -l) -gt $words_buffer ]] && find "$PR_DIR"/cache -mtime +20 -delete #cache cleaning. remove words older than 20 days.
 		else #not english dictionary
 			echo -e "$t_result" 				#google translated text output
-			[[ $dictionary ]] && echo -e "\n$dictionary"  	#google dictionary output
+			[[ $dictionary ]] && echo -e "$dictionary"  	#google dictionary output
 			[[ $fl ]] && echo -e "$fl" 			#google fixed text output
 
 			if [[ $source == en && ! $fl_raw && $r_words_count -le 4 ]]; then
