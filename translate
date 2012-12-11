@@ -138,7 +138,7 @@ bashtrap()
 
 jsscript="var googlearr = eval(JSON.stringify(myJSONObject));
 function translated_result(arr){
-	if(typeof googlearr[0][0][0] !== 'undefined' && googlearr[0] !== null){
+	if(typeof googlearr[0] !== 'undefined' && googlearr[0] !== null){
 		if(typeof googlearr[0][0] !== 'undefined' && googlearr[0][0] !== null){
 			if(typeof googlearr[0][0][0] !== 'undefined' && googlearr[0][0][0] !== null){
 				// print(\"\033[1;32m\"+googlearr[0][0][0]+\"\033[0m\")
@@ -148,7 +148,7 @@ function translated_result(arr){
 	}
 }
 function translit(arr){
-	if(typeof googlearr[0][0][0] !== 'undefined' && googlearr[0] !== null){
+	if(typeof googlearr[0] !== 'undefined' && googlearr[0] !== null){
 		if(typeof googlearr[0][0] !== 'undefined' && googlearr[0][0] !== null){
 			if(typeof googlearr[0][0][3] !== 'undefined' && googlearr[0][0][3] !== null){
 				print(googlearr[0][0][3])
