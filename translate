@@ -268,7 +268,7 @@ else
 				fl=$(echo "$fl_raw" | sed 's/\\u003cb\\u003e\\u003ci\\u003e/'$(tput bold)$(tput setaf 3)'/g' | sed 's/\\u003c\/i\\u003e\\u003c\/b\\u003e/'$(tput sgr0)'/g' | sed 's/\\u0026//g' | sed "s/\#39;/'/g" ) #google fixed text
 			fi
 
-echo $grespond | grep -o '\[.*\]'
+#echo $grespond | grep -o '\[.*\]'
 
 		echo -n "var myJSONObject = " > "$PR_DIR"/tmpjsobj
 		echo -n "$grespond" | grep -o '\[.*\]' >> "$PR_DIR"/tmpjsobj
