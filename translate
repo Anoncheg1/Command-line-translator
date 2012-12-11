@@ -58,7 +58,7 @@ declare -r PR_DIR="$HOME/.translate"
 
 declare -r TR_ENG_WORDS="$PR_DIR"/translated_words
 
-declare -Ar ln_arr
+declare -A ln_arr
 ln_arr["af"]="Afrikaans"
 ln_arr["sq"]="Albanian"
 ln_arr["am"]="Amharic"
