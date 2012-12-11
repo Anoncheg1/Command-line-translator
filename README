@@ -8,7 +8,7 @@ REQUIREMENTS:
 - forvo.com account for audio pronunciation 
 
 FEATURES:
-- translated text, fixed text with highlight, language detection, dictionary
+- translated text, fixed text with highlight, language detection, dictionary, translit
 for english:  phrases, ideom, transcription, audio pronunciation
 - cache for words
 - saving english words to file for learning

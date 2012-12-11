@@ -25,7 +25,7 @@
 # 	Mozilla js shell (spidermonkey) >= 1.8.0, 
 #	forvo.com account
 #features:
-#- translated text, fixed text with highlight, language detection, dictionary
+#- translated text, fixed text with highlight, language detection, dictionary, translit
 #- for english:  phrases, ideom, word forms, transcription, audio pronunciation
 #- cache for words
 #- saving words to file for learning
@@ -138,15 +138,23 @@ bashtrap()
 
 jsscript="var googlearr = eval(JSON.stringify(myJSONObject));
 function translated_result(arr){
-	var rsum=\"\"; //translated text
-	if(typeof googlearr[0] !== 'undefined' && googlearr[0] !== null){  //summing sentences
-		for (var i = 0; i < googlearr[0].length; i++){
-			if(typeof googlearr[0][i][0] !== 'undefined' && googlearr[0][i][0] !== null){
-				rsum=rsum+googlearr[0][i][0];
+	if(typeof googlearr[0][0][0] !== 'undefined' && googlearr[0] !== null){
+		if(typeof googlearr[0][0] !== 'undefined' && googlearr[0][0] !== null){
+			if(typeof googlearr[0][0][0] !== 'undefined' && googlearr[0][0][0] !== null){
+				// print(\"\033[1;32m\"+googlearr[0][0][0]+\"\033[0m\")
+				print(googlearr[0][0][0])
 			}
 		}
 	}
-	print(\"\033[1;32m\"+rsum+\"\033[0m\");
+}
+function translit(arr){
+	if(typeof googlearr[0][0][0] !== 'undefined' && googlearr[0] !== null){
+		if(typeof googlearr[0][0] !== 'undefined' && googlearr[0][0] !== null){
+			if(typeof googlearr[0][0][3] !== 'undefined' && googlearr[0][0][3] !== null){
+				print(googlearr[0][0][3])
+			}
+		}
+	}
 }
 function dictionary(arr){ //dictionary output
 	if(typeof arr[1] !== 'undefined' && arr[1] !== null){
@@ -260,7 +268,7 @@ else
 				fl=$(echo "$fl_raw" | sed 's/\\u003cb\\u003e\\u003ci\\u003e/'$(tput bold)$(tput setaf 3)'/g' | sed 's/\\u003c\/i\\u003e\\u003c\/b\\u003e/'$(tput sgr0)'/g' | sed 's/\\u0026//g' | sed "s/\#39;/'/g" ) #google fixed text
 			fi
 
-#echo $grespond | grep -o '\[.*\]'
+echo $grespond | grep -o '\[.*\]'
 
 		echo -n "var myJSONObject = " > "$PR_DIR"/tmpjsobj
 		echo -n "$grespond" | grep -o '\[.*\]' >> "$PR_DIR"/tmpjsobj
@@ -269,21 +277,24 @@ else
 
 		cp -f "$PR_DIR"/tmpjsobj "$PR_DIR"/tmpjsobj2
 		echo -n "language_identification(googlearr);" >> "$PR_DIR"/tmpjsobj2
-		det_language=$(js "$PR_DIR"/tmpjsobj2 | tail -c3)
+		det_language=$(js "$PR_DIR"/tmpjsobj2 | tail -c3)		# detected language
 		cp -f "$PR_DIR"/tmpjsobj "$PR_DIR"/tmpjsobj2
 		echo -n "translated_result(googlearr);" >> "$PR_DIR"/tmpjsobj2
-		t_result=$(js "$PR_DIR"/tmpjsobj2)
+		t_result=$(js "$PR_DIR"/tmpjsobj2)				# translated text
+		cp -f "$PR_DIR"/tmpjsobj "$PR_DIR"/tmpjsobj2
+		echo -n "translit(googlearr);" >> "$PR_DIR"/tmpjsobj2
+		translit=$(js "$PR_DIR"/tmpjsobj2)				# translit
 		cp -f "$PR_DIR"/tmpjsobj "$PR_DIR"/tmpjsobj2
 		echo -n "dictionary(googlearr);" >> "$PR_DIR"/tmpjsobj2
-		dictionary=$(js "$PR_DIR"/tmpjsobj2)
+		dictionary=$(js "$PR_DIR"/tmpjsobj2)				# dictionary
 
 		#Language detection
 		[[ $det_language != $source && (( $TLSOURCE || $det_language != $ENGLISH_TARGET_LANG )) ]] && echo -e "$(tput sgr0)$(tput setaf 7)*	$det_language ${ln_arr[$det_language]}$(tput sgr0)"
 
-		#res_for_check=$(echo "$grespond" | grep -o '\[.*\]' | sed 's/.*\[\[\[\"\([^\"]*\)".*/\1/')
-
-		#second attempt to translate with detected language
-		if [[ $source != $det_language && ! $fl_raw && $(echo -e "\033[1;32m$request\033[0m" | tr '[:upper:]' '[:lower:]') ==  $(echo $t_result | tr '[:upper:]' '[:lower:]') && ! $dictionary ]]; then
+		if [[ $source != $det_language && ! $fl_raw && ((
+				$(echo $request | sed 's/ //g' | tr '[:upper:]' '[:lower:]') ==  $(echo $t_result | sed 's/ //g' | tr '[:upper:]' '[:lower:]') || 
+				$(echo $t_result | sed 's/ //g' | tr '[:upper:]' '[:lower:]') ==  $(echo $translit | sed 's/ //g' | tr '[:upper:]' '[:lower:]')
+				)) && ! $dictionary ]]; then
 			[[ $source != "auto" ]] && echo -e "trying with detected language" # I guess google "auto" is not working then we will do it by yourself mutely
 			export TLSOURCE=$det_language #TLTARGET=en #source and target language for second attempt
 			if [[ $sound == 1 ]]; then $0 -s $request ; else $0 $request ;fi #second attempt to translate with detected language  #sound will be quiet...
@@ -297,7 +308,7 @@ else
 		#"Dictionary part" for english only. but it can be extended for every required language
 		if [[ $r_words_count -eq 1 && ${#request} -gt 1 && $source == en && ! $fl_raw ]]; then #dictionary
 
-			echo -e "$t_result\n$dictionary" > "$cachefile" #google translated text and dictionary to cache
+			echo -e "\\033[1;32m$t_result\\033[0m""\n$dictionary" > "$cachefile" #google translated text and dictionary to cache
 
 			#phrases, forms and a vform
 			macmill=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" -m $timeout http://www.macmillandictionary.com/dictionary/british/"$(echo $request | tr '[:upper:]' '[:lower:]' | tr ' ' - )" )
@@ -365,9 +376,10 @@ else
 			fi
 			[[ $(ls "$PR_DIR"/cache | wc -l) -gt $words_buffer ]] && find "$PR_DIR"/cache -mtime +20 -delete #cache cleaning. remove words older than 20 days.
 		else #not english dictionary
-			echo -e "$t_result" 				#google translated text output
-			[[ $dictionary ]] && echo -e "$dictionary"  	#google dictionary output
-			[[ $fl ]] && echo -e "$fl" 			#google fixed text output
+			echo -e "\\033[1;32m$t_result\\033[0m" 							#google translated text output
+			[[ $source != en && $r_words_count -le 8 && $(echo $t_result | sed 's/ //g' | tr '[:upper:]' '[:lower:]') !=  $(echo $translit | sed 's/ //g' | tr '[:upper:]' '[:lower:]') ]] && echo -e "$translit" #google translit	output
+			[[ $dictionary ]] && echo -e "$dictionary"  				#google dictionary 	output
+			[[ $fl ]] && echo -e "$fl" 						#google fixed text 	output
 
 			if [[ $source == en && ! $fl_raw && $r_words_count -le 4 ]]; then
 				#phrases for 2 words
@@ -400,13 +412,19 @@ else
 		cat "$cachefile" #output
 		[[ $source == en ]] && echo -e "\033[34m"http://oxforddictionaries.com/definition/english/"$request"$(tput sgr0)
 	fi
-	#sound output
-	if [[ $sound == 1 && -e "$cachefile".mp3 ]]; then 
-		stat=$(playsound --loop 0 --volume "$volume" "$cachefile".mp3 2>&1)
-		echo "$stat"
-		[[ $(echo "$stat" | grep -o 'Couldn') ]] && rm "$cachefile".mp3
-	fi
+	#sound
 	[[ $sound == 1 && ! -e "$cachefile".mp3 ]] && sleep 1 #to be able Ctrl+C to delete cache file
+
+	if [[ $sound == 1 && -e "$cachefile".mp3 ]]; then
+		if [[ $(stat -c%s "$cachefile".mp3) -ge 11000 ]]; then #if .mp3 is corrrect
+			stat=$(playsound --loop 0 --volume "$volume" "$cachefile".mp3 2>&1)
+			echo "$stat"
+			[[ $(echo "$stat" | grep -o 'Couldn') ]] && rm "$cachefile".mp3
+		else
+			rm "$cachefile".mp3
+			echo ".mp3 file is corrupt. try again."
+		fi
+	fi
 fi
 
 exit
