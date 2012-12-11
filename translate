@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # AWESOME GOOGLE TRANSLATE. This tool for access translate.google.com from terminal and additional English features.
 
-#    Copyright (C) 2012 Vasilij Vasiljevich Ubijtca.
+#    Copyright (C) 2012 Vitalij Chepelev.
 
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -30,7 +30,7 @@
 #- cache for words
 #- saving words to file for learning
 
-help='$(basename "$0") [-s[2,3]] [-l] [-h] <text>
+help=$(basename "$0")' [-s[2,3]] [-l] [-h] <text>
 if text is LATIN_LANG, then target language is FIRST_LANG
 otherwise, target language is LATIN_LANG
 -s, -s2, -s3, --sound Enable sound for one word
