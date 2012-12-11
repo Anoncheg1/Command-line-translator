@@ -26,7 +26,8 @@
 #	forvo.com account
 #features:
 #- translated text, fixed text with highlight, language detection, dictionary, translit
-#- for english:  phrases, ideom, word forms, transcription, audio pronunciation
+# for english: 
+#- phrases, ideom, word forms, transcription, audio pronunciation
 #- cache for words
 #- saving words to file for learning
 
