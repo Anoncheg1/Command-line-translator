@@ -151,7 +151,7 @@ function translated_result(arr){
 	print(rsum);
 }
 function translit(arr){
-	var rsum=\"\"; //translated text
+	var rsum=\"\"; //translit
 	if(typeof googlearr[0] !== 'undefined' && googlearr[0] !== null){ //summing sentences
 		for (var i = 0; i < googlearr[0].length; i++){
 			if(typeof googlearr[0][i][3] !== 'undefined' && googlearr[0][i][3] !== null){
