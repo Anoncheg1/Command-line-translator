@@ -140,23 +140,26 @@ bashtrap()
 
 jsscript="var googlearr = eval(JSON.stringify(myJSONObject));
 function translated_result(arr){
-	if(typeof googlearr[0] !== 'undefined' && googlearr[0] !== null){
-		if(typeof googlearr[0][0] !== 'undefined' && googlearr[0][0] !== null){
-			if(typeof googlearr[0][0][0] !== 'undefined' && googlearr[0][0][0] !== null){
-				// print(\"\033[1;32m\"+googlearr[0][0][0]+\"\033[0m\")
-				print(googlearr[0][0][0])
+	var rsum=\"\"; //translated text
+	if(typeof googlearr[0] !== 'undefined' && googlearr[0] !== null){ //summing sentences
+		for (var i = 0; i < googlearr[0].length; i++){
+			if(typeof googlearr[0][i][0] !== 'undefined' && googlearr[0][i][0] !== null){
+				rsum=rsum+googlearr[0][i][0];
 			}
 		}
 	}
+	print(rsum);
 }
 function translit(arr){
-	if(typeof googlearr[0] !== 'undefined' && googlearr[0] !== null){
-		if(typeof googlearr[0][0] !== 'undefined' && googlearr[0][0] !== null){
-			if(typeof googlearr[0][0][3] !== 'undefined' && googlearr[0][0][3] !== null){
-				print(googlearr[0][0][3])
+	var rsum=\"\"; //translated text
+	if(typeof googlearr[0] !== 'undefined' && googlearr[0] !== null){ //summing sentences
+		for (var i = 0; i < googlearr[0].length; i++){
+			if(typeof googlearr[0][i][3] !== 'undefined' && googlearr[0][i][3] !== null){
+				rsum=rsum+'\n'+googlearr[0][i][3];
 			}
 		}
 	}
+	print(rsum);
 }
 function dictionary(arr){ //dictionary output
 	if(typeof arr[1] !== 'undefined' && arr[1] !== null){
@@ -234,7 +237,7 @@ if [[ ${#request} -gt 300 ]]; then
 else
 	if [[ $r_words_count -le 4 ]];then 
 		httpproxy="" ; httpsproxy=""  #don't wanna proxy for 4 words.
-		request=$(echo $request | tr '[:upper:]' '[:lower:]') #lower request for short sentences
+		request=$(echo "$request" | tr '[:upper:]' '[:lower:]') #lower request for short sentences
 	fi
 	cachefile="$PR_DIR/cache/$source-$target"_"$request"
 	r_words_count=$(echo "$request"  |wc -w)
@@ -300,7 +303,7 @@ else
 				)) && ! $dictionary ]]; then
 			[[ $source != "auto" ]] && echo -e "trying with detected language" # I guess google "auto" is not working then we will do it by yourself mutely
 			export TLSOURCE=$det_language #TLTARGET=en #source and target language for second attempt
-			if [[ $sound == 1 ]]; then $0 -s $request ; else $0 $request ;fi #second attempt to translate with detected language  #sound will be quiet...
+			if [[ $sound == 1 ]]; then $0 -s "$request" ; else $0 "$request" ;fi #second attempt to translate with detected language  #sound will be quiet...
 			exit
 		fi
 
