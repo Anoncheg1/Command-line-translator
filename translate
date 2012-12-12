@@ -294,7 +294,8 @@ else
 
 		if [[ $source != $det_language && ! $fl_raw && ((
 				$(echo $request | sed 's/ //g' | tr '[:upper:]' '[:lower:]') ==  $(echo $t_result | sed 's/ //g' | tr '[:upper:]' '[:lower:]') || 
-				$(echo $t_result | sed 's/ //g' | tr '[:upper:]' '[:lower:]') ==  $(echo $translit | sed 's/ //g' | tr '[:upper:]' '[:lower:]')
+				$(echo $t_result | sed 's/ //g' | tr '[:upper:]' '[:lower:]') ==  $(echo $translit | sed 's/ //g' | tr '[:upper:]' '[:lower:]') ||
+				${request:0:1} == ${t_result:0:1}
 				)) && ! $dictionary ]]; then
 			[[ $source != "auto" ]] && echo -e "trying with detected language" # I guess google "auto" is not working then we will do it by yourself mutely
 			export TLSOURCE=$det_language #TLTARGET=en #source and target language for second attempt
