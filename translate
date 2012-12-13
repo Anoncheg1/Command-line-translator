@@ -265,7 +265,7 @@ else
 				if [[ $diffnum > 0 ]];then
 					[[ $source != en ]]&& diffnum=$(($diffnum/2+$diffnum%2))   #MUST BE CHECKED FOR REQUIRED LANGUAGES
 					[[ ${fl:$diffnum-1:1} == ' ' ]] && let diffnum-- #white space correction
-					fl="$(tput bold)$(tput setaf 3)${fl:0:$diffnum-1}$(tput bold)$(tput setaf 1)${fl:$diffnum-1:1}$(tput bold)$(tput setaf 3)${fl:$diffnum}$(tput sgr0) :$(tput setaf 3)"$(echo "$difftest" | wc -l)"$(tput sgr0)" #highlight difference in one word
+					fl="$(tput bold)$(tput setaf 3)${fl:0:$diffnum-1}$(tput bold)$(tput setaf 1)"${fl:$diffnum-1:$(echo "$difftest" | wc -l)}"$(tput bold)$(tput setaf 3)"${fl:$diffnum+$(echo "$difftest" | wc -l)-1}"$(tput sgr0)" #highlight difference in one word
 				else
 					fl="$(tput bold)$(tput setaf 3)$fl$(tput sgr0)"
 				fi
