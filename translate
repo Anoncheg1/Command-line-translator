@@ -46,8 +46,8 @@ declare -r FIRST_LANG=ru			#target language for request in LATIN_LANG		NOT in A-
 declare -r LATIN_LANG=en			#target for all not A-z latin requests			A-z latin alphabet will be detected!
 declare -r flogin=121212 			#forvo.com login and pass REQUIRED!
 declare -r fpass=121212
-httpproxy="127.0.0.1:4444"		#proxy for long strings
-httpsproxy="--socks5 127.0.0.1:9050"	#socks5
+#httpproxy="127.0.0.1:4444"		#proxy for long strings
+#httpsproxy="--socks5 127.0.0.1:9050"	#socks5
 #
 declare -r words_buffer=4000	#4000 files max. there is removeing all files older than 20 days.
 declare -r timeout=6
