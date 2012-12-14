@@ -257,14 +257,15 @@ else
 		#echo -e "var googlearr = eval(JSON.stringify(myJSONObject));\n print(googlearr);" >> "$PR_DIR"/tmpjsobj2
 		#js "$PR_DIR"/tmpjsobj2
 		fl_raw=$(echo "$grespond" | grep -o '[^"]*/i[^"]*') #google correction from $grespond
+
+		#Highlight
 		[[ $fl_raw ]] &&
 			if [[ $r_words_count -le 2 ]];then #getting google fixed text
 				fl=$(echo "$fl_raw" | sed 's/\\u003cb\\u003e\\u003ci\\u003e//g' | sed 's/\\u003c\/i\\u003e\\u003c\/b\\u003e//g' | sed 's/\\u0026//g' | sed "s/\#39;/'/g")
 				difftest="$(cmp -l <(echo -n $request) <(echo -n $fl) 2>/dev/null)"
-				diffnum=$(echo "$difftest" | head -n 1 | sed 's/\([0-9][0-9]\?\).*/\1/')
-				if [[ $diffnum > 0 ]];then
-					[[ $source != en ]]&& diffnum=$(($diffnum/2+$diffnum%2))   #MUST BE CHECKED FOR REQUIRED LANGUAGES
-					[[ ${fl:$diffnum-1:1} == ' ' ]] && let diffnum-- #white space correction
+				if [[ $(echo "$difftest" | grep '[0-9]') ]];then
+					#[[ $source != en ]]&& diffnum=$(($diffnum/2+$diffnum%2))   #MUST BE CHECKED FOR REQUIRED LANGUAGES
+					#[[ ${fl:$diffnum-1:1} == ' ' ]] && let diffnum-- #white space correction
 					for i in $(seq $(echo "$difftest" | wc -l) -1 1); do
 						pos=$(($(echo "$difftest" | sed -n $i'p' | sed -E 's/(([^ ]+ )).*/\1/' ) - 1))
 						fl=$(echo $fl | sed 's/^\(.\{'$pos'\}\).\(.*\)/\1'$(tput bold)$(tput setaf 1)${fl:$pos:1}$(tput sgr0)$(tput bold)$(tput setaf 3)'\2/') #highlight difference in one word
