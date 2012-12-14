@@ -260,9 +260,9 @@ else
 
 		#Highlight
 		[[ $fl_raw ]] &&
-			if [[ $r_words_count -le 2 ]];then #getting google fixed text
-				fl=$(echo "$fl_raw" | sed 's/\\u003cb\\u003e\\u003ci\\u003e//g' | sed 's/\\u003c\/i\\u003e\\u003c\/b\\u003e//g' | sed 's/\\u0026//g' | sed "s/\#39;/'/g")
-				difftest="$(cmp -l <(echo -n $request) <(echo -n $fl) 2>/dev/null)"
+			if [[ $r_words_count -le 2 ]];then #for 1-2 words
+				fl=$(echo "$fl_raw" | sed 's/\\u003cb\\u003e\\u003ci\\u003e//g' | sed 's/\\u003c\/i\\u003e\\u003c\/b\\u003e//g' | sed 's/\\u0026//g' | sed "s/\#39;/'/g") #removing shit
+				difftest="$(cmp -l <(echo -n $request) <(echo -n $fl) 2>/dev/null)" #comparison
 				if [[ $(echo "$difftest" | grep '[0-9]') ]];then
 					#[[ $source != en ]]&& diffnum=$(($diffnum/2+$diffnum%2))   #MUST BE CHECKED FOR REQUIRED LANGUAGES
 					#[[ ${fl:$diffnum-1:1} == ' ' ]] && let diffnum-- #white space correction
