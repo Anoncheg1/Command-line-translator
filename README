@@ -5,6 +5,7 @@ mirror http://pastebin.com/kPTYjY6W
 REQUIREMENTS: 
 - curl >= 7.21.0
 - Mozilla js shell (program included in the SpiderMonkey) >= 1.8.0
+- html2text for large texts
 - forvo.com account for audio pronunciation 
 
 FEATURES:
