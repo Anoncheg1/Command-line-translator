@@ -262,13 +262,14 @@ else
 		[[ $fl_raw ]] &&
 			if [[ $r_words_count -le 2 ]];then #for 1-2 words
 				fl=$(echo "$fl_raw" | sed 's/\\u003cb\\u003e\\u003ci\\u003e//g' | sed 's/\\u003c\/i\\u003e\\u003c\/b\\u003e//g' | sed 's/\\u0026//g' | sed "s/\#39;/'/g") #removing shit
+				[[ $(echo "$fl" | tr -d "'") == "$request" ]] && fl="" # skip highlight for ' char
 				difftest="$(cmp -l <(echo -n $request) <(echo -n $fl) 2>/dev/null)" #comparison
 				if [[ $(echo "$difftest" | grep '[0-9]') ]];then
 					#[[ $source != en ]]&& diffnum=$(($diffnum/2+$diffnum%2))   #MUST BE CHECKED FOR REQUIRED LANGUAGES
 					#[[ ${fl:$diffnum-1:1} == ' ' ]] && let diffnum-- #white space correction
 					for (( i=$(echo "$difftest" | wc -l); i>=1; i--)); do
 						pos=$(($(echo "$difftest" | sed -n $i'p' | sed -E 's/(([^ ]+ )).*/\1/' ) - 1))
-						fl=$(echo $fl | sed 's/^\(.\{'$pos'\}\).\(.*\)/\1'$(tput bold)$(tput setaf 1)${fl:$pos:1}$(tput sgr0)$(tput bold)$(tput setaf 3)'\2/') #highlight difference in one word
+						fl=$(echo "$fl" | sed 's/^\(.\{'$pos'\}\).\(.*\)/\1'$(tput bold)$(tput setaf 1)"${fl:$pos:1}"$(tput sgr0)$(tput bold)$(tput setaf 3)'\2/') #highlight difference in one word
 					done
 				fi
 				fl="$(tput bold)$(tput setaf 3)$fl$(tput sgr0)"
@@ -388,10 +389,10 @@ else
 			fi
 			[[ $(ls "$PR_DIR"/cache | wc -l) -gt $words_buffer ]] && find "$PR_DIR"/cache -mtime +20 -delete #cache cleaning. remove words older than 20 days.
 		else #not english dictionary
-			echo -e "\\033[1;32m$t_result\\033[0m" 							#google translated text output
-			[[ $source != en && $r_words_count -le $TRANSLIT_WORDS_MAX && $(echo $t_result | sed 's/ //g' | tr '[:upper:]' '[:lower:]') !=  $(echo $translit | sed 's/ //g' | tr '[:upper:]' '[:lower:]') ]] && echo -e "$translit" #google translit	output
+			echo -e "\\033[1;32m$t_result\\033[0m" 					#google translated text output
+			[[ $source != en && $r_words_count -le $TRANSLIT_WORDS_MAX && $(echo $t_result | sed 's/ //g' | tr '[:upper:]' '[:lower:]') !=  $(echo $translit | sed 's/ //g' | tr '[:upper:]' '[:lower:]') ]] && echo -e "$translit" 				#google translit	output
 			[[ $dictionary ]] && echo -e "$dictionary"  				#google dictionary 	output
-			[[ $fl ]] && echo -e "$fl" 						#google fixed text 	output
+			[[ $fl ]] && echo -e "$fl" #empty line... cant fix it (:'d		#google fixed text 	output
 
 			if [[ $source == en && ! $fl_raw && $r_words_count -le 4 ]]; then
 				#phrases for 2 words
