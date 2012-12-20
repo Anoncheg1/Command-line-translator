@@ -46,6 +46,7 @@ declare -r FIRST_LANG=ru			#target language for request in LATIN_LANG		NOT in A-
 declare -r LATIN_LANG=en			#target for all not A-z latin requests			A-z latin alphabet will be detected!
 declare -r flogin=121212 			#forvo.com login and pass REQUIRED!
 declare -r fpass=121212
+TERMINAL_C="WOB"				#Your terminal - white on black:WOB, black on white:BOW, anything other:O
 #httpproxy="127.0.0.1:4444"		#proxy for long strings
 #httpsproxy="--socks5 127.0.0.1:9050"	#socks5
 #
@@ -138,6 +139,40 @@ bashtrap()
 	exit
 }
 
+if [[ $TERMINAL_C == "WOB" ]];then
+	declare -r C_RED="$(tput bold)$(tput setaf 1)"		#highlight
+	declare -r C_YELLOW="$(tput bold)$(tput setaf 3)"	#highlight
+	declare -r C_GRAY="$(tput setaf 7)"	#language detected
+	declare -r C_CYAN_RAW="\033[1;36m" 	#forms
+	declare -r C_GRAY_RED_RAW="\033[1;35m"	#phrases
+	declare -r C_DARK_BLUE_RAW="\033[34m"	#link for dictionary
+	declare -r C_BLUE_RAW="\033[1;34m"	#dictionary and vform
+	declare -r C_BRIGHT_RAW="\033[1;37m"	#phrases and examples main part
+	declare -r C_GREEN="\033[1;32m"		#t_result
+elif [[ $TERMINAL_C == "BOW" ]];then
+	declare -r C_RED="$(tput bold)$(tput setaf 1)"		#highlight
+	declare -r C_YELLOW="$(tput setaf 3)"			#highlight
+	declare -r C_GRAY="$(tput bold)$(tput setaf 5)"	#language detected
+	declare -r C_CYAN_RAW="\033[1;36m" 		#forms
+	declare -r C_GRAY_RED_RAW="\033[1;35m"		#phrases
+	declare -r C_DARK_BLUE_RAW="$(tput setaf 7)"	#link for dictionary
+	declare -r C_BLUE_RAW="\033[1;34m"		#dictionary and vform
+	declare -r C_BRIGHT_RAW="$(tput bold)"		#phrases and examples main part
+	declare -r C_GREEN="$(tput bold)"		#t_result
+else #universal
+	declare -r C_RED="$(tput bold)$(tput setaf 1)"		#highlight
+	declare -r C_YELLOW="$(tput bold)"			#highlight
+	declare -r C_GRAY=""			#language detected
+	declare -r C_CYAN_RAW="" 		#forms
+	declare -r C_GRAY_RED_RAW=""		#phrases
+	declare -r C_DARK_BLUE_RAW=""		#link for dictionary
+	declare -r C_BLUE_RAW=""		#dictionary and vform
+	declare -r C_BRIGHT_RAW="$(tput bold)"	#phrases and examples main part
+	declare -r C_GREEN="$(tput bold)"	#t_result
+fi
+	declare -r C_NORMAL="$(tput sgr0)"
+	declare -r C_NORMAL_RAW="\033[0m"
+
 jsscript="var googlearr = eval(JSON.stringify(myJSONObject));
 function translated_result(arr){
 	var rsum=\"\"; //translated text
@@ -165,7 +200,7 @@ function dictionary(arr){ //dictionary output
 	if(typeof arr[1] !== 'undefined' && arr[1] !== null){
 		for (var a = 0; a < arr[1].length; a++){
 			if(typeof arr[1][a][0] !== 'undefined' && arr[1][a][0] !== null){
-				print(\"\033[1;34m\"+arr[1][a][0]+\"\033[0m\");//part of speach
+				print(\"$C_BLUE_RAW\"+arr[1][a][0]+\"$C_NORMAL_RAW\");//part of speach
 				for (var b = 0; b < arr[1][a][2].length; b++){//words
 					num=parseFloat(arr[1][a][2][b][3]); //frequency
 					num2=Math.round(num*100000)/10;//round
@@ -232,7 +267,7 @@ if [[ ${#request} -gt 300 ]]; then
 	fi
 	encoding=$(awk '/Content-Type: .* charset=/ {sub(/^.*charset=["'\'']?/,""); sub(/[ "'\''].*$/,""); print}' <<<"$result")
 	#iconv -f $encoding <<<"$result" | awk 'BEGIN {RS="<div"};/<span[^>]* id=["'\'']?result_box["'\'']?/ {sub(/^.*id=["'\'']?result_box["'\'']?(>| [^>]*>)([ \n\t]*<[^>]*>)*/,"");sub(/<.*$/,"");print}' | html2text -utf8
-	echo -e "\033[32;1m"$(iconv -f $encoding <<<"$result" |  awk 'BEGIN {RS="</div>"};/<span[^>]* id=["'\'']?result_box["'\'']?/' | html2text -utf8)"\033[0m"
+	echo -e "\033[32;1m"$(iconv -f $encoding <<<"$result" |  awk 'BEGIN {RS="</div>"};/<span[^>]* id=["'\'']?result_box["'\'']?/' | html2text -utf8)"$C_NORMAL_RAW"
 
 else
 	if [[ $r_words_count -le 4 ]];then 
@@ -269,12 +304,12 @@ else
 					#[[ ${fl:$diffnum-1:1} == ' ' ]] && let diffnum-- #white space correction
 					for (( i=$(echo "$difftest" | wc -l); i>=1; i--)); do
 						pos=$(($(echo "$difftest" | sed -n $i'p' | sed -E 's/(([^ ]+ )).*/\1/' ) - 1))
-						fl=$(echo "$fl" | sed 's/^\(.\{'$pos'\}\).\(.*\)/\1'$(tput bold)$(tput setaf 1)"${fl:$pos:1}"$(tput sgr0)$(tput bold)$(tput setaf 3)'\2/') #highlight difference in one word
+						fl=$(echo "$fl" | sed 's/^\(.\{'$pos'\}\).\(.*\)/\1'$C_RED"${fl:$pos:1}"$C_NORMAL$C_YELLOW'\2/') #highlight difference in one word
 					done
 				fi
-				fl="$(tput bold)$(tput setaf 3)$fl$(tput sgr0)"
+				fl="$C_YELLOW$fl$C_NORMAL"
 			else
-				fl=$(echo "$fl_raw" | sed 's/\\u003cb\\u003e\\u003ci\\u003e/'$(tput bold)$(tput setaf 3)'/g' | sed 's/\\u003c\/i\\u003e\\u003c\/b\\u003e/'$(tput sgr0)'/g' | sed 's/\\u0026//g' | sed "s/\#39;/'/g" ) #google fixed text
+				fl=$(echo "$fl_raw" | sed 's/\\u003cb\\u003e\\u003ci\\u003e/'$C_YELLOW'/g' | sed 's/\\u003c\/i\\u003e\\u003c\/b\\u003e/'$C_NORMAL'/g' | sed 's/\\u0026//g' | sed "s/\#39;/'/g" ) #google fixed text
 			fi
 
 #echo $grespond | grep -o '\[.*\]'
@@ -298,7 +333,7 @@ else
 		dictionary=$(js "$PR_DIR"/tmpjsobj2)				# dictionary
 
 		#Language detection
-		[[ $det_language != $source && (( $TLSOURCE || $det_language != $ENGLISH_TARGET_LANG )) ]] && echo -e "$(tput sgr0)$(tput setaf 7)*	$det_language ${ln_arr[$det_language]}$(tput sgr0)"
+		[[ $det_language != $source && (( $TLSOURCE || $det_language != $ENGLISH_TARGET_LANG )) ]] && echo -e "$C_GRAY*	$det_language ${ln_arr[$det_language]}$C_NORMAL"
 
 		if [[ $source != $det_language && ! $fl_raw && ((
 				$(echo $request | sed 's/ //g' | tr '[:upper:]' '[:lower:]') ==  $(echo $t_result | sed 's/ //g' | tr '[:upper:]' '[:lower:]') || 
@@ -318,7 +353,7 @@ else
 		#"Dictionary part" for english only. but it can be extended for every required language
 		if [[ $r_words_count -eq 1 && ${#request} -gt 1 && $source == en && ! $fl_raw ]]; then #dictionary
 
-			echo -e "\\033[1;32m$t_result\\033[0m""\n$dictionary" > "$cachefile" #google translated text and dictionary to cache
+			echo -e "$C_GREEN$t_result$C_NORMAL_RAW""\n$dictionary" > "$cachefile" #google translated text and dictionary to cache
 
 			#phrases, forms and a vform
 			macmill=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" -m $timeout http://www.macmillandictionary.com/dictionary/british/"$(echo $request | tr '[:upper:]' '[:lower:]' | tr ' ' - )" )
@@ -332,29 +367,29 @@ else
 			[[ (( fwc -eq 5 && (( ${firstf%?}"ed," != $lastf || ${firstf%?}"ed," != $last1f || $lastf != $last1f )) )) ||
 			   (( fwc -eq 3 && (( ${firstf%?}"er," != $last1f  || ${firstf%?}"est," != $lastf )) )) ||
 			   (( fwc -eq 2 && (( ${firstf%?}"s," != $lastf )) )) ||
-			   (( fwc -eq 4 )) ]] && echo -e "\033[1;36m"forms:$(tput sgr0) ${forms%?} >> "$cachefile"
+			   (( fwc -eq 4 )) ]] && echo -e "$C_CYAN_RAW"forms:$C_NORMAL ${forms%?} >> "$cachefile"
 			#vform
 			vform=$(echo "$macmill" | grep -o "GREF-ENTRY-before.*</a>" | sed 's/<\/a>/<\/a>\n/g' | head -n 1 | sed 's/.*<a[^>]*>\([^<]*\).*/\1/')
 			vform_desc=$(echo "$macmill" | grep "span class=\"GREF-TYPE\"" | sed 's/.*<span class=\"GREF-TYPE\">\([^<]*\)<.*/\1/')
-			[[ $vform ]] && echo -e "$vform_desc" "\\033[1;34m$vform\\033[0m" >> "$cachefile"
+			[[ $vform ]] && echo -e "$vform_desc" "$C_BLUE_RAW$vform$C_NORMAL_RAW" >> "$cachefile"
 			#phrases
 			raw_phras=$(echo "$macmill" | grep -o '<li ID.*End of DIV SENSE--></li>' | sed 's/<.\?span[^>]*>//g')
-			#div class="P-HEAD" #| sed 's/End of DIV SENSE--><\/li>/\n/g' \ -e 's/.*\"h2\">\([^<]*\).*\"EXAMPLE\">\([^<]*\).*\"EXAMPLE\">\([^<]*\).*/**\\033[1;37m\1\\033[0m\. \2<FUCKINGSHIT>\t\3/' \ | nl -s ' ' | sed -e 's/<FUCKINGSHIT>/\n/' -e 's/^ *//'
+			#div class="P-HEAD" #| sed 's/End of DIV SENSE--><\/li>/\n/g' \ -e 's/.*\"h2\">\([^<]*\).*\"EXAMPLE\">\([^<]*\).*\"EXAMPLE\">\([^<]*\).*/**\'$C_BRIGHT_RAW'\1'$C_NORMAL'\. \2<FUCKINGSHIT>\t\3/' \ | nl -s ' ' | sed -e 's/<FUCKINGSHIT>/\n/' -e 's/^ *//'
 #-e 's/.*\"EXAMPLE\">\([^<]*\).*\"EXAMPLE\">\([^<]*\).*/**\1<FUCKINGSHIT>\t\2/' \
 			phras=$(echo $raw_phras | sed -e 's/<a[^>]*>//g' -e 's/<\/a>//g' | sed -e 's/div class=\"P-HEAD\"/\n?????/g' | grep "?????" | grep -n . | sed 's/^[0-9]*:/&\n/' | sed 's/End of DIV EXAMPLES/\n/g' | sed '/^[0-9]*:/{h;d;};G; s/^\(.*\)\n\([0-9]*:\)/\2 \1/' | sed \
--e 's/^\([0-9]*\):.*\"h2\">\([^<]*\).*\"h2\">\([^<]*\).*\"EXAMPLE\">\([^<]*\).*/**\1 \\033[1;37m\2\3\\033[0m\. \4/' \
--e 's/^\([0-9]*\):.*\"h2\">\([^<]*\).*\"EXAMPLE\">\([^<]*\).*/**\1 \\033[1;37m\2\\033[0m\. \3/' \
--e 's/^\([0-9]*\):.*\"h2\">\([^<]*\).*\"h2\">\([^<]*\).*class=\"SENSE-BODY\">\([^<]*\).*/**\1 \\033[1;37m\2\3\\033[0m\. \4/' \
--e 's/^\([0-9]*\):.*\"h2\">\([^<]*\).*class=\"SENSE-BODY\">\([^<]*\).*/**\1 \\033[1;37m\2\\033[0m\. \3/' \
+-e 's/^\([0-9]*\):.*\"h2\">\([^<]*\).*\"h2\">\([^<]*\).*\"EXAMPLE\">\([^<]*\).*/**\1 \'$C_BRIGHT_RAW'\2\3'$C_NORMAL'\. \4/' \
+-e 's/^\([0-9]*\):.*\"h2\">\([^<]*\).*\"EXAMPLE\">\([^<]*\).*/**\1 \'$C_BRIGHT_RAW'\2'$C_NORMAL'\. \3/' \
+-e 's/^\([0-9]*\):.*\"h2\">\([^<]*\).*\"h2\">\([^<]*\).*class=\"SENSE-BODY\">\([^<]*\).*/**\1 \'$C_BRIGHT_RAW'\2\3'$C_NORMAL'\. \4/' \
+-e 's/^\([0-9]*\):.*\"h2\">\([^<]*\).*class=\"SENSE-BODY\">\([^<]*\).*/**\1 \'$C_BRIGHT_RAW'\2'$C_NORMAL'\. \3/' \
 -e 's/^\([0-9]*\):.*\"EXAMPLE\">\([^<]*\).*/**\1 \2/' | grep -o "^\*\*[0-9].*" | sed 's/^\*\*//' ) # doubleh2+exmaple, h2+exmaple, doubleh2+sentence, h2+sentence, only example
 			if [[ $phras ]]; then 	#phrases
-				echo -e "\033[1;35m"PHRASES:$(tput sgr0) >> "$cachefile"
+				echo -e "$C_GRAY_RED_RAW"PHRASES:$C_NORMAL >> "$cachefile"
 				echo -e "$phras" >> "$cachefile"
-				#echo -e "\033[34m"http://www.macmillandictionary.com/dictionary/american/"$request"$(tput sgr0) >> "$cachefile"
+				#echo -e "$C_DARK_BLUE_RAW"http://www.macmillandictionary.com/dictionary/american/"$request"$C_NORMAL >> "$cachefile"
 			else 			#second attempt examples
-				phrases_2=$(echo "$macmill" | grep -o 'div class="SENSE".*End of DIV SENSE--' | sed 's/End of DIV SENSE--/\n/g' | grep -n . | sed 's/^.:/&\n/' | sed 's/End of DIV EXAMPLES/\n/g' | sed '/^[0-9]:/{h;d;};G; s/^\(.*\)\n\([0-9]:\)/\2 \1/' | grep "<strong>" | sed 's/^\([0-9]\).*<strong>\([^<]*\)<.*class=\"EXAMPLE\">\([^<]*\)<.*/\1 \\033[1;37m\2\\033[0m. \3/')
+				phrases_2=$(echo "$macmill" | grep -o 'div class="SENSE".*End of DIV SENSE--' | sed 's/End of DIV SENSE--/\n/g' | grep -n . | sed 's/^.:/&\n/' | sed 's/End of DIV EXAMPLES/\n/g' | sed '/^[0-9]:/{h;d;};G; s/^\(.*\)\n\([0-9]:\)/\2 \1/' | grep "<strong>" | sed 's/^\([0-9]\).*<strong>\([^<]*\)<.*class=\"EXAMPLE\">\([^<]*\)<.*/\1 \'$C_BRIGHT_RAW'\2'$C_NORMAL'. \3/')
 				if [[ $phrases_2 ]];then
-					echo -e "\033[1;35m"EXAMPLES:$(tput sgr0) >> "$cachefile"
+					echo -e "$C_GRAY_RED_RAW"EXAMPLES:$C_NORMAL >> "$cachefile"
 					echo -e "$phrases_2" >> "$cachefile"
 				fi
 			fi
@@ -365,7 +400,7 @@ else
 			[[ $trans ]] && echo "[$trans]" >> "$cachefile"
 
 			cat "$cachefile" 2>/dev/null #output
-			echo -e "\033[34m"http://oxforddictionaries.com/definition/english/"$request"$(tput sgr0) # just another good english dictionary
+			echo -e "$C_DARK_BLUE_RAW"http://oxforddictionaries.com/definition/english/"$request"$C_NORMAL # just another good english dictionary
 
 			if [[ $trans ]] ; then
 
@@ -389,7 +424,7 @@ else
 			fi
 			[[ $(ls "$PR_DIR"/cache | wc -l) -gt $words_buffer ]] && find "$PR_DIR"/cache -mtime +20 -delete #cache cleaning. remove words older than 20 days.
 		else #not english dictionary
-			echo -e "\\033[1;32m$t_result\\033[0m" 					#google translated text output
+			echo -e "$C_GREEN$t_result$C_NORMAL_RAW" 					#google translated text output
 			[[ $source != en && $r_words_count -le $TRANSLIT_WORDS_MAX && $(echo $t_result | sed 's/ //g' | tr '[:upper:]' '[:lower:]') !=  $(echo $translit | sed 's/ //g' | tr '[:upper:]' '[:lower:]') ]] && echo -e "$translit" 				#google translit	output
 			[[ $dictionary ]] && echo -e "$dictionary"  				#google dictionary 	output
 			[[ $fl ]] && echo -e "$fl" #empty line... cant fix it (:'d		#google fixed text 	output
@@ -401,11 +436,11 @@ else
 					[[ $? != 0 ]] && { echo "cant get phrases for string" ; bashtrap; }
 					macmill=$(echo "$macmill" | grep -o 'div class="SENSE".*End of DIV SENSE--' | sed -e 's/<a[^>]*>//g' -e 's/<\/a>//g' | sed 's/End of DIV SENSE--/\n/g' | grep -n . | sed 's/^[0-9]*:/&\n/' | sed 's/End of DIV EXAMPLES/\n/g' | sed '/^[0-9]*:/{h;d;};G; s/^\(.*\)\n\([0-9]*:\)/\2 \1/' | sed \
 -e's/^\([0-9]*\):.*p id=\"EXAMPLE\" class=\"EXAMPLE\">\([^<]*\)<.*/*\1 \2/' \
--e 's/^\([0-9]\).*span class=\"BASE\">\([^<]*\).*context=\"DEFINITION-before\"> <\/span>\([^<]*\).*/*\1 \\033[1;37m\2\\033[0m\. \3/' | grep -o "^\*[0-9].*" | sed 's/^*//')
+-e 's/^\([0-9]\).*span class=\"BASE\">\([^<]*\).*context=\"DEFINITION-before\"> <\/span>\([^<]*\).*/*\1 \'$C_BRIGHT_RAW'\2'$C_NORMAL'\. \3/' | grep -o "^\*[0-9].*" | sed 's/^*//')
 				fi
 				examples=$macmill
 				if [[ $examples ]];then
-					echo -e "\033[1;35m"EXAMPLES:$(tput sgr0)
+					echo -e "$C_GRAY_RED_RAW"EXAMPLES:$C_NORMAL
 					echo -e "$examples"
 				fi
 
@@ -415,7 +450,7 @@ else
 					ideom=$(echo "$raw_ideoms" | sed 's/<i>//' | sed 's/<\/i>//' | sed 's/.*ds-single\">\([^<]*\)<.*/\1/')
 					illustration=$(echo "$raw_ideoms" | sed 's/.*class=illustration>\([^<]*\)<.*/\1/')
 					if [[ $ideom ]]; then
-						echo -e "\033[1;35m"Ideom:$(tput sgr0)
+						echo -e "$C_GRAY_RED_RAW"Ideom:$C_NORMAL
 						echo $ideom
 						echo $illustration
 					fi
@@ -425,7 +460,7 @@ else
 		fi #end of english dictionary
 	else #cache output
 		cat "$cachefile" #output
-		[[ $source == en ]] && echo -e "\033[34m"http://oxforddictionaries.com/definition/english/"$request"$(tput sgr0)
+		[[ $source == en ]] && echo -e "$C_DARK_BLUE_RAW"http://oxforddictionaries.com/definition/english/"$request"$C_NORMAL
 	fi
 	#sound
 	[[ $sound == 1 && ! -e "$cachefile".mp3 ]] && sleep 1 #to be able Ctrl+C to delete cache file
