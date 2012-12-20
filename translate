@@ -46,7 +46,7 @@ declare -r FIRST_LANG=ru			#target language for request in LATIN_LANG		NOT in A-
 declare -r LATIN_LANG=en			#target for all not A-z latin requests			A-z latin alphabet will be detected!
 declare -r flogin=121212 			#forvo.com login and pass REQUIRED!
 declare -r fpass=121212
-TERMINAL_C="WOB"				#Your terminal - white on black:WOB, black on white:BOW, anything other:O
+TERMINAL_C="WO"				#Your terminal - white on black:WOB, black on white:BOW, anything other:O
 #httpproxy="127.0.0.1:4444"		#proxy for long strings
 #httpsproxy="--socks5 127.0.0.1:9050"	#socks5
 #
@@ -160,7 +160,7 @@ elif [[ $TERMINAL_C == "BOW" ]];then
 	declare -r C_BRIGHT_RAW="$(tput bold)"		#phrases and examples main part
 	declare -r C_GREEN="$(tput bold)"		#t_result
 else #universal
-	declare -r C_RED="$(tput bold)$(tput setaf 1)"		#highlight
+	declare -r C_RED="$(tput setaf 1)"		#highlight
 	declare -r C_YELLOW="$(tput bold)"			#highlight
 	declare -r C_GRAY=""			#language detected
 	declare -r C_CYAN_RAW="" 		#forms
