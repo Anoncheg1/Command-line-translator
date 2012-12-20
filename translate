@@ -47,8 +47,8 @@ declare -r LATIN_LANG=en			#target for all not A-z latin requests			A-z latin al
 declare -r flogin=121212 			#forvo.com login and pass REQUIRED!
 declare -r fpass=121212
 TERMINAL_C="WOB"				#Your terminal - white on black:WOB, black on white:BOW, anything other:O
-#httpproxy="127.0.0.1:4444"		#proxy for long strings
-#httpsproxy="--socks5 127.0.0.1:9050"	#socks5
+httpproxy="127.0.0.1:4444"		#proxy for long strings
+httpsproxy="--socks5 127.0.0.1:9050"	#socks5
 #
 declare -r words_buffer=4000	#4000 files max. there is removeing all files older than 20 days.
 declare -r timeout=6
@@ -170,8 +170,8 @@ else #universal
 	declare -r C_BRIGHT_RAW="$(tput bold)"	#phrases and examples main part
 	declare -r C_GREEN="$(tput bold)"	#t_result
 fi
-	declare -r C_NORMAL="$(tput sgr0)"
-	declare -r C_NORMAL_RAW="\033[0m"
+declare -r C_NORMAL="$(tput sgr0)"
+declare -r C_NORMAL_RAW="\033[0m"
 
 jsscript="var googlearr = eval(JSON.stringify(myJSONObject));
 function translated_result(arr){
