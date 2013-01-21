@@ -146,8 +146,8 @@ if [[ $TERMINAL_C == "WOB" ]];then
 	declare -r C_CYAN_RAW="\033[1;36m" 	#forms
 	declare -r C_GRAY_RED_RAW="\033[1;35m"	#phrases
 	declare -r C_DARK_BLUE_RAW="\033[34m"	#link for dictionary
-	declare -r C_BLUE_RAW="\033[1;34m"	#dictionary and vform
-	declare -r C_BRIGHT_RAW="\033[1;37m"	#phrases and examples main part
+	declare -r C_BLUE_RAW="\033[1;34m"	#dictionary and vform1
+	declare -r C_BRIGHT_RAW="\033[1;37m"	#phrases, examples main part, vform2
 	declare -r C_GREEN="\033[1;32m"		#t_result
 elif [[ $TERMINAL_C == "BOW" ]];then
 	declare -r C_RED="$(tput bold)$(tput setaf 1)"		#highlight
@@ -156,18 +156,18 @@ elif [[ $TERMINAL_C == "BOW" ]];then
 	declare -r C_CYAN_RAW="\033[1;36m" 		#forms
 	declare -r C_GRAY_RED_RAW="\033[1;35m"		#phrases
 	declare -r C_DARK_BLUE_RAW="$(tput setaf 7)"	#link for dictionary
-	declare -r C_BLUE_RAW="\033[1;34m"		#dictionary and vform
-	declare -r C_BRIGHT_RAW="$(tput bold)"		#phrases and examples main part
+	declare -r C_BLUE_RAW="\033[1;34m"		#dictionary and vform1
+	declare -r C_BRIGHT_RAW="$(tput bold)"		#phrases, examples main part, vform2
 	declare -r C_GREEN="$(tput bold)"		#t_result
 else #universal
 	declare -r C_RED="$(tput setaf 1)"		#highlight
-	declare -r C_YELLOW="$(tput bold)"			#highlight
+	declare -r C_YELLOW="$(tput bold)"		#highlight
 	declare -r C_GRAY=""			#language detected
 	declare -r C_CYAN_RAW="" 		#forms
 	declare -r C_GRAY_RED_RAW=""		#phrases
 	declare -r C_DARK_BLUE_RAW=""		#link for dictionary
-	declare -r C_BLUE_RAW=""		#dictionary and vform
-	declare -r C_BRIGHT_RAW="$(tput bold)"	#phrases and examples main part
+	declare -r C_BLUE_RAW=""		#dictionary and vform1
+	declare -r C_BRIGHT_RAW="$(tput bold)"	#phrases, examples main part, vform2
 	declare -r C_GREEN="$(tput bold)"	#t_result
 fi
 declare -r C_NORMAL="$(tput sgr0)"
@@ -371,7 +371,7 @@ else
 			#vform
 			vform=$(echo "$macmill" | grep -o "GREF-ENTRY-before.*</a>" | sed 's/<\/a>/<\/a>\n/g' | head -n 1 | sed 's/.*<a[^>]*>\([^<]*\).*/\1/')
 			vform_desc=$(echo "$macmill" | grep "span class=\"GREF-TYPE\"" | sed 's/.*<span class=\"GREF-TYPE\">\([^<]*\)<.*/\1/')
-			[[ $vform ]] && echo -e "$vform_desc" "$C_BLUE_RAW$vform$C_NORMAL_RAW" >> "$cachefile"
+			[[ $vform ]] && echo -e "$C_BLUE_RAW$vform_desc$C_NORMAL_RAW" "$C_BRIGHT_RAW$vform$C_NORMAL_RAW" >> "$cachefile"
 			#phrases
 			raw_phras=$(echo "$macmill" | grep -o '<li ID.*End of DIV SENSE--></li>' | sed 's/<.\?span[^>]*>//g')
 			#div class="P-HEAD" #| sed 's/End of DIV SENSE--><\/li>/\n/g' \ -e 's/.*\"h2\">\([^<]*\).*\"EXAMPLE\">\([^<]*\).*\"EXAMPLE\">\([^<]*\).*/**\'$C_BRIGHT_RAW'\1'$C_NORMAL'\. \2<FUCKINGSHIT>\t\3/' \ | nl -s ' ' | sed -e 's/<FUCKINGSHIT>/\n/' -e 's/^ *//'
