@@ -412,6 +412,7 @@ else
 
 				#getting sound from forvo.com
 				if [[ $sound == 1 && ! -e "$cachefile".mp3 ]]; then
+					[[ $(ls "$PR_DIR"/cache | wc -l) -gt $words_buffer ]] && find "$PR_DIR"/cache -mtime +20 -delete #cache cleaning. remove words older than 20 days.
 					curl -s -c "$PR_DIR"/tmpcookie --connect-timeout $timeout -m $timeout --user-agent "$useragent" $httpsproxy -x "$httpproxy" -d "login=$flogin&password=$fpass" http://ru.forvo.com/login/ -o/dev/null
 					if [[ -e "$PR_DIR"/tmpcookie ]]; then
 						slink=$(curl -s -b $PR_DIR/tmpcookie --connect-timeout $timeout -m $timeout --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://ru.forvo.com/word/"$request"/ | grep -o '[^"]*/download/mp3/'"$request"'/en/[^"]*' |head -n 1 )
@@ -422,7 +423,6 @@ else
 					fi
 				fi
 			fi
-			[[ $(ls "$PR_DIR"/cache | wc -l) -gt $words_buffer ]] && find "$PR_DIR"/cache -mtime +20 -delete #cache cleaning. remove words older than 20 days.
 		else #not english dictionary
 			echo -e "$C_GREEN$t_result$C_NORMAL_RAW" 					#google translated text output
 			[[ $source != en && $r_words_count -le $TRANSLIT_WORDS_MAX && $(echo $t_result | sed 's/ //g' | tr '[:upper:]' '[:lower:]') !=  $(echo $translit | sed 's/ //g' | tr '[:upper:]' '[:lower:]') ]] && echo -e "$translit" 				#google translit	output
