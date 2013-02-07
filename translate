@@ -424,9 +424,8 @@ else
 				ted_words_file=$(cat "$TR_ENG_WORDS")
 				ted_words_file=$(echo "$ted_words_file" | tail -n 70)
 				if [[ ! $(echo "$ted_words_file" | grep "$request" 2>/dev/null) ]]; then
-					echo "$ted_words_file" > "$TR_ENG_WORDS"
+					echo -e "$ted_words_file\n""$request" > "$TR_ENG_WORDS"
 					#echo -e "$request \t\t\t\t\t\t\t\t\t\t [$trans]" >> "$TR_ENG_WORDS"
-					echo -e "$request" >> "$TR_ENG_WORDS"
 				fi
 
 				#getting sound from forvo.com
