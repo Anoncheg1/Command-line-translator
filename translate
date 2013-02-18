@@ -475,9 +475,8 @@ else
 		cat "$cachefile" #output
 		[[ $source == en ]] && echo -e "$C_DARK_BLUE_RAW"http://oxforddictionaries.com/definition/english/"$request"$C_NORMAL
 	fi
-	#sound
-	[[ $sound == 1 && ! -e "$cachefile".mp3 ]] && sleep 1 #to be able Ctrl+C to delete cache file
 
+	#sound
 	[[ $sound == 1 ]] &&
 		if [[ -e "$cachefile".mp3 ]]; then
 			if [[ $(stat -c%s "$cachefile".mp3) -ge 11000 ]]; then #if .mp3 is corrrect
@@ -490,6 +489,7 @@ else
 			fi
 		else
 			echo ".mp3 file not found."
+			sleep 1 #to be able Ctrl+C to delete cache file
 		fi
 fi
 
