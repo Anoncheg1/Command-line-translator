@@ -478,16 +478,19 @@ else
 	#sound
 	[[ $sound == 1 && ! -e "$cachefile".mp3 ]] && sleep 1 #to be able Ctrl+C to delete cache file
 
-	if [[ $sound == 1 && -e "$cachefile".mp3 ]]; then
-		if [[ $(stat -c%s "$cachefile".mp3) -ge 11000 ]]; then #if .mp3 is corrrect
-			stat=$(playsound --loop 0 --volume "$volume" "$cachefile".mp3 2>&1)
-			echo "$stat"
-			[[ $(echo "$stat" | grep -o 'Couldn') ]] && rm "$cachefile".mp3
+	[[ $sound == 1 ]] &&
+		if [[ -e "$cachefile".mp3 ]]; then
+			if [[ $(stat -c%s "$cachefile".mp3) -ge 11000 ]]; then #if .mp3 is corrrect
+				stat=$(playsound --loop 0 --volume "$volume" "$cachefile".mp3 2>&1)
+				echo "$stat"
+				[[ $(echo "$stat" | grep -o 'Couldn') ]] && rm "$cachefile".mp3
+			else
+				rm "$cachefile".mp3
+				echo ".mp3 file is corrupt. try again."
+			fi
 		else
-			rm "$cachefile".mp3
-			echo ".mp3 file is corrupt. try again."
+			echo ".mp3 file not found."
 		fi
-	fi
 fi
 
 exit
