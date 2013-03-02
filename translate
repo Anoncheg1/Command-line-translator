@@ -262,14 +262,16 @@ fi
 
 eng_sound_download(){ 			# $cachefile, 
 	[[ $(ls "$PR_DIR"/cache | wc -l) -gt $words_buffer ]] && find "$PR_DIR"/cache -mtime +20 -delete #cache cleaning. remove words older than 20 days.
+	rm "$PR_DIR"/tmpcookie 2>/dev/null &
 	curl -s -c "$PR_DIR"/tmpcookie --connect-timeout $timeout -m $timeout --user-agent "$useragent" $httpsproxy -x "$httpproxy" -d "login=$flogin&password=$fpass" http://ru.forvo.com/login/ -o/dev/null
 	if [[ -e "$PR_DIR"/tmpcookie ]]; then
 		slink=$(curl -s -b $PR_DIR/tmpcookie --connect-timeout $timeout -m $timeout --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://ru.forvo.com/word/"$(echo $request | tr ' ' _ )"/ | grep -o '[^"]*/download/mp3/'"$(echo $request | tr ' ' _ )"'/en/[^"]*' |head -n 1 )
-		[[ $slink ]] && curl -s -b "$PR_DIR"/tmpcookie --connect-timeout $timeout -m $timeout --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://ru.forvo.com"$slink" > "$cachefile".mp3
-		rm "$PR_DIR"/tmpcookie 2>/dev/null &
-	else
-		echo fail to get sound from forvo.com
+		if [[ ${#slink} -gt 5 ]];then
+			 curl -s -b "$PR_DIR"/tmpcookie --connect-timeout $timeout -m $timeout --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://ru.forvo.com"$slink" > "$cachefile".mp3
+			return
+		fi
 	fi
+	echo fail to get sound from forvo.com
 }
 
 
@@ -373,7 +375,6 @@ else
 
 			#phrases, forms and a vform
 			macmill=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" -m $timeout http://www.macmillandictionary.com/dictionary/british/"$(echo $request | tr '[:upper:]' '[:lower:]' | tr ' ' - )" )
-			echo $(echo $request | tr '[:upper:]' '[:lower:]' | tr ' ' - )
 			[[ $? != 0 ]] && { echo "cant get phrases" ; bashtrap; }
 			#forms
 			forms=$(echo $macmill | grep -o "id=\"wordsformslayer-head\".*End of DIV wordforms" | sed 's/INFLECTION-CONTENT/\n/g' | sed -e 's/.*INFLECTION-ENTRY\">\([^<]*\)<.*I-VARIANT-before\">\([^<]*\).*INFLECTION-ENTRY\">\([^<]*\).*/666\1\2\3,/' -e 's/.*INFLECTION-ENTRY\">\([^<]*\)<.*/666\1,/' | grep 666 | cut -c 4-)
@@ -419,7 +420,7 @@ else
 			cat "$cachefile" 2>/dev/null #output
 			echo -e "$C_DARK_BLUE_RAW"http://oxforddictionaries.com/definition/english/$(echo "$request" | sed "s/'/%27/" )$C_NORMAL # just another good english dictionary
 
-			if [[ $trans || $r_words_count -eq 2 ]] ; then
+			if [[ ${#request} -gt 2 || $r_words_count -le 2 ]] ; then
 
 				#saving words
 				ted_words_file=$(cat "$TR_ENG_WORDS")
@@ -489,7 +490,7 @@ else
 				echo ".mp3 file is corrupt. try again."
 			fi
 		else
-			echo ".mp3 file not found."
+			#echo ".mp3 file not found."
 			sleep 1 #to be able Ctrl+C to delete cache file
 		fi
 fi
