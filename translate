@@ -371,7 +371,8 @@ else
 		#"Dictionary part" for english only. but it can be extended for every required language
 		if [[ $r_words_count -le 2 && ${#request} -gt 1 && $source == en && ! $fl_raw ]]; then #dictionary
 
-			echo -e "$C_GREEN$t_result$C_NORMAL_RAW""\n$dictionary" > "$cachefile" #google translated text and dictionary to cache
+			echo -e "$C_GREEN$t_result$C_NORMAL_RAW" > "$cachefile" #google translated text to cache
+			[[ $dictionary ]] && echo -e "$dictionary" >> "$cachefile" #google dictionary to cache
 
 			#phrases, forms and a vform
 			macmill=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" -m $timeout http://www.macmillandictionary.com/dictionary/british/"$(echo $request | tr '[:upper:]' '[:lower:]' | tr ' ' - )" )
