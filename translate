@@ -23,6 +23,8 @@
 # mirror http://pastebin.com/kPTYjY6W
 # requirements: curl >= 7.21.0,
 # 	Mozilla js shell (spidermonkey) >= 1.8.0, 
+#	mpg123
+#	html2text
 #	forvo.com account
 #features:
 #- translated text, fixed text with highlight, language detection, dictionary, translit
@@ -47,8 +49,8 @@ declare -r LATIN_LANG=en			#target for all not A-z latin requests			A-z latin al
 declare -r flogin=121212 			#forvo.com login and pass REQUIRED!
 declare -r fpass=121212
 TERMINAL_C="WOB"				#Your terminal - white on black:WOB, black on white:BOW, anything other:O
-#httpproxy="127.0.0.1:4444"		#proxy for long strings
-#httpsproxy="--socks5 127.0.0.1:9050"	#socks5
+httpproxy="127.0.0.1:4444"		#proxy for long strings
+httpsproxy="--socks5 127.0.0.1:9050"	#socks5
 #
 declare -r words_buffer=4000		#4000 files max. there is removeing all files older than 20 days.
 declare -r timeout=6
@@ -228,10 +230,8 @@ if [[ $1 = -h || $1 = --help ]]; then #help
 	echo "$help"
 	exit
 fi
-if [[ $1 == -s || $1 == -s2 || $1 == -s3 || $1 == --sound ]];then #sound varibles
+if [[ $1 == -s || $1 == --sound ]];then #sound varibles
 	sound=1
-	[[ $1 == -s2 ]] && volume=1.5
-	[[ $1 == -s3 ]] && volume=2.5
 	request=($*) #get array
 	request[0]="" #remove first parameter
 	request=${request[*]} #to string
@@ -483,9 +483,9 @@ else
 	[[ $sound == 1 ]] &&
 		if [[ -e "$cachefile".mp3 ]]; then
 			if [[ $(stat -c%s "$cachefile".mp3) -ge 11000 ]]; then #if .mp3 is corrrect
-				stat=$(playsound --loop 0 --volume "$volume" "$cachefile".mp3 2>&1)
-				echo "$stat"
-				[[ $(echo "$stat" | grep -o 'Couldn') ]] && rm "$cachefile".mp3
+				stat=$(mpg123 "$cachefile".mp3 2>&1)
+#				echo "$stat"
+				[[ ! $(echo "$stat" | grep -o 'Comment') ]] && rm "$cachefile".mp3
 			else
 				rm "$cachefile".mp3
 				echo ".mp3 file is corrupt. try again."

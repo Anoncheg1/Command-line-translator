@@ -6,7 +6,10 @@ REQUIREMENTS:
 - curl >= 7.21.0
 - Mozilla js shell (program included in the SpiderMonkey) >= 1.8.0
 - html2text for large texts
-- forvo.com account for audio pronunciation 
+- mpg123 for playing pronunciation
+For Debian: apt-get install curl spidermonkey-bin html2text mpg123
+- forvo.com account for pronunciation
+
 
 FEATURES:
 - translated text, fixed text with highlight, language detection, dictionary, translit
@@ -19,8 +22,6 @@ for convenience:
 in ~/.bash_aliases
 alias t="/home/user/translate"
 alias ts="/home/user/translate -s"
-alias ts2="/home/user/translate -s2"
-alias ts3="/home/user/translate -s3"
 
 You can force the language with environment varibles by command:
 export TLSOURCE=en TLTARGET=ru
@@ -31,7 +32,7 @@ in /etc/bash_completion.d/translate
 # t completion
 TR_ENG_WORDS="$HOME"/.translate/translated_words
 have t &&
-complete -W "$(cat $TR_ENG_WORDS)" t ts ts2 ts3 #autocompletion
+complete -W "$(cat $TR_ENG_WORDS)" t ts #autocompletion
 
 You can thank me with
 www.moneybookers.com: MR VITALIJ CHEPELEV, hujhuj222@gmail.com
