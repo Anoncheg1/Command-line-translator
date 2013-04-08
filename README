@@ -12,7 +12,12 @@ For Debian: apt-get install curl spidermonkey-bin html2text mpg123
 
 
 FEATURES:
-- translated text, fixed text with highlight, language detection, dictionary, translit
+  - translated text,
+  - fixed text with highlight,
+  - language detection,
+  - dictionary,
+  - translit,
+  - execution without parameters will translate last saved request
 for english: 
 - phrases, ideom, transcription, audio pronunciation
 - cache for words

@@ -63,6 +63,7 @@ declare -r PR_DIR="$HOME/.translate"
 [ ! -d "$PR_DIR"/cache ] && mkdir "$PR_DIR"/cache
 
 declare -r TR_ENG_WORDS="$PR_DIR"/translated_words
+declare -r FIXED_STRING="$PR_DIR"/fixed_string
 
 declare -A ln_arr
 ln_arr["af"]="Afrikaans"
@@ -244,7 +245,15 @@ if [[ $1 = -l || $1 = --list ]]; then #list
 	done | sort -k2
 	exit
 fi
-[[ ${#request} -eq 0 ]] && exit
+
+if [[ ${#request} -eq 0 ]];then
+	if [[ -e $FIXED_STRING ]]; then
+		request=$(cat $FIXED_STRING 2>/dev/null)
+	else
+		exit
+	fi
+fi
+rm $FIXED_STRING 2> /dev/null
 
 tchar=${request:0:1} #language detection by the first character
 tcharnum=$(printf "%d" "'${tchar}")
@@ -285,7 +294,7 @@ if [[ ${#request} -gt 300 ]]; then
 	fi
 	encoding=$(awk '/Content-Type: .* charset=/ {sub(/^.*charset=["'\'']?/,""); sub(/[ "'\''].*$/,""); print}' <<<"$result")
 	#iconv -f $encoding <<<"$result" | awk 'BEGIN {RS="<div"};/<span[^>]* id=["'\'']?result_box["'\'']?/ {sub(/^.*id=["'\'']?result_box["'\'']?(>| [^>]*>)([ \n\t]*<[^>]*>)*/,"");sub(/<.*$/,"");print}' | html2text -utf8
-	echo -e "\033[32;1m"$(iconv -f $encoding <<<"$result" |  awk 'BEGIN {RS="</div>"};/<span[^>]* id=["'\'']?result_box["'\'']?/' | html2text -utf8)"$C_NORMAL_RAW"
+	echo -e "\033[32;1m"$(iconv -f "$encoding" <<<"$result" |  awk 'BEGIN {RS="</div>"};/<span[^>]* id=["'\'']?result_box["'\'']?/' | html2text -utf8)"$C_NORMAL_RAW"
 
 else
 	if [[ $r_words_count -le 4 ]];then 
@@ -318,6 +327,7 @@ else
 				[[ $(echo "$fl" | tr -d "'") == "$request" ]] && fl="" # skip highlight for ' char
 				difftest="$(cmp -l <(echo -n $request) <(echo -n $fl) 2>/dev/null)" #comparison
 				if [[ $(echo "$difftest" | grep '[0-9]') ]];then
+				echo "$fl" > $FIXED_STRING					
 					#[[ $source != en ]]&& diffnum=$(($diffnum/2+$diffnum%2))   #MUST BE CHECKED FOR REQUIRED LANGUAGES
 					#[[ ${fl:$diffnum-1:1} == ' ' ]] && let diffnum-- #white space correction
 					for (( i=$(echo "$difftest" | wc -l); i>=1; i--)); do
@@ -328,6 +338,7 @@ else
 				fl="$C_YELLOW$fl$C_NORMAL"
 			else
 				fl=$(echo "$fl_raw" | sed 's/\\u003cb\\u003e\\u003ci\\u003e/'$C_YELLOW'/g' | sed 's/\\u003c\/i\\u003e\\u003c\/b\\u003e/'$C_NORMAL'/g' | sed 's/\\u0026//g' | sed "s/\#39;/'/g" ) #google fixed text
+				echo "$fl" > $FIXED_STRING
 			fi
 
 #echo $grespond | grep -o '\[.*\]'
