@@ -246,14 +246,15 @@ if [[ $1 = -l || $1 = --list ]]; then #list
 	exit
 fi
 
-if [[ ${#request} -eq 0 ]];then
+if [[ ${#request} -eq 0 ]];then #using saved fixed string without parameters
 	if [[ -e $FIXED_STRING ]]; then
 		request=$(cat $FIXED_STRING 2>/dev/null)
+		echo -e "$(tput bold)$(tput setaf 3)$request$(tput sgr0)"
 	else
 		exit
 	fi
 fi
-rm $FIXED_STRING 2> /dev/null
+#rm $FIXED_STRING 2> /dev/null
 
 tchar=${request:0:1} #language detection by the first character
 tcharnum=$(printf "%d" "'${tchar}")
