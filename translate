@@ -322,6 +322,7 @@ else
 		fl_raw=$(echo "$grespond" | grep -o '[^"]*/i[^"]*') #google correction from $grespond
 
 		#Highlight
+		declare difftest
 		[[ $fl_raw ]] &&
 			if [[ $r_words_count -le 2 ]];then #for 1-2 words
 				fl=$(echo "$fl_raw" | sed 's/\\u003cb\\u003e\\u003ci\\u003e//g' | sed 's/\\u003c\/i\\u003e\\u003c\/b\\u003e//g' | sed 's/\\u0026//g' | sed "s/\#39;/'/g") #removing shit
@@ -341,7 +342,7 @@ else
 				fl=$(echo "$fl_raw" | sed 's/\\u003cb\\u003e\\u003ci\\u003e/'$C_YELLOW'/g' | sed 's/\\u003c\/i\\u003e\\u003c\/b\\u003e/'$C_NORMAL'/g' | sed 's/\\u0026//g' | sed "s/\#39;/'/g" ) #google fixed text
 				echo "$fl" > $FIXED_STRING
 			fi
-
+#echo $difftest
 #echo $grespond | grep -o '\[.*\]'
 
 		echo -n "var myJSONObject = " > "$PR_DIR"/tmpjsobj
@@ -380,8 +381,16 @@ else
 
 
 
+
+
+		declare trans
+		if [[ $r_words_count -le 2 && ${#request} -gt 1 && $source == en && ! $(echo "$difftest" | wc -l) -gt 1 ]];then #special check( expample: advise advice)
+		#transcription
+			trans=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://lingvo-online.ru/en/Translate/en-"$target"/"$request" | grep -o '"[^"]*/transcription\.gif.Text=[^"]*"' | sed 's/.*=\(.*\)"/\1/'| echo -n -e $(sed 's/+/ /g; s/%/\\x/g')) #getting transcription
+			[[ $? != 0 ]] &&  { echo "can't get transcription"; } #bashtrap;
+		fi
 		#"Dictionary part" for english only. but it can be extended for every required language
-		if [[ $r_words_count -le 2 && ${#request} -gt 1 && $source == en && ! $fl_raw ]]; then #dictionary
+		if [[ $r_words_count -le 2 && ${#request} -gt 1 && $source == en && (( ! $fl_raw || $trans )) ]]; then #dictionary
 
 			echo -e "$C_GREEN$t_result$C_NORMAL_RAW" > "$cachefile" #google translated text to cache
 			[[ $dictionary ]] && echo -e "$dictionary" >> "$cachefile" #google dictionary to cache
@@ -424,10 +433,8 @@ else
 					echo -e "$phrases_2" >> "$cachefile"
 				fi
 			fi
-
+			
 			#transcription
-			trans=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://lingvo-online.ru/en/Translate/en-"$target"/"$request" | grep -o '"[^"]*/transcription\.gif.Text=[^"]*"' | sed 's/.*=\(.*\)"/\1/'| echo -n -e $(sed 's/+/ /g; s/%/\\x/g')) #getting transcription
-			[[ $? != 0 ]] &&  { echo "can't get transcription"; bashtrap; }
 			[[ $trans ]] && echo "[$trans]" >> "$cachefile"
 
 			cat "$cachefile" 2>/dev/null #output
@@ -455,7 +462,6 @@ else
 			echo -e "$C_GREEN$t_result$C_NORMAL_RAW" 					#google translated text output
 			[[ $source != en && $r_words_count -le $TRANSLIT_WORDS_MAX && $(echo $t_result | sed 's/ //g' | tr '[:upper:]' '[:lower:]') !=  $(echo $translit | sed 's/ //g' | tr '[:upper:]' '[:lower:]') ]] && echo -e "$translit" 				#google translit	output
 			[[ $dictionary ]] && echo -e "$dictionary"  				#google dictionary 	output
-			[[ $fl ]] && echo -e "$fl" #empty line... cant fix it (:'d		#google fixed text 	output
 
 			if [[ $source == en && ! $fl_raw && $r_words_count -le 4 ]]; then
 				#phrases for 2 words
@@ -486,6 +492,7 @@ else
 			fi
 
 		fi #end of english dictionary
+		[[ $fl_raw ]] && echo -e "$fl" #empty line... cant fix it (:'d		#google fixed text 	output
 	else #cache output
 		cat "$cachefile" #output
 		[[ $source == en ]] && echo -e "$C_DARK_BLUE_RAW"http://oxforddictionaries.com/definition/english/"$request"$C_NORMAL
