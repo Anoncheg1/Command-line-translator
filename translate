@@ -21,7 +21,9 @@
 
 # main mirror https://github.com/Anoncheg1/Command-line-translator
 # mirror http://pastebin.com/kPTYjY6W
-# requirements: curl >= 7.21.0,
+# requirements: 
+#	UTF-8 support for required languages
+#	curl >= 7.21.0,
 # 	Mozilla js shell (spidermonkey) >= 1.8.0, 
 #	mpg123
 #	html2text
@@ -36,11 +38,12 @@
 help=$(basename "$0")' [-s[2,3]] [-l] [-h] <text>
 if text is LATIN_LANG, then target language is FIRST_LANG
 otherwise, target language is LATIN_LANG
--s, -s2, -s3, --sound Enable sound for one word
+-s --sound Enable sound for one word
 -l, --list List of languages
 You can force the language with environment varibles by command:
 export TLSOURCE=en TLTARGET=ru
 but better configure "FIRST_LANG" and "LATIN_LANG" in script for auto detection of direction by the first character!
+You neeed UTF-8 support for required languages.
 '
 
 # adjust to taste
