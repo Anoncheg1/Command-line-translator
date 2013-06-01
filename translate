@@ -347,7 +347,7 @@ else
 				echo "$fl" > $FIXED_STRING
 			fi
 #echo $difftest
-#echo $grespond | html2text -utf8 | grep -o '\[.*\]'
+#echo $grespond | grep -o '\[.*\]'
 
 		echo -n "var myJSONObject = " > "$PR_DIR"/tmpjsobj
 		echo -n "$grespond" | grep -o '\[.*\]' >> "$PR_DIR"/tmpjsobj
@@ -431,7 +431,7 @@ else
 				echo -e "$phras" >> "$cachefile"
 				#echo -e "$C_DARK_BLUE_RAW"http://www.macmillandictionary.com/dictionary/american/"$request"$C_NORMAL >> "$cachefile"
 			else 			#second attempt examples
-				phrases_2=$(echo "$macmill" | sed -e 's/<a[^>]*>//g' -e 's/<\/a>//g' | sed 's/<.\?span[^>]*>//g' | grep -o 'div class="SENSE".*End of DIV SENSE--' | sed 's/End of DIV SENSE--/\n/g' | grep -n . | sed 's/^.:/&\n/' | sed 's/End of DIV EXAMPLES/\n/g' | sed '/^[0-9]:/{h;d;};G; s/^\(.*\)\n\([0-9]:\)/\2 \1/' | grep "<strong>" | sed 's/^\([0-9]\).*<strong>\([^<]*\)<.*class=\"EXAMPLE\">\([^<]*\)<.*/\1 \'$C_BRIGHT_RAW'\2'$C_NORMAL'. \3/' | sed 's/^\([0-9]\).*<strong>\([^<]*\)<\/strong>\([^<]*\).*/\1 \'$C_BRIGHT_RAW'\2'$C_NORMAL'. \3/')
+				phrases_2=$(echo "$macmill" | sed -e 's/<a[^>]*>//g' -e 's/<\/a>//g' | sed 's/<.\?span[^>]*>//g' | grep -o 'div class="SENSE".*End of DIV SENSE--' | sed 's/End of DIV SENSE--/\n/g' | grep -n . | sed 's/^.:/&\n/' | sed 's/End of DIV EXAMPLES/\n/g' | sed '/^[0-9]:/{h;d;};G; s/^\(.*\)\n\([0-9]:\)/\2 \1/' | grep "<strong>" | sed 's/^\([0-9]\).*<strong>\([^<]*\)<.*class=\"EXAMPLE\">\([^<]*\)<.*/\1 \'$C_BRIGHT_RAW'\2'$C_NORMAL'. \3/' | sed 's/^\([0-9]\).*<strong>\([^<]*\)<\/strong>\([^<]*\).*/\1 \'$C_BRIGHT_RAW'\2'$C_NORMAL'. \3/' | sed 's/\. / /')
 				if [[ $phrases_2 ]];then
 					echo -e "$C_GRAY_RED_RAW"EXAMPLES:$C_NORMAL >> "$cachefile"
 					echo -e "$phrases_2" >> "$cachefile"
