@@ -5,7 +5,7 @@ mirror http://pastebin.com/kPTYjY6W
 REQUIREMENTS: 
 - UTF-8 support for required languages		For Debian: #dpkg-reconfigure locales
 - curl >= 7.21.0
-- Mozilla js shell (program included in the SpiderMonkey) >= 1.8.0
+- Mozilla js shell (program included in SpiderMonkey) >= 1.8.0
 - html2text for large texts
 - mpg123 for playing pronunciation
 For Debian: #apt-get install curl spidermonkey-bin html2text mpg123
