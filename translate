@@ -505,7 +505,7 @@ else
 							if [[ $ideom ]]; then
 								echo -e "$C_GRAY_RED_RAW"Ideom:$C_NORMAL
 								echo $ideom
-								echo $illustration
+								[[ $illustration]] && echo $illustration
 							fi
 						else
 							ency_link=$(echo "$list" | grep -o 'http://encyclopedia2[^"]*')
@@ -516,7 +516,7 @@ else
 								if [[ $ency ]]; then
 									echo -e "$C_GRAY_RED_RAW"Ideom:$C_NORMAL
 									echo "$ency"
-									echo -e  Contrast with: "$C_BRIGHT_RAW"$contr_ency"$C_NORMAL"
+									[[ $contr_ency]] && echo -e  Contrast with: "$C_BRIGHT_RAW"$contr_ency"$C_NORMAL"
 								fi	
 							fi
 						fi
