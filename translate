@@ -530,8 +530,9 @@ else
 		[[ $source == en ]] && echo -e "$C_DARK_BLUE_RAW"http://oxforddictionaries.com/definition/english/"$request"$C_NORMAL
 	fi
 
-	#sound
-	[[ $sound == 1 && wait ]] &&
+	#sound	
+	if [[ $sound == 1 ]]; then
+		wait
 		if [[ -e "$cachefile".mp3 ]]; then
 			if [[ $(stat -c%s "$cachefile".mp3) -ge 11000 ]]; then #if .mp3 is corrrect
 				stat=$(mpg123 "$cachefile".mp3 2>&1)
@@ -545,6 +546,7 @@ else
 			#echo ".mp3 file not found."
 			sleep 1 #to be able Ctrl+C to delete cache file
 		fi
+	fi
 fi
 
 exit
