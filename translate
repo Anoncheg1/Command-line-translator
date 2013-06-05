@@ -34,6 +34,8 @@
 #- phrases, ideom, word forms, transcription, audio pronunciation
 #- cache for words
 #- saving words to file for learning
+#
+#:) translate.google.com, thefreedictionary.com, lingvo-online.ru, www.forvo.com 
 
 help=$(basename "$0")' [-s[2,3]] [-l] [-h] <text>
 if text is LATIN_LANG, then target language is FIRST_LANG
@@ -394,8 +396,8 @@ else
 			[[ $? != 0 ]] &&  { echo "can't get transcription"; } #bashtrap;
 		fi
 		#"Dictionary part" for english only. but it can be extended for every required language
-		if [[ $r_words_count -le 2 && ${#request} -gt 1 && $source == en && (( ! $fl_raw || $trans )) ]]; then #dictionary
-
+		if [[ $r_words_count -eq 1 && ${#request} -gt 1 && $source == en && (( ! $fl_raw || $trans )) ]]; then #dictionary
+		
 			echo -e "$C_GREEN$t_result$C_NORMAL_RAW" > "$cachefile" #google translated text to cache
 			[[ $dictionary ]] && echo -e "$dictionary" >> "$cachefile" #google dictionary to cache
 
@@ -453,14 +455,13 @@ else
 					echo -e "$ted_words_file\n""$request" > "$TR_ENG_WORDS"
 					#echo -e "$request \t\t\t\t\t\t\t\t\t\t [$trans]" >> "$TR_ENG_WORDS"
 				fi
-
+				
 				#getting sound from forvo.com
-				[[ ! -e "$cachefile".mp3 ]] &&
-					if [[ $sound == 1 ]]; then 
-						eng_sound_download
-					elif [[ $SOUND_DOWNLOAD_AWS == 1 ]];then
-						eng_sound_download &      # in background
-					fi
+					[[ ! -e "$cachefile".mp3 ]] &&
+						if [[ $sound == 1 || $SOUND_DOWNLOAD_AWS == 1 ]];then
+							eng_sound_download &      # in background
+						fi
+						
 			fi
 		else #not english dictionary
 			echo -e "$C_GREEN$t_result$C_NORMAL_RAW" 					#google translated text output
@@ -470,6 +471,13 @@ else
 			if [[ $source == en && ! $fl_raw && $r_words_count -le 4 ]]; then
 				#phrases for 2 words
 				if [[ $r_words_count -le 2 ]];then
+
+					#getting sound from forvo.com
+					[[ ! -e "$cachefile".mp3 ]] &&
+						if [[ $sound == 1 || $SOUND_DOWNLOAD_AWS == 1 ]];then
+							eng_sound_download &      # in background
+						fi
+
 					macmill=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://www.macmillandictionary.com/dictionary/british/"$(echo $request | tr ' ' - )" )
 					[[ $? != 0 ]] && { echo "cant get phrases for string" ; bashtrap; }
 					macmill=$(echo "$macmill" | grep -o 'div class="SENSE".*End of DIV SENSE--' | sed -e 's/<a[^>]*>//g' -e 's/<\/a>//g' | sed 's/End of DIV SENSE--/\n/g' | grep -n . | sed 's/^[0-9]*:/&\n/' | sed 's/End of DIV EXAMPLES/\n/g' | sed '/^[0-9]*:/{h;d;};G; s/^\(.*\)\n\([0-9]*:\)/\2 \1/' | sed \
@@ -484,13 +492,33 @@ else
 
 				#search for ideom for 2-4 words
 				if [[ ! $phras2 ]]; then
-					raw_ideoms=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://idioms.thefreedictionary.com/"$(echo $request | tr ' ' + )" | grep -o 'div class="ds-single".*</div><div')
-					ideom=$(echo "$raw_ideoms" | sed 's/<i>//' | sed 's/<\/i>//' | sed 's/.*ds-single\">\([^<]*\)<.*/\1/')
-					illustration=$(echo "$raw_ideoms" | sed 's/.*class=illustration>\([^<]*\)<.*/\1/')
-					if [[ $ideom ]]; then
-						echo -e "$C_GRAY_RED_RAW"Ideom:$C_NORMAL
-						echo $ideom
-						echo $illustration
+					list=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://www.thefreedictionary.com/"$(echo $request | tr ' ' + )" | grep "[fF]ound in:")
+					[[ $? != 0 ]] && { echo "cant get phrases for string" ; bashtrap; }				
+					if [[ $list ]]; then
+						ideomlink=$(echo "$list" | grep -o 'http://idioms[^"]*')
+						if [[ $ideomlink ]]; then
+							raw_ideoms=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" "$ideomlink" | grep -o 'div class="ds-single".*</div><div')
+
+							ideom=$(echo "$raw_ideoms" | sed 's/<i>//' | sed 's/<\/i>//' | sed 's/.*ds-single\">\([^<]*\)<.*/\1/')
+							illustration=$(echo "$raw_ideoms" | sed 's/.*class=illustration>\([^<]*\)<.*/\1/')
+							if [[ $ideom ]]; then
+								echo -e "$C_GRAY_RED_RAW"Ideom:$C_NORMAL
+								echo $ideom
+								echo $illustration
+							fi
+						else
+							ency_link=$(echo "$list" | grep -o 'http://encyclopedia2[^"]*')
+							if [[ $ency_link ]]; then
+								raw_ency=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" "$ency_link")								
+								ency=$(echo "$raw_ency" | grep '<div class=hw>' | grep -o 'div>.*<br /' | sed -e 's/"//g' | sed -e 's/<b>/'$(tput bold)'/g' -e 's/<\/b>/'$C_NORMAL'/g' | sed 's/div>\([^<]*\).*/\1/')
+								contr_ency=$(echo "$raw_ency" | grep "Contrast with" | sed 's/.*\">\([^<]*\)<\/a.*/\1/')
+								if [[ $ency ]]; then
+									echo -e "$C_GRAY_RED_RAW"Ideom:$C_NORMAL
+									echo "$ency"
+									echo -e  Contrast with: "$C_BRIGHT_RAW"$contr_ency"$C_NORMAL"
+								fi	
+							fi
+						fi
 					fi
 				fi
 			fi
@@ -503,7 +531,7 @@ else
 	fi
 
 	#sound
-	[[ $sound == 1 ]] &&
+	[[ $sound == 1 && wait ]] &&
 		if [[ -e "$cachefile".mp3 ]]; then
 			if [[ $(stat -c%s "$cachefile".mp3) -ge 11000 ]]; then #if .mp3 is corrrect
 				stat=$(mpg123 "$cachefile".mp3 2>&1)
