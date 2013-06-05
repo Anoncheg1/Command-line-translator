@@ -310,7 +310,13 @@ else
 	fi
 	cachefile="$PR_DIR/cache/$source-$target"_"$request"
 	r_words_count=$(echo "$request"  |wc -w)
-	if [[ ! -e "$cachefile" || (( $sound == 1 && ! -e "$cachefile".mp3 )) ]]; then
+	
+	[[ ! -e "$cachefile".mp3 && $r_words_count -le 2 ]] &&
+		if [[ $sound == 1 || $SOUND_DOWNLOAD_AWS == 1 ]];then #getting sound from forvo.com
+			eng_sound_download &      # in background
+		fi
+	
+	if [[ ! -e "$cachefile" ]]; then
 
 		if ! grespond=$(curl -s -i --user-agent "$useragent" $httpsproxy -x "$httpproxy" -m $timeout --data-urlencode "text=$request" "http://translate.google.com/translate_a/t?client=t&hl=$target&sl=$source&tl=$target&ie=UTF-8&oe=UTF-8&multires=1&ssel=0&tsel=0&sc=1") && [[ "$httpproxy" != "" ]] #getting google respond for short sentence
 		then	# second attempt without https proxy
@@ -455,13 +461,7 @@ else
 					echo -e "$ted_words_file\n""$request" > "$TR_ENG_WORDS"
 					#echo -e "$request \t\t\t\t\t\t\t\t\t\t [$trans]" >> "$TR_ENG_WORDS"
 				fi
-				
-				#getting sound from forvo.com
-					[[ ! -e "$cachefile".mp3 ]] &&
-						if [[ $sound == 1 || $SOUND_DOWNLOAD_AWS == 1 ]];then
-							eng_sound_download &      # in background
-						fi
-						
+
 			fi
 		else #not english dictionary
 			echo -e "$C_GREEN$t_result$C_NORMAL_RAW" 					#google translated text output
@@ -471,12 +471,6 @@ else
 			if [[ $source == en && ! $fl_raw && $r_words_count -le 4 ]]; then
 				#phrases for 2 words
 				if [[ $r_words_count -le 2 ]];then
-
-					#getting sound from forvo.com
-					[[ ! -e "$cachefile".mp3 ]] &&
-						if [[ $sound == 1 || $SOUND_DOWNLOAD_AWS == 1 ]];then
-							eng_sound_download &      # in background
-						fi
 
 					macmill=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://www.macmillandictionary.com/dictionary/british/"$(echo $request | tr ' ' - )" )
 					[[ $? != 0 ]] && { echo "cant getmacmillandictionary.com phrases for string" ; bashtrap; }
@@ -511,7 +505,7 @@ else
 							ency_link=$(echo "$list" | grep -o 'http://encyclopedia2[^"]*')
 							if [[ $ency_link ]]; then
 								raw_ency=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" "$ency_link")								
-								ency=$(echo "$raw_ency" | grep '<div class=hw>' | grep -o 'div>.*<br /' | sed -e 's/"//g' | sed -e 's/<b>/'$(tput bold)'/g' -e 's/<\/b>/'$C_NORMAL'/g' | sed 's/div>\([^<]*\).*/\1/')
+								ency=$(echo "$raw_ency" | grep '<div class=hw>' | grep -o 'div>.*<br /' | sed -e 's/"//g' | sed -e 's/<b>/'$(tput bold)'/g' -e 's/<\/b>/'$C_NORMAL'/g' | sed 's/div>\([^<]*\).*/\1/') #confus $C_BRIGHT_RAW
 								contr_ency=$(echo "$raw_ency" | grep "Contrast with" | sed 's/.*\">\([^<]*\)<\/a.*/\1/')
 								if [[ $ency ]]; then
 									echo -e "$C_GRAY_RED_RAW"Ideom:$C_NORMAL
