@@ -486,35 +486,37 @@ else
 
 				#search for ideom for 2-4 words
 				if [[ ! $phras2 ]]; then
-					list=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://www.thefreedictionary.com/"$(echo $request | tr ' ' + )")
-					[[ $? != 0 ]] && { echo "cant get thefreedictionary.com phrases for string" ; bashtrap; }
-					list=$(echo "$list" | grep "[fF]ound in:")
-					if [[ $list ]]; then
-						ideomlink=$(echo "$list" | grep -o 'http://idioms[^"]*')
-						if [[ $ideomlink ]]; then
-							raw_ideoms=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" "$ideomlink" | grep -o 'div class="ds-single".*</div><div')
-
-							ideom=$(echo "$raw_ideoms" | sed 's/<i>//' | sed 's/<\/i>//' | sed 's/.*ds-single\">\([^<]*\)<.*/\1/')
-							illustration=$(echo "$raw_ideoms" | sed 's/.*class=illustration>\([^<]*\)<.*/\1/')
-							if [[ $ideom ]]; then
-								echo -e "$C_GRAY_RED_RAW"Ideom:$C_NORMAL
-								echo $ideom
-								[[ $illustration ]] && echo $illustration
-							fi
-						else
-							ency_link=$(echo "$list" | grep -o 'http://encyclopedia2[^"]*')
-							if [[ $ency_link ]]; then
-								raw_ency=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" "$ency_link")								
-								ency=$(echo "$raw_ency" | grep '<div class=hw>' | grep -o 'div>.*<br /' | sed -e 's/"//g' | sed -e 's/<b>/'$(tput bold)'/g' -e 's/<\/b>/'$C_NORMAL'/g' | sed 's/div>\([^<]*\).*/\1/') #confus $C_BRIGHT_RAW
-								contr_ency=$(echo "$raw_ency" | grep "Contrast with" | sed 's/.*\">\([^<]*\)<\/a.*/\1/')
-								if [[ $ency ]]; then
-									echo -e "$C_GRAY_RED_RAW"Ideom:$C_NORMAL
-									echo "$ency"
-									[[ $contr_ency ]] && echo -e  Contrast with: "$C_BRIGHT_RAW"$contr_ency"$C_NORMAL"
-								fi	
-							fi
-						fi
+					ideom_and_list=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://idioms.thefreedictionary.com/"$(echo $request | tr ' ' + )")
+					[[ $? != 0 ]] && { echo "cant get thefreedictionary.com phrases for ideom1" ; bashtrap; }
+					list=$(echo "$ideom_and_list" | grep "[fF]ound in:")
+						#ideomlink=$(echo "$list" | grep -o 'http://idioms[^"]*')
+						#if [[ $ideomlink ]]; then
+						#	raw_ideoms=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" "$ideomlink" | grep -o 'div class="ds-single".*</div><div')
+					raw_ideoms=$(echo "$ideom_and_list" | grep -o 'div class="ds-single".*</div><div')
+					ideom=$(echo "$raw_ideoms" | sed 's/<i>//' | sed 's/<\/i>//' | sed 's/.*ds-single\">\([^<]*\)<.*/\1/')
+					illustration=$(echo "$raw_ideoms" | sed 's/.*class=illustration>\([^<]*\)<.*/\1/')
+					if [[ $ideom ]]; then
+						echo -e "$C_GRAY_RED_RAW"Ideom:$C_NORMAL
+						echo $ideom
+						[[ $illustration ]] && echo $illustration
 					fi
+
+					if [[ ! $ideom && $list ]]; then
+						ency_link=$(echo "$list" | grep -o 'http://encyclopedia2[^"]*')
+						if [[ $ency_link ]]; then
+							raw_ency=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" "$ency_link")
+							[[ $? != 0 ]] && { echo "cant get thefreedictionary.com phrases for ideom2" ; bashtrap; }
+							ency=$(echo "$raw_ency" | grep '<div class=hw>' | sed 's/<br \/>//g' | sed -e 's/<b>/'$(tput bold)'/g' -e 's/<\/b>/'$C_NORMAL'/g' | sed 's/.*iv>\([^<]*\).*/\1/' )
+							#| grep -o '</div>[^<]*<' |  sed s'/.*>\([^<]*\)<.*/\1/'
+							#| grep -o 'div>.*<br /' | sed -e 's/"//g' | sed -e 's/<b>/'$(tput bold)'/g' -e 's/<\/b>/'$C_NORMAL'/g' | sed 's/div>\([^<]*\).*/\1/') #confus $C_BRIGHT_RAW
+							contr_ency=$(echo "$raw_ency" | grep "Contrast with" | sed 's/.*\">\([^<]*\)<\/a.*/\1/')
+							if [[ $ency ]]; then
+								echo -e "$C_GRAY_RED_RAW"Ideom:$C_NORMAL
+								echo "$ency"
+								[[ $contr_ency ]] && echo -e "$C_BRIGHT_RAW"$contr_ency"$C_NORMAL"
+							fi	
+						fi
+					fi					
 				fi
 			fi
 
