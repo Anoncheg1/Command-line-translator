@@ -479,7 +479,7 @@ else
 						fi
 
 					macmill=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://www.macmillandictionary.com/dictionary/british/"$(echo $request | tr ' ' - )" )
-					[[ $? != 0 ]] && { echo "cant get phrases for string" ; bashtrap; }
+					[[ $? != 0 ]] && { echo "cant getmacmillandictionary.com phrases for string" ; bashtrap; }
 					macmill=$(echo "$macmill" | grep -o 'div class="SENSE".*End of DIV SENSE--' | sed -e 's/<a[^>]*>//g' -e 's/<\/a>//g' | sed 's/End of DIV SENSE--/\n/g' | grep -n . | sed 's/^[0-9]*:/&\n/' | sed 's/End of DIV EXAMPLES/\n/g' | sed '/^[0-9]*:/{h;d;};G; s/^\(.*\)\n\([0-9]*:\)/\2 \1/' | sed \
 -e's/^\([0-9]*\):.*p id=\"EXAMPLE\" class=\"EXAMPLE\">\([^<]*\)<.*/*\1 \2/' \
 -e 's/^\([0-9]\).*span class=\"BASE\">\([^<]*\).*context=\"DEFINITION-before\"> <\/span>\([^<]*\).*/*\1 \'$C_BRIGHT_RAW'\2'$C_NORMAL'\. \3/' | grep -o "^\*[0-9].*" | sed 's/^*//')
@@ -492,8 +492,9 @@ else
 
 				#search for ideom for 2-4 words
 				if [[ ! $phras2 ]]; then
-					list=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://www.thefreedictionary.com/"$(echo $request | tr ' ' + )" | grep "[fF]ound in:")
-					[[ $? != 0 ]] && { echo "cant get phrases for string" ; bashtrap; }				
+					list=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://www.thefreedictionary.com/"$(echo $request | tr ' ' + )")
+					[[ $? != 0 ]] && { echo "cant get thefreedictionary.com phrases for string" ; bashtrap; }
+					list=$(echo "$list" | grep "[fF]ound in:")
 					if [[ $list ]]; then
 						ideomlink=$(echo "$list" | grep -o 'http://idioms[^"]*')
 						if [[ $ideomlink ]]; then
