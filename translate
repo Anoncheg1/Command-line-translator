@@ -304,7 +304,7 @@ if [[ ${#request} -gt 300 ]]; then
 	echo -e "\033[32;1m"$(echo "$result" |  awk 'BEGIN {RS="</div>"};/<span[^>]* id=["'\'']?result_box["'\'']?/' | html2text -utf8)"$C_NORMAL_RAW"
 
 else
-	if [[ $r_words_count -le 4 ]];then 
+	if [[ $r_words_count -le 5 ]];then 
 		httpproxy="" ; httpsproxy=""  #don't wanna proxy for 4 words.
 		request=$(echo "$request" | tr '[:upper:]' '[:lower:]') #lower request for short sentences
 	fi
@@ -468,7 +468,7 @@ else
 			[[ $source != en && $r_words_count -le $TRANSLIT_WORDS_MAX && $(echo $t_result | sed 's/ //g' | tr '[:upper:]' '[:lower:]') !=  $(echo $translit | sed 's/ //g' | tr '[:upper:]' '[:lower:]') ]] && echo -e "$translit" 				#google translit	output
 			[[ $dictionary ]] && echo -e "$dictionary"  				#google dictionary 	output
 
-			if [[ $source == en && ! $fl_raw && $r_words_count -le 4 ]]; then
+			if [[ $source == en && ! $fl_raw && $r_words_count -le 5 ]]; then
 				#phrases for 2 words
 				if [[ $r_words_count -le 2 ]];then
 
@@ -484,7 +484,7 @@ else
 					echo -e "$examples"
 				fi
 
-				#search for ideom for 2-4 words
+				#search for ideom for 2-5 words
 				if [[ ! $phras2 ]]; then
 					ideom_and_list=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://idioms.thefreedictionary.com/"$(echo $request | tr ' ' + )")
 					[[ $? != 0 ]] && { echo "cant get thefreedictionary.com phrases for ideom1" ; bashtrap; }
