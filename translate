@@ -505,11 +505,10 @@ else
 						[[ $? != 0 ]] && { echo "cant get thefreedictionary.com phrases for ideom2" ; bashtrap; }
 						testdrun_rare=$(echo "$raw_ency" | grep '<div class=hw>' | sed 's/<script>/\n/'| head -n 1| grep -o "<div class=runseg>")
 						if [[ $testdrun_rare ]];then #sheet metal
-						ency=$(echo "$raw_ency" | grep '<div class=hw>' | sed 's/<script>/\n/' | head -n 1 | sed 's/<br \/>//g' | sed -e 's/<i>//g' -e 's/<\/i>/,/g' | sed -e 's/<b>/'$(tput bold)'/g' -e 's/<\/b>/'$C_NORMAL'/g' | sed 's/.*<div[^>]*>\([^<]*\).*/\1/' | sed -e 's/^.*<p>//' -e 's/<\/p>.*//' | sed -e 's/^.*<p>//')
+							ency=$(echo "$raw_ency" | grep '<div class=hw>' | sed 's/<script>/\n/' | head -n 1 | sed 's/<br \/>//g' | sed -e 's/<i>//g' -e 's/<\/i>/,/g' | sed -e 's/<b>/'$(tput bold)'/g' -e 's/<\/b>/'$C_NORMAL'/g' | sed 's/.*<div[^>]*>\([^<]*\).*/\1/' | sed -e 's/^.*<p>//' -e 's/<\/p>.*//' | sed -e 's/^.*<p>//')
 						else #Three sheets to the wind, number crunching, syntactic sugar
-						ency=$(echo "$raw_ency" | grep '<div class=hw>' | sed 's/<script>/\n/'| head -n 1 | sed 's/<br \/>//g' | sed -e 's/<b>/'$(tput bold)'/g' -e 's/<\/b>/'$C_NORMAL'/g' | sed s'/<div class=runseg.*<\/div>//' | sed -e 's/^.*<p>//' -e 's/<\/p>.*//' | sed -e 's/^.*<p>//' | sed 's/.*iv>\([^<]*\)<a.*/\1/' | sed -e 's/Contrast with//' -e 's/See//')
+							ency=$(echo "$raw_ency" | grep '<div class=hw>' | sed 's/<script>/\n/'| head -n 1 | sed 's/<br \/>//g' | sed -e 's/<b>/'$(tput bold)'/g' -e 's/<\/b>/'$C_NORMAL'/g' | sed s'/<div class=runseg.*<\/div>//' | sed -e 's/^.*<p>//' -e 's/<\/p>.*//' | sed -e 's/^.*<p>//' | sed 's/.*iv>\([^<]*\)<a.*/\1/' | sed -e 's/Contrast with//' -e 's/See//')
 						fi
-						#ency=$(echo "$raw_ency" | grep '<div class=hw>' | sed 's/<script>/\n/'| head -n 1 | sed 's/<br \/>//g' | sed -e 's/<b>/'$(tput bold)'/g' -e 's/<\/b>/'$C_NORMAL'/g' | sed s'/<div class=runseg.*<\/div>//' | sed -e 's/^.*<p>//' -e 's/<\/p>.*//' | sed -e 's/^.*<p>//' | sed 's/.*iv>\([^<]*\)<a.*/\1/' | sed -e 's/Contrast with//' -e 's/See//')
 						if [[ $ency ]]; then
 							corephrase1=$(echo "$raw_ency" | grep '<div class=hw>' | grep -o '<h1>.*</h1>' | sed 's/.*>\([^<]*\)<.*/\1/')
 							corephrase2=$(echo "$raw_ency" | grep -o '<div class=hw>[^<]*<' | sed 's/.*>\([^<]*\)</\1/')
