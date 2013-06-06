@@ -506,16 +506,17 @@ else
 						if [[ $ency_link ]]; then
 							raw_ency=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" "$ency_link")
 							[[ $? != 0 ]] && { echo "cant get thefreedictionary.com phrases for ideom2" ; bashtrap; }
-							ency=$(echo "$raw_ency" | grep '<div class=hw>' | sed 's/<br \/>//g' | sed -e 's/<b>/'$(tput bold)'/g' -e 's/<\/b>/'$C_NORMAL'/g' | sed s'/<div class=runseg.*<\/div>//' | sed 's/.*iv>\([^<]*\)<a.*/\1/') # t number crunching, syntactic sugar
+							#Three sheets to the wind, number crunching, syntactic sugar
+							ency=$(echo "$raw_ency" | grep '<div class=hw>' | sed 's/<br \/>//g' | sed -e 's/<b>/'$(tput bold)'/g' -e 's/<\/b>/'$C_NORMAL'/g' | sed s'/<div class=runseg.*<\/div>//' | sed -e 's/^.*<p>//' -e 's/<\/p>.*//' | sed -e 's/^.*<p>//' | sed 's/.*iv>\([^<]*\)<a.*/\1/' | sed -e 's/Contrast with//' -e 's/See//')
 							if [[ $ency ]]; then
 								echo -e "$C_GRAY_RED_RAW"Ideom:$C_NORMAL
-								echo -n "$ency"
+								echo "$ency"
 								contr_ency=$(echo "$raw_ency" | grep "Contrast with" | sed 's/.*\">\([^<]*\)<\/a.*/\1/')
 								if [[ $contr_ency ]]; then
-									echo -e "$C_BRIGHT_RAW"$contr_ency"$C_NORMAL"
+									echo -e Contrast with: "$C_BRIGHT_RAW"$contr_ency"$C_NORMAL"
 								else
 									see_ency=$(echo "$raw_ency" | grep '<div class=hw>' | grep -o "See.*<a href=.*</a>" | sed 's/.*>\([^<]*\)<.*/\1/')
-									echo -e "$C_BRIGHT_RAW"$see_ency"$C_NORMAL"
+									echo -e See"$C_BRIGHT_RAW" $see_ency"$C_NORMAL"
 								fi
 							fi	
 						fi
