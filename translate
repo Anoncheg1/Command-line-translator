@@ -449,7 +449,7 @@ else
 			#transcription
 			[[ $trans ]] && echo "[$trans]" >> "$cachefile"
 
-			cat "$cachefile" 2>/dev/null #output
+			cat "$cachefile" 2>/dev/null #output for 1 word
 			echo -e "$C_DARK_BLUE_RAW"http://oxforddictionaries.com/definition/english/$(echo "$request" | sed "s/'/%27/" )$C_NORMAL # just another good english dictionary
 
 			if [[ ${#request} -gt 2 || $r_words_count -le 2 ]] ; then
@@ -464,75 +464,75 @@ else
 
 			fi
 		else #not english dictionary
-			echo -e "$C_GREEN$t_result$C_NORMAL_RAW" 					#google translated text output
-			[[ $source != en && $r_words_count -le $TRANSLIT_WORDS_MAX && $(echo $t_result | sed 's/ //g' | tr '[:upper:]' '[:lower:]') !=  $(echo $translit | sed 's/ //g' | tr '[:upper:]' '[:lower:]') ]] && echo -e "$translit" 				#google translit	output
-			[[ $dictionary ]] && echo -e "$dictionary"  				#google dictionary 	output
+			echo -e "$C_GREEN$t_result$C_NORMAL_RAW" > "$cachefile"				#google translated text output
+			[[ $source != en && $r_words_count -le $TRANSLIT_WORDS_MAX && $(echo $t_result | sed 's/ //g' | tr '[:upper:]' '[:lower:]') !=  $(echo $translit | sed 's/ //g' | tr '[:upper:]' '[:lower:]') ]] && echo -e "$translit" >> "$cachefile"				#google translit	output
+			[[ $dictionary ]] && echo -e "$dictionary" >> "$cachefile"			#google dictionary 	output
+
 
 			if [[ $source == en && ! $fl_raw && $r_words_count -le 5 ]]; then
+			
 				#phrases for 2 words
 				if [[ $r_words_count -le 2 ]];then
-
+				
 					macmill=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://www.macmillandictionary.com/dictionary/british/"$(echo $request | tr ' ' - )" )
 					[[ $? != 0 ]] && { echo "cant getmacmillandictionary.com phrases for string" ; bashtrap; }
 					macmill=$(echo "$macmill" | grep -o 'div class="SENSE".*End of DIV SENSE--' | sed -e 's/<a[^>]*>//g' -e 's/<\/a>//g' | sed 's/End of DIV SENSE--/\n/g' | grep -n . | sed 's/^[0-9]*:/&\n/' | sed 's/End of DIV EXAMPLES/\n/g' | sed '/^[0-9]*:/{h;d;};G; s/^\(.*\)\n\([0-9]*:\)/\2 \1/' | sed \
 -e's/^\([0-9]*\):.*p id=\"EXAMPLE\" class=\"EXAMPLE\">\([^<]*\)<.*/*\1 \2/' \
 -e 's/^\([0-9]\).*span class=\"BASE\">\([^<]*\).*context=\"DEFINITION-before\"> <\/span>\([^<]*\).*/*\1 \'$C_BRIGHT_RAW'\2'$C_NORMAL'\. \3/' | grep -o "^\*[0-9].*" | sed 's/^*//')
-				fi
-				examples=$macmill
-				if [[ $examples ]];then
-					echo -e "$C_GRAY_RED_RAW"EXAMPLES:$C_NORMAL
-					echo -e "$examples"
-				fi
+					if [[ $macmill ]];then
+						echo -e "$C_GRAY_RED_RAW"EXAMPLES:$C_NORMAL >> "$cachefile"
+						echo -e "$macmill" >> "$cachefile"
+					fi
+				fi				
 
 				#search for ideom for 2-5 words
-				if [[ ! $phras2 ]]; then
-					ideom_and_list=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://idioms.thefreedictionary.com/"$(echo $request | tr ' ' + )")
-					[[ $? != 0 ]] && { echo "cant get thefreedictionary.com phrases for ideom1" ; bashtrap; }
-					list=$(echo "$ideom_and_list" | grep "[fF]ound in:")
-						#ideomlink=$(echo "$list" | grep -o 'http://idioms[^"]*')
-						#if [[ $ideomlink ]]; then
-						#	raw_ideoms=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" "$ideomlink" | grep -o 'div class="ds-single".*</div><div')
-					raw_ideoms=$(echo "$ideom_and_list" | grep -o 'div class="ds-single".*</div><div')
-					ideom=$(echo "$raw_ideoms" | sed 's/<i>//' | sed 's/<\/i>//' | sed 's/.*ds-single\">\([^<]*\)<.*/\1/')
-					illustration=$(echo "$raw_ideoms" | sed 's/.*class=illustration>\([^<]*\)<.*/\1/')
-					if [[ $ideom ]]; then
-						echo -e "$C_GRAY_RED_RAW"Ideom:$C_NORMAL
-						echo -n "$ideom "
-						[[ $illustration ]] && echo $illustration
-					fi
-
-					if [[ ! $ideom && $list ]]; then
-						ency_link=$(echo "$list" | grep -o 'http://encyclopedia2[^"]*')
-						if [[ $ency_link ]]; then
-							raw_ency=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" "$ency_link")
-							[[ $? != 0 ]] && { echo "cant get thefreedictionary.com phrases for ideom2" ; bashtrap; }
-														
-							testdrun_rare=$(echo "$raw_ency" | grep '<div class=hw>' | sed 's/<script>/\n/'| head -n 1| grep -o "<div class=runseg>")
-							if [[ $testdrun_rare ]];then #sheet metal
-							ency=$(echo "$raw_ency" | grep '<div class=hw>' | sed 's/<script>/\n/'| head -n 1 | sed 's/<br \/>//g' | sed -e 's/<b>/'$(tput bold)'/g' -e 's/<\/b>/'$C_NORMAL'/g' | sed 's/.*<div[^>]*>\([^<]*\).*/\1/' | sed -e 's/^.*<p>//' -e 's/<\/p>.*//' | sed -e 's/^.*<p>//')
-							else #Three sheets to the wind, number crunching, syntactic sugar
-							ency=$(echo "$raw_ency" | grep '<div class=hw>' | sed 's/<script>/\n/'| head -n 1 | sed 's/<br \/>//g' | sed -e 's/<b>/'$(tput bold)'/g' -e 's/<\/b>/'$C_NORMAL'/g' | sed s'/<div class=runseg.*<\/div>//' | sed -e 's/^.*<p>//' -e 's/<\/p>.*//' | sed -e 's/^.*<p>//' | sed 's/.*iv>\([^<]*\)<a.*/\1/' | sed -e 's/Contrast with//' -e 's/See//')
-							fi
-							#ency=$(echo "$raw_ency" | grep '<div class=hw>' | sed 's/<script>/\n/'| head -n 1 | sed 's/<br \/>//g' | sed -e 's/<b>/'$(tput bold)'/g' -e 's/<\/b>/'$C_NORMAL'/g' | sed s'/<div class=runseg.*<\/div>//' | sed -e 's/^.*<p>//' -e 's/<\/p>.*//' | sed -e 's/^.*<p>//' | sed 's/.*iv>\([^<]*\)<a.*/\1/' | sed -e 's/Contrast with//' -e 's/See//')
-							if [[ $ency ]]; then
-								corephrase1=$(echo "$raw_ency" | grep '<div class=hw>' | grep -o '<h1>.*</h1>' | sed 's/.*>\([^<]*\)<.*/\1/')
-								corephrase2=$(echo "$raw_ency" | grep -o '<div class=hw>[^<]*<' | sed 's/.*>\([^<]*\)</\1/')
-								echo -e "$C_GRAY_RED_RAW"Ideom:$C_NORMAL
-								[[ $corephrase1 ]] && echo -e "$C_BRIGHT_RAW"$corephrase1"$C_NORMAL"
-								[[ $corephrase2 ]] && echo -e "$C_BRIGHT_RAW"$corephrase2"$C_NORMAL"
-								echo "$ency"
-								contr_ency=$(echo "$raw_ency" | grep "Contrast with" | sed 's/.*\">\([^<]*\)<\/a.*/\1/')
-								if [[ $contr_ency ]]; then
-									echo -e Contrast with: "$C_BRIGHT_RAW"$contr_ency"$C_NORMAL"
-								else
-									see_ency=$(echo "$raw_ency" | grep '<div class=hw>' | grep -o "See.*<a href=.*</a>" | sed 's/.*>\([^<]*\)<.*/\1/')
-									[[ $see_ency ]] && echo -e See"$C_BRIGHT_RAW" $see_ency"$C_NORMAL"
-								fi
-							fi	
-						fi
-					fi					
+				ideom_and_list=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://idioms.thefreedictionary.com/"$(echo $request | tr ' ' + )")
+				[[ $? != 0 ]] && { echo "cant get thefreedictionary.com phrases for ideom1" ; bashtrap; }
+				list=$(echo "$ideom_and_list" | grep "[fF]ound in:")				
+				raw_ideoms=$(echo "$ideom_and_list" | grep -o 'div class="ds-single".*</div><div')
+				ideom=$(echo "$raw_ideoms" | sed 's/<i>//' | sed 's/<\/i>//' | sed 's/.*ds-single\">\([^<]*\)<.*/\1/')
+				illustration=$(echo "$raw_ideoms" | sed 's/.*class=illustration>\([^<]*\)<.*/\1/')
+				if [[ $ideom ]]; then
+					echo -e "$C_GRAY_RED_RAW"Ideom:$C_NORMAL >> "$cachefile"
+					echo -n "$ideom " >> "$cachefile"
+					[[ $illustration ]] && echo $illustration >> "$cachefile"
 				fi
+
+				if [[ ! $ideom && $list ]]; then
+					ency_link=$(echo "$list" | grep -o 'http://encyclopedia2[^"]*')
+					if [[ $ency_link ]]; then
+						raw_ency=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" "$ency_link")
+						[[ $? != 0 ]] && { echo "cant get thefreedictionary.com phrases for ideom2" ; bashtrap; }
+
+						testdrun_rare=$(echo "$raw_ency" | grep '<div class=hw>' | sed 's/<script>/\n/'| head -n 1| grep -o "<div class=runseg>")
+						if [[ $testdrun_rare ]];then #sheet metal
+						ency=$(echo "$raw_ency" | grep '<div class=hw>' | sed 's/<script>/\n/'| head -n 1 | sed 's/<br \/>//g' | sed -e 's/<b>/'$(tput bold)'/g' -e 's/<\/b>/'$C_NORMAL'/g' | sed 's/.*<div[^>]*>\([^<]*\).*/\1/' | sed -e 's/^.*<p>//' -e 's/<\/p>.*//' | sed -e 's/^.*<p>//')
+						else #Three sheets to the wind, number crunching, syntactic sugar
+						ency=$(echo "$raw_ency" | grep '<div class=hw>' | sed 's/<script>/\n/'| head -n 1 | sed 's/<br \/>//g' | sed -e 's/<b>/'$(tput bold)'/g' -e 's/<\/b>/'$C_NORMAL'/g' | sed s'/<div class=runseg.*<\/div>//' | sed -e 's/^.*<p>//' -e 's/<\/p>.*//' | sed -e 's/^.*<p>//' | sed 's/.*iv>\([^<]*\)<a.*/\1/' | sed -e 's/Contrast with//' -e 's/See//')
+						fi
+						#ency=$(echo "$raw_ency" | grep '<div class=hw>' | sed 's/<script>/\n/'| head -n 1 | sed 's/<br \/>//g' | sed -e 's/<b>/'$(tput bold)'/g' -e 's/<\/b>/'$C_NORMAL'/g' | sed s'/<div class=runseg.*<\/div>//' | sed -e 's/^.*<p>//' -e 's/<\/p>.*//' | sed -e 's/^.*<p>//' | sed 's/.*iv>\([^<]*\)<a.*/\1/' | sed -e 's/Contrast with//' -e 's/See//')
+						if [[ $ency ]]; then
+							corephrase1=$(echo "$raw_ency" | grep '<div class=hw>' | grep -o '<h1>.*</h1>' | sed 's/.*>\([^<]*\)<.*/\1/')
+							corephrase2=$(echo "$raw_ency" | grep -o '<div class=hw>[^<]*<' | sed 's/.*>\([^<]*\)</\1/')
+							echo -e "$C_GRAY_RED_RAW"Ideom:$C_NORMAL >> "$cachefile"
+							[[ $corephrase1 ]] && echo -e "$C_BRIGHT_RAW"$corephrase1"$C_NORMAL" >> "$cachefile"
+							[[ $corephrase2 ]] && echo -e "$C_BRIGHT_RAW"$corephrase2"$C_NORMAL" >> "$cachefile"
+							echo "$ency" >> "$cachefile"
+							contr_ency=$(echo "$raw_ency" | grep "Contrast with" | sed 's/.*\">\([^<]*\)<\/a.*/\1/')
+							if [[ $contr_ency ]]; then
+								echo -e Contrast with: "$C_BRIGHT_RAW"$contr_ency"$C_NORMAL" >> "$cachefile"
+							else
+								see_ency=$(echo "$raw_ency" | grep '<div class=hw>' | grep -o "See.*<a href=.*</a>" | sed 's/.*>\([^<]*\)<.*/\1/')
+								[[ $see_ency ]] && echo -e See"$C_BRIGHT_RAW" $see_ency"$C_NORMAL" >> "$cachefile"
+							fi
+						fi	
+					fi
+				fi					
+
 			fi
+			cat "$cachefile" 2>/dev/null #output 
+			[[ $r_words_count -gt 2 ]] && rm "$cachefile" #rm for mroe then 2 words
+
 
 		fi #end of english dictionary
 		[[ $fl_raw ]] && echo -e "$fl" #empty line... cant fix it (:'d		#google fixed text 	output
