@@ -35,7 +35,7 @@
 #- cache for words
 #- saving words to file for learning
 #
-#:) translate.google.com, thefreedictionary.com, lingvo-online.ru, www.forvo.com 
+#:) translate.google.com, www.macmillandictionary.com/dictionary/british, thefreedictionary.com, lingvo-online.ru, www.forvo.com 
 
 help=$(basename "$0")' [-s[2,3]] [-l] [-h] <text>
 if text is LATIN_LANG, then target language is FIRST_LANG
@@ -497,7 +497,7 @@ else
 					illustration=$(echo "$raw_ideoms" | sed 's/.*class=illustration>\([^<]*\)<.*/\1/')
 					if [[ $ideom ]]; then
 						echo -e "$C_GRAY_RED_RAW"Ideom:$C_NORMAL
-						echo $ideom
+						echo -n "$ideom "
 						[[ $illustration ]] && echo $illustration
 					fi
 
@@ -506,14 +506,17 @@ else
 						if [[ $ency_link ]]; then
 							raw_ency=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" "$ency_link")
 							[[ $? != 0 ]] && { echo "cant get thefreedictionary.com phrases for ideom2" ; bashtrap; }
-							ency=$(echo "$raw_ency" | grep '<div class=hw>' | sed 's/<br \/>//g' | sed -e 's/<b>/'$(tput bold)'/g' -e 's/<\/b>/'$C_NORMAL'/g' | sed 's/.*iv>\([^<]*\).*/\1/' )
-							#| grep -o '</div>[^<]*<' |  sed s'/.*>\([^<]*\)<.*/\1/'
-							#| grep -o 'div>.*<br /' | sed -e 's/"//g' | sed -e 's/<b>/'$(tput bold)'/g' -e 's/<\/b>/'$C_NORMAL'/g' | sed 's/div>\([^<]*\).*/\1/') #confus $C_BRIGHT_RAW
-							contr_ency=$(echo "$raw_ency" | grep "Contrast with" | sed 's/.*\">\([^<]*\)<\/a.*/\1/')
+							ency=$(echo "$raw_ency" | grep '<div class=hw>' | sed 's/<br \/>//g' | sed -e 's/<b>/'$(tput bold)'/g' -e 's/<\/b>/'$C_NORMAL'/g' | sed s'/<div class=runseg.*<\/div>//' | sed 's/.*iv>\([^<]*\)<a.*/\1/') # t number crunching, syntactic sugar
 							if [[ $ency ]]; then
 								echo -e "$C_GRAY_RED_RAW"Ideom:$C_NORMAL
-								echo "$ency"
-								[[ $contr_ency ]] && echo -e "$C_BRIGHT_RAW"$contr_ency"$C_NORMAL"
+								echo -n "$ency"
+								contr_ency=$(echo "$raw_ency" | grep "Contrast with" | sed 's/.*\">\([^<]*\)<\/a.*/\1/')
+								if [[ $contr_ency ]]; then
+									echo -e "$C_BRIGHT_RAW"$contr_ency"$C_NORMAL"
+								else
+									see_ency=$(echo "$raw_ency" | grep '<div class=hw>' | grep -o "See.*<a href=.*</a>" | sed 's/.*>\([^<]*\)<.*/\1/')
+									echo -e "$C_BRIGHT_RAW"$see_ency"$C_NORMAL"
+								fi
 							fi	
 						fi
 					fi					
