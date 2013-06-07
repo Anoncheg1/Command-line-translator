@@ -392,9 +392,6 @@ else
 		[[ $source == "auto" ]] && { source=$det_language; cachefile="$PR_DIR/cache/$source-$target"_"$request"; } #auto in cachefile fix #not necessary
 
 
-
-
-
 		declare trans
 		if [[ $r_words_count -le 2 && ${#request} -gt 1 && $source == en && ! $(echo "$difftest" | wc -l) -gt 1 ]];then #special check( expample: advise advice)
 		#transcription
@@ -402,8 +399,8 @@ else
 			[[ $? != 0 ]] &&  { echo "can't get transcription"; } #bashtrap;
 		fi
 		#"Dictionary part" for english only. but it can be extended for every required language
-		if [[ $r_words_count -eq 1 && ${#request} -gt 1 && $source == en && (( $fl_raw == "" || $trans )) ]]; then #dictionary
-		
+		if [[ $r_words_count -eq 1 && ${#request} -gt 1 && $source == en && (( ! $fl_raw || $trans )) ]]; then #dictionary
+
 			echo -e "$C_GREEN$t_result$C_NORMAL_RAW" > "$cachefile" #google translated text to cache
 			[[ $dictionary ]] && echo -e "$dictionary" >> "$cachefile" #google dictionary to cache
 
@@ -463,12 +460,12 @@ else
 				fi
 
 			fi
-		else #not english dictionary
+		elif [[ ! $fl_raw ]]; then  #not english dictionary
 			echo -e "$C_GREEN$t_result$C_NORMAL_RAW" > "$cachefile"				#google translated text output
 			[[ $source != en && $r_words_count -le $TRANSLIT_WORDS_MAX && $(echo $t_result | sed 's/ //g' | tr '[:upper:]' '[:lower:]') !=  $(echo $translit | sed 's/ //g' | tr '[:upper:]' '[:lower:]') ]] && echo -e "$translit" >> "$cachefile"				#google translit	output
 			[[ $dictionary ]] && echo -e "$dictionary" >> "$cachefile"			#google dictionary 	output
 
-			if [[ $source == en && $fl_raw == "" && $r_words_count -le 5 ]]; then			
+			if [[ $source == en && $r_words_count -le 5 ]]; then			
 				#phrases for 2 words
 				if [[ $r_words_count -le 2 ]];then
 				
