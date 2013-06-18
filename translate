@@ -501,18 +501,19 @@ else
 						raw_ency=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" "$ency_link")
 						[[ $? != 0 ]] && { echo "cant get thefreedictionary.com phrases for ideom2" ; bashtrap; }
 						#not counting <div id=MainTxt><span class="hw">
-						testdrun_rare=$(echo "$raw_ency" | grep '<div class=hw>' | sed 's/<script>/\n/'| head -n 1| grep -o "<div class=runseg>")
-						if [[ $testdrun_rare ]];then #sheet metal
-							ency=$(echo "$raw_ency" | grep '<div class=hw>' | sed 's/<script>/\n/' | head -n 1 | sed 's/<br \/>//g' | sed -e 's/<i>//g' -e 's/<\/i>/,/g' | sed -e 's/<b>/'$(tput bold)'/g' -e 's/<\/b>/'$C_NORMAL'/g' | sed 's/.*<div[^>]*>\([^<]*\).*/\1/' | sed -e 's/^.*<p>//' -e 's/<\/p>.*//' | sed -e 's/^.*<p>//')
-						else #Three sheets to the wind, number crunching, syntactic sugar
-							ency=$(echo "$raw_ency" | grep '<div class=hw>' | sed 's/<script>/\n/'| head -n 1 | sed 's/<br \/>//g' | sed -e 's/<b>/'$(tput bold)'/g' -e 's/<\/b>/'$C_NORMAL'/g' | sed s'/<div class=runseg.*<\/div>//' | sed -e 's/^.*<p>//' -e 's/<\/p>.*//' | sed -e 's/^.*<p>//' | sed 's/.*iv>\([^<]*\)<a.*/\1/' | sed -e 's/Contrast with//' -e 's/See//')
+						firstpass=$(echo "$raw_ency" | grep '<div class=hw>' | sed 's/<script>/\n/'| head -n 1 | sed 's/<br \/><br \/>/\n/g' | sed 's/<br \/>//g' | sed -e 's/<div class=hw>/ /' -e 's/<\/div>/. /' | sed -e 's/^[ \t]*//')
+						echo "$raw_ency" | grep '<div class=hw>'
+						if [[ $(echo $firstpass | grep -o "<div class=runseg>") ]];then #sheet metal
+							ency=$(echo "$firstpass" | sed -e 's/<i>//g' -e 's/<\/i>/,/g' | sed -e 's/<b>/'$(tput bold)'/g' -e 's/<\/b>/'$C_NORMAL'/g' | sed 's/.*<div[^>]*>\([^<]*\).*/\1/' | sed -e 's/^.*<p>//' -e 's/<\/p>.*//' | sed -e 's/^.*<p>//')
+						else #Three sheets to the wind, number crunching, syntactic sugar, death valley, tightly coupled
+							ency=$(echo "$firstpass" | sed -e 's/<b>/'$(tput bold)'/g' -e 's/<\/b>/'$C_NORMAL'/g' | sed 's/<a.*<\/a>//g' | sed 's/^<p>//' | sed 's/<p>/\n/g' | sed 's/<\/p>//g' | sed 's/.*iv>\([^<]*\)<a.*/\1/' | sed -e 's/Contrast with//' -e 's/See//')
 						fi
 						if [[ $ency ]]; then
 							corephrase1=$(echo "$raw_ency" | grep '<div class=hw>' | grep -o '<h1>.*</h1>' | sed 's/.*>\([^<]*\)<.*/\1/')
 							corephrase2=$(echo "$raw_ency" | grep -o '<div class=hw>[^<]*<' | sed 's/.*>\([^<]*\)</\1/')
 							echo -e "$C_GRAY_RED_RAW"Ideom:$C_NORMAL >> "$cachefile"
-							[[ $corephrase1 ]] && echo -e "$C_BRIGHT_RAW"$corephrase1"$C_NORMAL" >> "$cachefile"
-							[[ $corephrase2 ]] && echo -e "$C_BRIGHT_RAW"$corephrase2"$C_NORMAL" >> "$cachefile"
+							[[ $corephrase1 && $(echo $corephrase1 | tr '[:upper:]' '[:lower:]') != $request ]] && echo -e "$C_BRIGHT_RAW"$corephrase1"$C_NORMAL" >> "$cachefile"							
+							[[ $corephrase2 && $corephrase2 != $corephrase1 ]] && echo -e "$C_BRIGHT_RAW"$corephrase2"$C_NORMAL" >> "$cachefile"
 							echo "$ency" >> "$cachefile"
 							contr_ency=$(echo "$raw_ency" | grep "Contrast with" | sed 's/.*\">\([^<]*\)<\/a.*/\1/')
 							if [[ $contr_ency ]]; then
