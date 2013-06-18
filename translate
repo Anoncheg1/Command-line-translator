@@ -63,7 +63,9 @@ declare -r TRANSLIT_WORDS_MAX=10
 declare -r SOUND_DOWNLOAD_AWS=1		# 1 - always. 0 - on demand.
 declare -r useragent="Mozilla/5.0 (X11; Linux i686) AppleWebKit/534.34 (KHTML, like Gecko) QupZilla/1.3.1 Safari/534.34"
 #
-declare -r PR_DIR="$HOME/.translate"
+CDIR="$HOME/.config"
+[ ! -d "$CDIR" ] && mkdir "$CDIR"
+declare -r PR_DIR="$HOME/.config/translate"
 [ ! -d "$PR_DIR" ] && mkdir "$PR_DIR"
 [ ! -d "$PR_DIR"/cache ] && mkdir "$PR_DIR"/cache
 
@@ -398,7 +400,7 @@ else
 			trans=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://lingvo-online.ru/en/Translate/en-"$target"/"$request" | grep -o '"[^"]*/transcription\.gif.Text=[^"]*"' | sed 's/.*=\(.*\)"/\1/'| echo -n -e $(sed 's/+/ /g; s/%/\\x/g')) #getting transcription
 			[[ $? != 0 ]] &&  { echo "can't get transcription"; } #bashtrap;
 		fi
-		#"Dictionary part" for english only. but it can be extended for every required language
+		# Main "Dictionary part" for english only. but it can be extended for every required language
 		if [[ $r_words_count -eq 1 && ${#request} -gt 1 && $source == en && (( ! $fl_raw || $trans )) ]]; then #dictionary
 
 			echo -e "$C_GREEN$t_result$C_NORMAL_RAW" > "$cachefile" #google translated text to cache
@@ -460,7 +462,7 @@ else
 				fi
 
 			fi
-		elif [[ ! $fl_raw ]]; then  #not english dictionary
+		elif [[ ! $fl_raw ]]; then  #not english dictionary (without errors - fl_raw)
 			echo -e "$C_GREEN$t_result$C_NORMAL_RAW" > "$cachefile"				#google translated text output
 			[[ $source != en && $r_words_count -le $TRANSLIT_WORDS_MAX && $(echo $t_result | sed 's/ //g' | tr '[:upper:]' '[:lower:]') !=  $(echo $translit | sed 's/ //g' | tr '[:upper:]' '[:lower:]') ]] && echo -e "$translit" >> "$cachefile"				#google translit	output
 			[[ $dictionary ]] && echo -e "$dictionary" >> "$cachefile"			#google dictionary 	output
@@ -528,8 +530,11 @@ else
 			[[ $r_words_count -gt 2 ]] && rm "$cachefile" #rm for mroe then 2 words
 
 
-		fi #end of english dictionary
-		[[ $fl_raw ]] && echo -e "$fl" #empty line... cant fix it (:'d		#google fixed text 	output
+		else # with errors $fl_raw
+			echo -e "$C_GREEN$t_result$C_NORMAL_RAW" #google translated text output
+			[[ $source != en && $r_words_count -le $TRANSLIT_WORDS_MAX && $(echo $t_result | sed 's/ //g' | tr '[:upper:]' '[:lower:]') !=  $(echo $translit | sed 's/ //g' | tr '[:upper:]' '[:lower:]') ]] && echo -e "$translit"	#google translit	output
+			echo -e "$fl" #empty line... cant fix it (:'d		#google fixed text 	output
+		fi #main end
 	else #cache output
 		cat "$cachefile" #output
 		[[ $source == en ]] && echo -e "$C_DARK_BLUE_RAW"http://oxforddictionaries.com/definition/english/"$request"$C_NORMAL
