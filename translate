@@ -502,7 +502,7 @@ else
 						[[ $? != 0 ]] && { echo "cant get thefreedictionary.com phrases for ideom2" ; bashtrap; }
 						#not counting <div id=MainTxt><span class="hw">
 						firstpass=$(echo "$raw_ency" | grep '<div class=hw>' | sed 's/<script>/\n/'| head -n 1 | sed 's/<br \/><br \/>/\n/g' | sed 's/<br \/>//g' | sed -e 's/<div class=hw>/ /' -e 's/<\/div>/. /' | sed -e 's/^[ \t]*//')
-						echo "$raw_ency" | grep '<div class=hw>'
+#						echo "$raw_ency" | grep '<div class=hw>'
 						if [[ $(echo $firstpass | grep -o "<div class=runseg>") ]];then #sheet metal
 							ency=$(echo "$firstpass" | sed -e 's/<i>//g' -e 's/<\/i>/,/g' | sed -e 's/<b>/'$(tput bold)'/g' -e 's/<\/b>/'$C_NORMAL'/g' | sed 's/.*<div[^>]*>\([^<]*\).*/\1/' | sed -e 's/^.*<p>//' -e 's/<\/p>.*//' | sed -e 's/^.*<p>//')
 						else #Three sheets to the wind, number crunching, syntactic sugar, death valley, tightly coupled
