@@ -354,7 +354,7 @@ else
 				fl="$C_YELLOW$fl$C_NORMAL"
 			else
 				fl=$(echo "$fl_raw" | sed 's/\\u003cb\\u003e\\u003ci\\u003e/'$C_YELLOW'/g' | sed 's/\\u003c\/i\\u003e\\u003c\/b\\u003e/'$C_NORMAL'/g' | sed 's/\\u0026//g' | sed "s/\#39;/'/g" ) #google fixed text
-				echo "$fl" > $FIXED_STRING
+				#echo "$fl" > $FIXED_STRING
 			fi
 #echo $difftest
 #echo $grespond | grep -o '\[.*\]'

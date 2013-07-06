@@ -18,7 +18,7 @@ FEATURES:
   - language detection,
   - dictionary,
   - translit,
-  - execution without parameters will translate last saved request
+  - execution without parameters will translate fixed string for 1-2 words
 for english: 
 - phrases, ideom, transcription, audio pronunciation
 - cache for words
