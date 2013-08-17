@@ -24,7 +24,7 @@
 # requirements: 
 #	UTF-8 support for required languages
 #	curl >= 7.21.0,
-# 	Mozilla js shell (spidermonkey) >= 1.8.0, 
+# 	SpiderMonkey >= Version: 17.0.8esr-2 
 #	mpg123
 #	html2text
 #	forvo.com account
@@ -357,6 +357,7 @@ else
 				#echo "$fl" > $FIXED_STRING
 			fi
 #echo $difftest
+#echo $grespond | grep -o '\[.*\]' | enca -L russian
 #echo $grespond | grep -o '\[.*\]'
 
 		echo -n "var myJSONObject = " > "$PR_DIR"/tmpjsobj
@@ -366,16 +367,16 @@ else
 
 		cp -f "$PR_DIR"/tmpjsobj "$PR_DIR"/tmpjsobj2
 		echo -n "language_identification(googlearr);" >> "$PR_DIR"/tmpjsobj2
-		det_language=$(js "$PR_DIR"/tmpjsobj2 | tail -c3)		# detected language
+		det_language=$(js -U "$PR_DIR"/tmpjsobj2 | tail -c3)		# detected language
 		cp -f "$PR_DIR"/tmpjsobj "$PR_DIR"/tmpjsobj2
 		echo -n "translated_result(googlearr);" >> "$PR_DIR"/tmpjsobj2
-		t_result=$(js "$PR_DIR"/tmpjsobj2)				# translated text
+		t_result=$(js -U "$PR_DIR"/tmpjsobj2)				# translated text
 		cp -f "$PR_DIR"/tmpjsobj "$PR_DIR"/tmpjsobj2
 		echo -n "translit(googlearr);" >> "$PR_DIR"/tmpjsobj2
-		translit=$(js "$PR_DIR"/tmpjsobj2)				# translit
+		translit=$(js -U "$PR_DIR"/tmpjsobj2)				# translit
 		cp -f "$PR_DIR"/tmpjsobj "$PR_DIR"/tmpjsobj2
 		echo -n "dictionary(googlearr);" >> "$PR_DIR"/tmpjsobj2
-		dictionary=$(js "$PR_DIR"/tmpjsobj2)				# dictionary
+		dictionary=$(js -U "$PR_DIR"/tmpjsobj2)				# dictionary
 
 		#Language detection
 		[[ $det_language != $source && (( $TLSOURCE || $det_language != $ENGLISH_TARGET_LANG )) ]] && echo -e "$C_GRAY*	$det_language ${ln_arr[$det_language]}$C_NORMAL"
