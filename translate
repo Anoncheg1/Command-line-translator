@@ -146,7 +146,7 @@ trap bashtrap INT
 bashtrap()
 {
 	echo "Exit signal detected. Deleting cache files."
-	rm "$cachefile" 2> /dev/null
+	rm "$cachefile" 2> /dev/null	
 	exit
 }
 
@@ -463,7 +463,7 @@ else
 				fi
 
 			fi
-		elif [[ ! $fl_raw ]]; then  #not english dictionary (without errors - fl_raw)
+		elif [[ ! $fl_raw ]]; then  #all languages dictionary (without errors - fl_raw)
 			echo -e "$C_GREEN$t_result$C_NORMAL_RAW" > "$cachefile"				#google translated text output
 			[[ $source != en && $r_words_count -le $TRANSLIT_WORDS_MAX && $(echo $t_result | sed 's/ //g' | tr '[:upper:]' '[:lower:]') !=  $(echo $translit | sed 's/ //g' | tr '[:upper:]' '[:lower:]') ]] && echo -e "$translit" >> "$cachefile"				#google translit	output
 			[[ $dictionary ]] && echo -e "$dictionary" >> "$cachefile"			#google dictionary 	output
@@ -486,7 +486,7 @@ else
 				#search for ideom for 2-5 words
 				ideom_and_list=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://idioms.thefreedictionary.com/"$(echo $request | tr ' ' + )")
 				[[ $? != 0 ]] && { echo "cant get thefreedictionary.com phrases for ideom1" ; bashtrap; }
-				list=$(echo "$ideom_and_list" | grep "[fF]ound in:")				
+				list=$(echo "$ideom_and_list" | grep "[fF]ound in:")
 				raw_ideoms=$(echo "$ideom_and_list" | grep -o 'div class="ds-single".*</div><div')
 				ideom=$(echo "$raw_ideoms" | sed 's/<i>//' | sed 's/<\/i>//' | sed 's/.*ds-single\">\([^<]*\)<.*/\1/')
 				illustration=$(echo "$raw_ideoms" | sed 's/.*class=illustration>\([^<]*\)<.*/\1/')
@@ -502,26 +502,29 @@ else
 						raw_ency=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" "$ency_link")
 						[[ $? != 0 ]] && { echo "cant get thefreedictionary.com phrases for ideom2" ; bashtrap; }
 						#not counting <div id=MainTxt><span class="hw">
-						firstpass=$(echo "$raw_ency" | grep '<div class=hw>' | sed 's/<script>/\n/'| head -n 1 | sed 's/<br \/><br \/>/\n/g' | sed 's/<br \/>//g' | sed -e 's/<div class=hw>/ /' -e 's/<\/div>/. /' | sed -e 's/^[ \t]*//')
-#						echo "$raw_ency" | grep '<div class=hw>'
-						if [[ $(echo $firstpass | grep -o "<div class=runseg>") ]];then #sheet metal
-							ency=$(echo "$firstpass" | sed -e 's/<i>//g' -e 's/<\/i>/,/g' | sed -e 's/<b>/'$(tput bold)'/g' -e 's/<\/b>/'$C_NORMAL'/g' | sed 's/.*<div[^>]*>\([^<]*\).*/\1/' | sed -e 's/^.*<p>//' -e 's/<\/p>.*//' | sed -e 's/^.*<p>//')
-						else #Three sheets to the wind, number crunching, syntactic sugar, death valley, tightly coupled
-							ency=$(echo "$firstpass" | sed -e 's/<b>/'$(tput bold)'/g' -e 's/<\/b>/'$C_NORMAL'/g' | sed 's/<a.*<\/a>//g' | sed 's/^<p>//' | sed 's/<p>/\n/g' | sed 's/<\/p>//g' | sed 's/.*iv>\([^<]*\)<a.*/\1/' | sed -e 's/Contrast with//' -e 's/See//')
-						fi
-						if [[ $ency ]]; then
-							corephrase1=$(echo "$raw_ency" | grep '<div class=hw>' | grep -o '<h1>.*</h1>' | sed 's/.*>\([^<]*\)<.*/\1/')
-							corephrase2=$(echo "$raw_ency" | grep -o '<div class=hw>[^<]*<' | sed 's/.*>\([^<]*\)</\1/')
-							echo -e "$C_GRAY_RED_RAW"Ideom:$C_NORMAL >> "$cachefile"
-							[[ $corephrase1 && $(echo $corephrase1 | tr '[:upper:]' '[:lower:]') != $request ]] && echo -e "$C_BRIGHT_RAW"$corephrase1"$C_NORMAL" >> "$cachefile"							
-							[[ $corephrase2 && $corephrase2 != $corephrase1 ]] && echo -e "$C_BRIGHT_RAW"$corephrase2"$C_NORMAL" >> "$cachefile"
-							echo "$ency" >> "$cachefile"
-							contr_ency=$(echo "$raw_ency" | grep "Contrast with" | sed 's/.*\">\([^<]*\)<\/a.*/\1/')
-							if [[ $contr_ency ]]; then
-								echo -e Contrast with: "$C_BRIGHT_RAW"$contr_ency"$C_NORMAL" >> "$cachefile"
-							else
-								see_ency=$(echo "$raw_ency" | grep '<div class=hw>' | grep -o "See.*<a href=.*</a>" | sed 's/.*>\([^<]*\)<.*/\1/')
-								[[ $see_ency ]] && echo -e See"$C_BRIGHT_RAW" $see_ency"$C_NORMAL" >> "$cachefile"
+						redirectto=$(echo "$raw_ency" | grep -o "<h1>.*</h1>" | sed 's/<div>.*<\/div>//' | sed -e 's/<h1>//' -e 's/<.h1>//' | tr '[:upper:]' '[:lower:]')						
+						if [[ $r_words_count -eq $(echo $redirectto | wc -w ) ]]; then
+							firstpass=$(echo "$raw_ency" | grep '<div class=hw>' | sed 's/<script>/\n/'| head -n 1 | sed 's/<br \/><br \/>/\n/g' | sed 's/<br \/>//g' | sed -e 's/<div class=hw>/ /' -e 's/<\/div>/. /' | sed -e 's/^[ \t]*//')
+#							echo "$raw_ency" | grep '<div class=hw>'
+							if [[ $(echo $firstpass | grep -o "<div class=runseg>") ]];then #sheet metal
+								ency=$(echo "$firstpass" | sed -e 's/<i>//g' -e 's/<\/i>/,/g' | sed -e 's/<b>/'$(tput bold)'/g' -e 's/<\/b>/'$C_NORMAL'/g' | sed 's/.*<div[^>]*>\([^<]*\).*/\1/' | sed -e 's/^.*<p>//' -e 's/<\/p>.*//' | sed -e 's/^.*<p>//')
+							else #Three sheets to the wind, number crunching, syntactic sugar, death valley, tightly coupled
+								ency=$(echo "$firstpass" | sed -e 's/<b>/'$(tput bold)'/g' -e 's/<\/b>/'$C_NORMAL'/g' | sed 's/<a.*<\/a>//g' | sed 's/^<p>//' | sed 's/<p>/\n/g' | sed 's/<\/p>//g' | sed 's/.*iv>\([^<]*\)<a.*/\1/' | sed -e 's/Contrast with//' -e 's/See//')
+							fi
+							if [[ $ency ]]; then
+								corephrase1=$(echo "$raw_ency" | grep '<div class=hw>' | grep -o '<h1>.*</h1>' | sed 's/.*>\([^<]*\)<.*/\1/')
+								corephrase2=$(echo "$raw_ency" | grep -o '<div class=hw>[^<]*<' | sed 's/.*>\([^<]*\)</\1/')
+								echo -e "$C_GRAY_RED_RAW"Ideom:$C_NORMAL >> "$cachefile"
+								[[ $corephrase1 && $(echo $corephrase1 | tr '[:upper:]' '[:lower:]') != $request ]] && echo -e "$C_BRIGHT_RAW"$corephrase1"$C_NORMAL" >> "$cachefile"							
+								[[ $corephrase2 && $corephrase2 != $corephrase1 ]] && echo -e "$C_BRIGHT_RAW"$corephrase2"$C_NORMAL" >> "$cachefile"
+								echo "$ency" >> "$cachefile"
+								contr_ency=$(echo "$raw_ency" | grep "Contrast with" | sed 's/.*\">\([^<]*\)<\/a.*/\1/')
+								if [[ $contr_ency ]]; then
+									echo -e Contrast with: "$C_BRIGHT_RAW"$contr_ency"$C_NORMAL" >> "$cachefile"
+								else
+									see_ency=$(echo "$raw_ency" | grep '<div class=hw>' | grep -o "See.*<a href=.*</a>" | sed 's/.*>\([^<]*\)<.*/\1/')
+									[[ $see_ency ]] && echo -e See"$C_BRIGHT_RAW" $see_ency"$C_NORMAL" >> "$cachefile"
+								fi
 							fi
 						fi	
 					fi
@@ -529,7 +532,7 @@ else
 
 			fi
 			cat "$cachefile" 2>/dev/null #output 
-			[[ $r_words_count -gt 2 ]] && rm "$cachefile" #rm for mroe then 2 words
+			[[ $r_words_count -gt 2 ]] && rm "$cachefile" 2> /dev/null #rm for more then 2 words
 
 
 		else # with errors $fl_raw
