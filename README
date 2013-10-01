@@ -21,6 +21,7 @@ FEATURES:
   - dictionary,
   - translit,
   - execution without parameters will translate fixed string for 1-2 words
+  - prompt mode
 for english: 
 - phrases, ideom, transcription, audio pronunciation
 - cache for words
