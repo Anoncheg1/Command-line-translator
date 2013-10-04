@@ -330,10 +330,10 @@ while true; do #Prompt loop
 
 	
 	if [[ ${#request} -gt 300 ]]; then
-		if ! result=$(curl -s -i --user-agent "$useragent" $httpsproxy -x "$httpproxy" -d "sl=$source" -d "tl=$target" --data-urlencode "text=$request" http://translate.google.com) && [[ $httpproxy != "" ]] #getting google respond for short sentence
+		if ! result=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" -d "sl=$source" -d "tl=$target" --data-urlencode "text=$request" http://translate.google.com) && [[ $httpproxy != "" ]] #getting google respond for short sentence
 		then	# second attempt without https proxy
 			httpsproxy=""
-			result=$(curl -s -i --user-agent "$useragent" $httpsproxy -x "$httpproxy" -d "sl=$source" -d "tl=$target" --data-urlencode "text=$request" http://translate.google.com)
+			result=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" -d "sl=$source" -d "tl=$target" --data-urlencode "text=$request" http://translate.google.com)
 		fi
 		#encoding=$(awk '/Content-Type: .* charset=/ {sub(/^.*charset=["'\'']?/,""); sub(/[ "'\''].*$/,""); print}' <<<"$result")
 		#iconv -f $encoding <<<"$result" | awk 'BEGIN {RS="<div"};/<span[^>]* id=["'\'']?result_box["'\'']?/ {sub(/^.*id=["'\'']?result_box["'\'']?(>| [^>]*>)([ \n\t]*<[^>]*>)*/,"");sub(/<.*$/,"");print}' | html2text -utf8
@@ -355,11 +355,11 @@ while true; do #Prompt loop
 	
 		if [[ ! -e "$cachefile" ]]; then
 
-			if ! grespond=$(curl -s -i --user-agent "$useragent" $httpsproxy -x "$httpproxy" -m $timeout --data-urlencode "text=$request" "http://translate.google.com/translate_a/t?client=t&hl=$target&sl=$source&tl=$target&ie=UTF-8&oe=UTF-8&multires=1&ssel=0&tsel=0&sc=1") && [[ "$httpproxy" != "" ]] #getting google respond for short sentence
+			if ! grespond=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" -m $timeout --data-urlencode "text=$request" "http://translate.google.com/translate_a/t?client=t&hl=$target&sl=$source&tl=$target&ie=UTF-8&oe=UTF-8&multires=1&ssel=0&tsel=0&sc=1") && [[ "$httpproxy" != "" ]] #getting google respond for short sentence
 			then	# second attempt without https proxy
 				#echo https proxy not working. using http proxy.
 				httpsproxy=""
-				grespond=$(curl -s -i --user-agent "$useragent" $httpsproxy -x "$httpproxy" -m $timeout --data-urlencode "text=$request" "http://translate.google.com/translate_a/t?client=t&hl=$target&sl=$source&tl=$target&ie=UTF-8&oe=UTF-8&multires=1&ssel=0&tsel=0&sc=1") #getting google respond for short sentence
+				grespond=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" -m $timeout --data-urlencode "text=$request" "http://translate.google.com/translate_a/t?client=t&hl=$target&sl=$source&tl=$target&ie=UTF-8&oe=UTF-8&multires=1&ssel=0&tsel=0&sc=1") #getting google respond for short sentence
 			fi
 			[[ ! $(echo "$grespond" | grep -o '\[.*\]') ]] && { echo "can't connect" ; exit; } #small connection check
 
@@ -505,7 +505,7 @@ while true; do #Prompt loop
 				[[ $source != en && $r_words_count -le $TRANSLIT_WORDS_MAX && $(echo $t_result | sed 's/ //g' | tr '[:upper:]' '[:lower:]') !=  $(echo $translit | sed 's/ //g' | tr '[:upper:]' '[:lower:]') ]] && echo -e "$translit" >> "$cachefile"				#google translit	output
 				[[ $dictionary ]] && echo -e "$dictionary" >> "$cachefile"			#google dictionary 	output
 
-				if [[ $source == en && $r_words_count -le 5 ]]; then			
+				if [[ $source == en && $r_words_count -le 5 ]]; then #english
 					#phrases for 2 words
 					if [[ $r_words_count -le 2 ]];then
 				
@@ -531,6 +531,9 @@ while true; do #Prompt loop
 						echo -e "$C_GRAY_RED_RAW"Ideom:$C_NORMAL >> "$cachefile"
 						echo -n "$ideom " >> "$cachefile"
 						[[ $illustration ]] && echo $illustration >> "$cachefile"
+					elif [[ ! $dictionary ]]; then
+						a_compl=$(curl -s --user-agent "$useragent" -G --data-urlencode "query=$request" "http://www.thefreedictionary.com/_/search/suggest.ashx?jsonp=SAYT.Callback" | grep -o "\[\[.*\]\]" | sed 's/",/\n/g' | sed -e 's/.*"//' -e '$ d')
+						echo -e "$C_BRIGHT_RAW"Suggestions:$C_NORMAL'\n'$a_compl >> "$cachefile"
 					fi
 
 					if [[ ! $ideom && $list ]]; then
