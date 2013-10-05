@@ -56,6 +56,7 @@ declare -r flogin=121212 			#forvo.com login and pass REQUIRED!
 declare -r fpass=121212
 TERMINAL_C="WOB"				#Your terminal - white on black:WOB, black on white:BOW, anything other:O
 declare PROMPT_MODE_ACTIVATED=false			#You may repeat your requests
+declare -r SUGGESTIONS_ACTIVATED=true			#Suggestions for ideoms and anything
 #httpproxy="127.0.0.1:4444"		#proxy for long strings
 #httpsproxy="--socks5 127.0.0.1:9050"	#socks5
 #
@@ -531,9 +532,9 @@ while true; do #Prompt loop
 						echo -e "$C_GRAY_RED_RAW"Ideom:$C_NORMAL >> "$cachefile"
 						echo -n "$ideom " >> "$cachefile"
 						[[ $illustration ]] && echo $illustration >> "$cachefile"
-					elif [[ ! $dictionary ]]; then
+					elif [[ $SUGGESTIONS_ACTIVATED && ! $dictionary ]]; then
 						a_compl=$(curl -s --user-agent "$useragent" -G --data-urlencode "query=$request" "http://www.thefreedictionary.com/_/search/suggest.ashx?jsonp=SAYT.Callback" | grep -o "\[\[.*\]\]" | sed 's/",/\n/g' | sed -e 's/.*"//' -e '$ d')
-						[[ $a_compl ]] && echo -e "$C_BRIGHT_RAW"Suggestions:$C_NORMAL'\n'$a_compl >> "$cachefile"
+						[[ $a_compl && $(echo $a_compl | tr '[:upper:]' '[:lower:]') != $request ]] && echo -e "$C_BRIGHT_RAW"Suggestions:$C_NORMAL'\n'"$a_compl" >> "$cachefile"
 					fi
 
 					if [[ ! $ideom && $list ]]; then
