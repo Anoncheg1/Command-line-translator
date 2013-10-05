@@ -533,7 +533,7 @@ while true; do #Prompt loop
 						[[ $illustration ]] && echo $illustration >> "$cachefile"
 					elif [[ ! $dictionary ]]; then
 						a_compl=$(curl -s --user-agent "$useragent" -G --data-urlencode "query=$request" "http://www.thefreedictionary.com/_/search/suggest.ashx?jsonp=SAYT.Callback" | grep -o "\[\[.*\]\]" | sed 's/",/\n/g' | sed -e 's/.*"//' -e '$ d')
-						echo -e "$C_BRIGHT_RAW"Suggestions:$C_NORMAL'\n'$a_compl >> "$cachefile"
+						[[ $a_compl ]] && echo -e "$C_BRIGHT_RAW"Suggestions:$C_NORMAL'\n'$a_compl >> "$cachefile"
 					fi
 
 					if [[ ! $ideom && $list ]]; then
