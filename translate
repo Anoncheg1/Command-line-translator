@@ -241,11 +241,13 @@ if [[ $1 == -h || $1 == --help ]]; then #help
 	echo "$help"
 	exit
 fi
-if [[ $1 == -s || $1 == --sound ]];then #sound
+if [[ $1 == -sp || $1 == -ps || $1 == -s || $1 == --sound ]];then #sound
 	sound=1
-	request=($*) #get array
-	request[0]="" #remove first parameter
-	request=${request[*]} #to string
+	if [[ $1 != -sp || $1 != -ps ]];then #sound
+		request=($*) #get array
+		request[0]="" #remove first parameter
+		request=${request[*]} #to string
+	fi
 else
 	request="$*"
 fi
@@ -255,7 +257,8 @@ if [[ $1 == -l || $1 == --list ]]; then #list
 	done | sort -k2
 	exit
 fi
-if [[ $1 == -p || $1 == --prompt ]]; then #help
+if [[ $1 == -p || $1 == -sp || $1 == -ps || $1 == --prompt ]]; then #help
+	[[ $2 == -s || $1 == --sound ]] && sound=1
 	echo "Prompt mode activated"
 	declare PROMPT_MODE_ACTIVATED=true
 	request=""
