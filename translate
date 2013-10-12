@@ -242,7 +242,7 @@ if [[ $1 == -h || $1 == --help ]]; then #help
 	exit
 fi
 if [[ $1 == -p || $1 == -sp || $1 == -ps || $1 == --prompt ]]; then #prompt mode
-	[[ $2 == -s || $2 == --sound || $1 == -sp || $1 == -ps ]] && sound=1
+	[[ $1 == -sp || $1 == -ps || $2 == -s || $2 == --sound ]] && sound=1
 	echo "Prompt mode activated"
 	declare PROMPT_MODE_ACTIVATED=true
 	request=""
@@ -261,14 +261,6 @@ if [[ $1 == -l || $1 == --list ]]; then #list
 	exit
 fi
 
-if [[ $PROMPT_MODE_ACTIVATED == false && ${#request} -eq 0 ]];then #using saved fixed string without parameters
-	if [[ -e $FIXED_STRING ]]; then
-		request=$(cat $FIXED_STRING 2>/dev/null)
-		echo -e "$(tput bold)$(tput setaf 3)$request$(tput sgr0)"
-	else
-		exit
-	fi
-fi
 #rm $FIXED_STRING 2> /dev/null
 
 eng_sound_download(){ 			# $cachefile, 
@@ -287,20 +279,20 @@ eng_sound_download(){ 			# $cachefile,
 
 
 #----------------------------------------------- MAIN PART ----------------------------------------------------------------
-while true; do #Prompt loop
-	
-	if [[ $PROMPT_MODE_ACTIVATED == true ]]; then
-		if [[ ${#det_language_request} -eq 0 ]]; then
-			echo -n "> "
-			read request
-			[[ ${#request} -eq 0 ]] && continue;
-		else
-			request = $det_language_request
-			det_language_request = ""
-		fi
-	fi
+main_func(){	
 
-	f_w=$(echo "$request" | cut -f 1 -d " ")	
+	#if [[ $PROMPT_MODE_ACTIVATED == true && ${#det_language_request} -eq 0 && ${#request} -eq 0 ]]; then
+	#		continue
+	#fi	
+	#if [[ ${#request} -eq 0 && -z $det_language_request ]];then #using saved fixed string without parameters
+	if [[ ${#request} -eq 0 ]];then #using saved fixed string without parameters
+		if [[ -e $FIXED_STRING ]]; then
+			request=$(cat $FIXED_STRING 2>/dev/null)
+			echo -e "$(tput bold)$(tput setaf 3)$request$(tput sgr0)"	
+		fi
+	fi	
+
+	f_w=$(echo "$request" | cut -f 1 -d " ")
 	if [[  $f_w == -s || $f_w == --sound ]];then #sound in prompt
 		sound=1
 		echo "Pronunciation enabled"
@@ -426,7 +418,8 @@ while true; do #Prompt loop
 				export TLSOURCE=$det_language #TLTARGET=en #source and target language for second attempt
 				if [[ $PROMPT_MODE_ACTIVATED == false ]]; then
 					if [[ $sound == 1 ]]; then $0 -s "$request" ; else $0 "$request" ;fi #second attempt to translate with detected language  #sound will be quiet...
-				else det_language_request="$request" ;fi
+				#else det_language_request="$request" ;fi
+				fi
 				exit
 			fi
 
@@ -604,9 +597,16 @@ while true; do #Prompt loop
 			fi
 		fi
 	fi
-[[ $PROMPT_MODE_ACTIVATED == false ]] && exit
-done
+}
 
+if [[ $PROMPT_MODE_ACTIVATED == true ]]; then
+	while IFS="" read -r -e -d $'\n' -p '> ' request; do #Prompt loop
+		history -s "$request"
+		main_func
+	done
+else
+	main_func
+fi
 
 #rest languages for interface. not in list of source language
 #hl=ak          Akan
