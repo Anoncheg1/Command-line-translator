@@ -279,33 +279,7 @@ eng_sound_download(){ 			# $cachefile,
 
 
 #----------------------------------------------- MAIN PART ----------------------------------------------------------------
-main_func(){	
-
-	#if [[ $PROMPT_MODE_ACTIVATED == true && ${#det_language_request} -eq 0 && ${#request} -eq 0 ]]; then
-	#		continue
-	#fi	
-	#if [[ ${#request} -eq 0 && -z $det_language_request ]];then #using saved fixed string without parameters
-	if [[ ${#request} -eq 0 ]];then #using saved fixed string without parameters
-		if [[ -e $FIXED_STRING ]]; then
-			request=$(cat $FIXED_STRING 2>/dev/null)
-			echo -e "$(tput bold)$(tput setaf 3)$request$(tput sgr0)"	
-		fi
-	fi	
-
-	f_w=$(echo "$request" | cut -f 1 -d " ")
-	if [[  $f_w == -s || $f_w == --sound ]];then #sound in prompt
-		sound=1
-		echo "Pronunciation enabled"
-		continue
-	fi
-	if [[ $f_w == -l || $f_w == --list ]]; then #list
-		for i in "${!ln_arr[@]}" ;do
-			echo -e "$i\t${ln_arr[$i]}"
-		done | sort -k2		
-		continue
-	fi
-	if [[ $f_w == -h || $f_w == --help ]]; then #help
-		echo "$help" ; continue ; fi
+main_func(){
 
 	tchar=${request:0:1} #language detection by the first character
 	tcharnum=$(printf "%d" "'${tchar}")
@@ -602,6 +576,38 @@ main_func(){
 if [[ $PROMPT_MODE_ACTIVATED == true ]]; then
 	while IFS="" read -r -e -d $'\n' -p '> ' request; do #Prompt loop
 		history -s "$request"
+		
+		#if [[ $PROMPT_MODE_ACTIVATED == true && ${#det_language_request} -eq 0 && ${#request} -eq 0 ]]; then
+		#		continue
+		#fi	
+		#if [[ ${#request} -eq 0 && -z $det_language_request ]];then #using saved fixed string without parameters
+		if [[ ${#request} -eq 0 ]];then #using saved fixed string without parameters
+			if [[ -e $FIXED_STRING ]]; then
+				request=$(cat $FIXED_STRING 2>/dev/null)
+				echo -e "$(tput bold)$(tput setaf 3)$request$(tput sgr0)"	
+			fi
+		fi	
+
+		f_w=$(echo "$request" | cut -f 1 -d " ")
+		if [[  $f_w == -s || $f_w == --sound ]];then #sound in prompt
+			if [[ $sound == 1 ]];then
+				sound=0
+				echo "Pronunciation disabled"
+			else
+				sound=1
+				echo "Pronunciation enabled"
+			fi			
+			continue
+		fi
+		if [[ $f_w == -l || $f_w == --list ]]; then #list
+			for i in "${!ln_arr[@]}" ;do
+				echo -e "$i\t${ln_arr[$i]}"
+			done | sort -k2		
+			continue
+		fi
+		if [[ $f_w == -h || $f_w == --help ]]; then #help
+			echo "$help" ; continue ; fi		
+		
 		main_func
 	done
 else
