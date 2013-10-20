@@ -281,6 +281,13 @@ eng_sound_download(){ 			# $cachefile,
 #----------------------------------------------- MAIN PART ----------------------------------------------------------------
 main_func(){
 
+	if [[ ${#request} -eq 0 ]];then #using saved fixed string without parameters
+		if [[ -e $FIXED_STRING ]]; then
+			request=$(cat $FIXED_STRING 2>/dev/null)
+			echo -e "$(tput bold)$(tput setaf 3)$request$(tput sgr0)"	
+		fi
+	fi
+
 	tchar=${request:0:1} #language detection by the first character
 	tcharnum=$(printf "%d" "'${tchar}")
 	if [[ $tcharnum -ge 65 && $tcharnum -le 122 || (( $TLSOURCE == $LATIN_LANG && ! $TLTARGET )) ]]; then #if request is A-Za-z then it is LATIN_LANG... ("en,it" will not be detected here idk how to make it for now)
@@ -581,12 +588,6 @@ if [[ $PROMPT_MODE_ACTIVATED == true ]]; then
 		#		continue
 		#fi	
 		#if [[ ${#request} -eq 0 && -z $det_language_request ]];then #using saved fixed string without parameters
-		if [[ ${#request} -eq 0 ]];then #using saved fixed string without parameters
-			if [[ -e $FIXED_STRING ]]; then
-				request=$(cat $FIXED_STRING 2>/dev/null)
-				echo -e "$(tput bold)$(tput setaf 3)$request$(tput sgr0)"	
-			fi
-		fi	
 
 		f_w=$(echo "$request" | cut -f 1 -d " ")
 		if [[  $f_w == -s || $f_w == --sound ]];then #sound in prompt
