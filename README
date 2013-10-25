@@ -32,9 +32,10 @@ in ~/.bash_aliases
 alias t="/home/user/translate"
 alias ts="/home/user/translate -s"
 
-You can force the language with environment varibles by command:
-export TLSOURCE=en TLTARGET=ru
-but better configure "FIRST_LANG" and "LATIN_LANG" in script for auto detection of direction by the first character!
+-S lang Set source language
+-T lang Set target language
+-l List of languages
+Configure "FIRST_LANG" and "LATIN_LANG" in script for auto detection of direction by the first character!
 
 for auto-Tab-completion:
 in /etc/bash_completion.d/translate
@@ -44,6 +45,5 @@ have t &&
 complete -W "$(cat $TR_ENG_WORDS)" t ts #autocompletion
 
 You can thank me with
-www.moneybookers.com: MR VITALIJ CHEPELEV, hujhuj222@gmail.com
 Webmoney: wmz Z253207064534, wmr R327158221146, wme E282089965215
 

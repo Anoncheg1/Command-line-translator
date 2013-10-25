@@ -37,12 +37,14 @@
 #
 #:) translate.google.com, www.macmillandictionary.com/dictionary/british, thefreedictionary.com, lingvo-online.ru, www.forvo.com 
 
-help=$(basename "$0")' [-s] [-l] [-h] <text>
+help=$(basename "$0")' [-s] [-l] [-h] [-p] [-S language_2_chars] [-T language_2_chars] <text>
 if text is LATIN_LANG, then target language is FIRST_LANG
 otherwise, target language is LATIN_LANG
--s --sound Enable sound for one word
--p, --prompt Prompt mode
--l, --list List of languages
+-s Enable sound for one word
+-p Prompt mode
+-S lang Set source language
+-T lang Set target language
+-l List of languages
 You can force the language with environment varibles by command:
 export TLSOURCE=en TLTARGET=ru
 but better configure "FIRST_LANG" and "LATIN_LANG" in script for auto detection of direction by the first character!
@@ -237,30 +239,65 @@ function language_identification(arr){ //get detected languages
 
 sound=0
 volume=0.8
-if [[ $1 == -h || $1 == --help ]]; then #help
-	echo "$help"
-	exit
-fi
-if [[ $1 == -p || $1 == -sp || $1 == -ps || $1 == --prompt ]]; then #prompt mode
-	[[ $1 == -sp || $1 == -ps || $2 == -s || $2 == --sound ]] && sound=1
-	echo "Prompt mode activated"
-	declare PROMPT_MODE_ACTIVATED=true
-	request=""
-elif [[ $1 == -s || $1 == --sound ]];then #sound
-	sound=1	
-	request=($*) #get array
-	request[0]="" #remove first parameter
-	request=${request[*]} #to string	
-else
-	request="$*"
-fi
-if [[ $1 == -l || $1 == --list ]]; then #list
-	for i in "${!ln_arr[@]}" ;do
-		echo -e "$i\t${ln_arr[$i]}"
-	done | sort -k2
-	exit
-fi
+#if [[ $1 == -h || $1 == --help ]]; then #help
+#	echo "$help"
+#	exit
+#fi
+#if [[ $1 == -p || $1 == -sp || $1 == -ps || $1 == --prompt ]]; then #prompt mode
+#	[[ $1 == -sp || $1 == -ps || $2 == -s || $2 == --sound ]] && sound=1
+#	echo "Prompt mode activated"
+#	declare PROMPT_MODE_ACTIVATED=true
+#	request=""
+#elif [[ $1 == -s || $1 == --sound ]];then #sound
+#	sound=1	
+#	request=($*) #get array
+#	request[0]="" #remove first parameter
+#	request=${request[*]} #to string	
+#else
+#	request="$*"
+#fi
+#if [[ $1 == -l || $1 == --list ]]; then #list
+#	for i in "${!ln_arr[@]}" ;do
+#		echo -e "$i\t${ln_arr[$i]}"
+#	done | sort -k2
+#	exit
+#fi
 
+#GETOPT=`getopt -o hlps --long --list,--sound,c-long:: \
+#     -n 'example.bash' -- "$@"`
+#eval set -- "$GETOPT"
+source=
+target=
+while getopts :hlpsS:T: opt; do
+	case $opt in
+		h)
+			echo "$help"
+			exit;;
+		s)
+			sound=1;;
+		p)
+			echo "Prompt mode activated"
+			declare PROMPT_MODE_ACTIVATED=true;;
+		l)
+			for i in "${!ln_arr[@]}" ;do
+			echo -e "$i\t${ln_arr[$i]}"
+			done | sort -k2
+			exit;;
+		S)
+			TLSOURCE="$OPTARG";;
+		T)
+			TLTARGET="$OPTARG";;
+#		\?)
+#			echo "Invalid option: -$OPTARG" >&2
+#			exit 1;;
+		?)	
+			echo "Invalid option: -$OPTARG" >&2
+			printf "Usage: %s: [-s] [-h] [-l] [-p] [-S language_2_chars] [-T language_2_chars] <text>\n" $(basename "$0")
+			exit 2;;
+	esac
+done
+shift $(($OPTIND - 1))
+request="$*"
 #rm $FIXED_STRING 2> /dev/null
 
 eng_sound_download(){ 			# $cachefile, 
@@ -284,7 +321,9 @@ main_func(){
 	if [[ ${#request} -eq 0 ]];then #using saved fixed string without parameters
 		if [[ -e $FIXED_STRING ]]; then
 			request=$(cat $FIXED_STRING 2>/dev/null)
-			echo -e "$(tput bold)$(tput setaf 3)$request$(tput sgr0)"	
+			echo -e "$(tput bold)$(tput setaf 3)$request$(tput sgr0)"
+		else
+			exit 1				
 		fi
 	fi
 
@@ -301,7 +340,7 @@ main_func(){
 
 	[[ $TLSOURCE ]] && source=$TLSOURCE; 
 	[[ $TLTARGET ]] && target=$TLTARGET; # export TLSOURCE=en TLTARGET=ru; will force the language
-
+#echo source=$source
 	
 	if [[ ${#request} -gt 300 ]]; then
 		if ! result=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" -d "sl=$source" -d "tl=$target" --data-urlencode "text=$request" http://translate.google.com) && [[ $httpproxy != "" ]] #getting google respond for short sentence
@@ -388,7 +427,7 @@ main_func(){
 			dictionary=$(js -U "$PR_DIR"/tmpjsobj2)				# dictionary
 
 			#Language detection
-			[[ $det_language != $source && (( $TLSOURCE || $det_language != $ENGLISH_TARGET_LANG )) ]] && echo -e "$C_GRAY*	$det_language ${ln_arr[$det_language]}$C_NORMAL"
+			[[ $det_language && $det_language != $source && $TLSOURCE ]] && echo -e "$C_GRAY*	$det_language ${ln_arr[$det_language]}$C_NORMAL"
 
 			if [[ $source != $det_language && ! $fl_raw && ((
 					$(echo $request | sed 's/ //g' | tr '[:upper:]' '[:lower:]') ==  $(echo $t_result | sed 's/ //g' | tr '[:upper:]' '[:lower:]') || 
