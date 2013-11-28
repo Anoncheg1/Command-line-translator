@@ -434,10 +434,12 @@ main_func(){
 			translit=$(js -U "$PR_DIR"/tmpjsobj2)				# translit
 			cp -f "$PR_DIR"/tmpjsobj "$PR_DIR"/tmpjsobj2
 			echo -n "dictionary(googlearr);" >> "$PR_DIR"/tmpjsobj2
-			dictionary=$(js -U "$PR_DIR"/tmpjsobj2)				# dictionary
-			cp -f "$PR_DIR"/tmpjsobj "$PR_DIR"/tmpjsobj2
-			echo -n "options_for_one_word(googlearr);" >> "$PR_DIR"/tmpjsobj2
-			options_for_one_word=$(js -U "$PR_DIR"/tmpjsobj2)		# suggested variants from google
+			dictionary=$(js -U "$PR_DIR"/tmpjsobj2)				# dictionary			
+			if [[ $r_words_count -le 2 && $(echo "$dictionary" | wc -l) -le 3 ]];then
+				cp -f "$PR_DIR"/tmpjsobj "$PR_DIR"/tmpjsobj2
+				echo -n "options_for_one_word(googlearr);" >> "$PR_DIR"/tmpjsobj2
+				options_for_one_word=$(js -U "$PR_DIR"/tmpjsobj2)		# suggested variants from google
+			fi
 
 			#Language detection
 			[[ $det_language && $det_language != $source && $TLSOURCE ]] && echo -e "$C_GRAY*	$det_language ${ln_arr[$det_language]}$C_NORMAL"
