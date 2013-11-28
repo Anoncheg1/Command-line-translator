@@ -230,6 +230,16 @@ function dictionary(arr){ //dictionary output
 		}
 	}
 }
+function options_for_one_word(arr){
+	if(typeof arr[5][0][2] !== 'undefined' && arr[5][0][2] !== null){
+		for (var a = 0; a < arr[5][0][2].length; a++){
+			if(typeof arr[5][0][2][a][0] !== 'undefined' && arr[5][0][2][a][0] !== null){
+				print(arr[5][0][2][a][0]);		
+			}
+		}
+	}
+	
+}
 function language_identification(arr){ //get detected languages
 	if(typeof arr[8] !== 'undefined' && arr[8] !== null && typeof arr[8][0] !== 'undefined' && arr[8][0] !== null && typeof arr[8][0][0] !== 'undefined' && arr[8][0][0] !== null){
 		print('Detected language: '+arr[8][0][0]); //detected language
@@ -425,6 +435,9 @@ main_func(){
 			cp -f "$PR_DIR"/tmpjsobj "$PR_DIR"/tmpjsobj2
 			echo -n "dictionary(googlearr);" >> "$PR_DIR"/tmpjsobj2
 			dictionary=$(js -U "$PR_DIR"/tmpjsobj2)				# dictionary
+			cp -f "$PR_DIR"/tmpjsobj "$PR_DIR"/tmpjsobj2
+			echo -n "options_for_one_word(googlearr);" >> "$PR_DIR"/tmpjsobj2
+			options_for_one_word=$(js -U "$PR_DIR"/tmpjsobj2)				# dictionary
 
 			#Language detection
 			[[ $det_language && $det_language != $source && $TLSOURCE ]] && echo -e "$C_GRAY*	$det_language ${ln_arr[$det_language]}$C_NORMAL"
@@ -457,6 +470,7 @@ main_func(){
 
 				echo -e "$C_GREEN$t_result$C_NORMAL_RAW" > "$cachefile" #google translated text to cache
 				[[ $dictionary ]] && echo -e "$dictionary" >> "$cachefile" #google dictionary to cache
+				[[ $(echo "$dictionary" | wc -l) -le 3 ]] && echo -e "$C_BLUE_RAW"Options:"$C_NORMAL"'\n'"$options_for_one_word" >> "$cachefile" #google sugestions to cache
 
 				#phrases, forms and a vform
 				macmill=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" -m $timeout http://www.macmillandictionary.com/dictionary/british/"$(echo $request | tr '[:upper:]' '[:lower:]' | tr ' ' - )" )
@@ -514,11 +528,12 @@ main_func(){
 					fi
 
 				fi
-			elif [[ ! $fl_raw ]]; then  #all languages dictionary (without errors - fl_raw)
+			elif [[ ! $fl_raw && $r_words_count -le 5 ]]; then  #all languages dictionary (without errors - fl_raw)
 				echo -e "$C_GREEN$t_result$C_NORMAL_RAW" > "$cachefile"				#google translated text output
 				[[ $source != en && $r_words_count -le $TRANSLIT_WORDS_MAX && $(echo $t_result | sed 's/ //g' | tr '[:upper:]' '[:lower:]') !=  $(echo $translit | sed 's/ //g' | tr '[:upper:]' '[:lower:]') ]] && echo -e "$translit" >> "$cachefile"				#google translit	output
 				[[ $dictionary ]] && echo -e "$dictionary" >> "$cachefile"			#google dictionary 	output
-
+				[[ $r_words_count -eq 1 && $(echo "$dictionary" | wc -l) -le 3 ]] && echo -e "$C_BLUE_RAW"Options:"$C_NORMAL"'\n'"$options_for_one_word" >> "$cachefile" #google sugestions to cache
+				
 				if [[ $source == en && $r_words_count -le 5 ]]; then #english
 					#phrases for 2 words
 					if [[ $r_words_count -le 2 ]];then
@@ -589,7 +604,7 @@ main_func(){
 				[[ $r_words_count -gt 2 ]] && rm "$cachefile" 2> /dev/null #rm for more then 2 words
 
 
-			else # with errors $fl_raw
+			else # with errors $fl_raw ;  words > 5
 				echo -e "$C_GREEN$t_result$C_NORMAL_RAW" #google translated text output
 				[[ $source != en && $r_words_count -le $TRANSLIT_WORDS_MAX && $(echo $t_result | sed 's/ //g' | tr '[:upper:]' '[:lower:]') !=  $(echo $translit | sed 's/ //g' | tr '[:upper:]' '[:lower:]') ]] && echo -e "$translit"	#google translit	output
 				echo -e "$fl" #empty line... cant fix it (:'d		#google fixed text 	output
