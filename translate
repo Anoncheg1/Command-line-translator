@@ -437,7 +437,7 @@ main_func(){
 			dictionary=$(js -U "$PR_DIR"/tmpjsobj2)				# dictionary
 			cp -f "$PR_DIR"/tmpjsobj "$PR_DIR"/tmpjsobj2
 			echo -n "options_for_one_word(googlearr);" >> "$PR_DIR"/tmpjsobj2
-			options_for_one_word=$(js -U "$PR_DIR"/tmpjsobj2)				# dictionary
+			options_for_one_word=$(js -U "$PR_DIR"/tmpjsobj2)		# suggested variants from google
 
 			#Language detection
 			[[ $det_language && $det_language != $source && $TLSOURCE ]] && echo -e "$C_GRAY*	$det_language ${ln_arr[$det_language]}$C_NORMAL"
@@ -470,7 +470,7 @@ main_func(){
 
 				echo -e "$C_GREEN$t_result$C_NORMAL_RAW" > "$cachefile" #google translated text to cache
 				[[ $dictionary ]] && echo -e "$dictionary" >> "$cachefile" #google dictionary to cache
-				[[ $(echo "$dictionary" | wc -l) -le 3 ]] && echo -e "$C_BLUE_RAW"Options:"$C_NORMAL"'\n'"$options_for_one_word" >> "$cachefile" #google sugestions to cache
+				[[ $(echo "$options_for_one_word" | wc -l) -gt 1 && $(echo "$dictionary" | wc -l) -le 3 ]] && echo -e "$C_BLUE_RAW"Options:"$C_NORMAL"'\n'"$options_for_one_word" >> "$cachefile" #google sugestions to cache
 
 				#phrases, forms and a vform
 				macmill=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" -m $timeout http://www.macmillandictionary.com/dictionary/british/"$(echo $request | tr '[:upper:]' '[:lower:]' | tr ' ' - )" )
@@ -532,7 +532,7 @@ main_func(){
 				echo -e "$C_GREEN$t_result$C_NORMAL_RAW" > "$cachefile"				#google translated text output
 				[[ $source != en && $r_words_count -le $TRANSLIT_WORDS_MAX && $(echo $t_result | sed 's/ //g' | tr '[:upper:]' '[:lower:]') !=  $(echo $translit | sed 's/ //g' | tr '[:upper:]' '[:lower:]') ]] && echo -e "$translit" >> "$cachefile"				#google translit	output
 				[[ $dictionary ]] && echo -e "$dictionary" >> "$cachefile"			#google dictionary 	output
-				[[ $r_words_count -eq 1 && $(echo "$dictionary" | wc -l) -le 3 ]] && echo -e "$C_BLUE_RAW"Options:"$C_NORMAL"'\n'"$options_for_one_word" >> "$cachefile" #google sugestions to cache
+				[[ $(echo "$options_for_one_word" | wc -l) -gt 1 && $r_words_count -le 2 && $(echo "$dictionary" | wc -l) -le 3 ]] && echo -e "$C_BLUE_RAW"Options:"$C_NORMAL"'\n'"$options_for_one_word" >> "$cachefile" #google sugestions to cache
 				
 				if [[ $source == en && $r_words_count -le 5 ]]; then #english
 					#phrases for 2 words
