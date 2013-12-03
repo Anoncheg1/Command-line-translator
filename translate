@@ -37,7 +37,7 @@
 #
 #:) translate.google.com, www.macmillandictionary.com/dictionary/british, thefreedictionary.com, lingvo-online.ru, www.forvo.com 
 
-help=$(basename "$0")' [-s] [-l] [-h] [-p] [-S language_2_chars] [-T language_2_chars] <text>
+help=`basename "$0"`' [-s] [-l] [-h] [-p] [-S language_2_chars] [-T language_2_chars] <text>
 if text is LATIN_LANG, then target language is FIRST_LANG
 otherwise, target language is LATIN_LANG
 -s Enable sound for one word
@@ -156,9 +156,9 @@ bashtrap()
 }
 
 if [[ $TERMINAL_C == "WOB" ]];then
-	declare -r C_RED="$(tput bold)$(tput setaf 1)"		#highlight
-	declare -r C_YELLOW="$(tput bold)$(tput setaf 3)"	#highlight
-	declare -r C_GRAY="$(tput setaf 7)"	#language detected
+	declare -r C_RED="`tput bold``tput setaf 1`"		#highlight
+	declare -r C_YELLOW="`tput bold``tput setaf 3`"	#highlight
+	declare -r C_GRAY="`tput setaf 7`"	#language detected
 	declare -r C_CYAN_RAW="\033[1;36m" 	#forms
 	declare -r C_GRAY_RED_RAW="\033[1;35m"	#phrases
 	declare -r C_DARK_BLUE_RAW="\033[34m"	#link for dictionary
@@ -166,27 +166,27 @@ if [[ $TERMINAL_C == "WOB" ]];then
 	declare -r C_BRIGHT_RAW="\033[1;37m"	#phrases, examples main part, vform2
 	declare -r C_GREEN="\033[1;32m"		#t_result
 elif [[ $TERMINAL_C == "BOW" ]];then
-	declare -r C_RED="$(tput bold)$(tput setaf 1)"		#highlight
-	declare -r C_YELLOW="$(tput setaf 3)"			#highlight
-	declare -r C_GRAY="$(tput bold)$(tput setaf 5)"	#language detected
+	declare -r C_RED="`tput bold``tput setaf 1`"		#highlight
+	declare -r C_YELLOW="`tput setaf 3`"			#highlight
+	declare -r C_GRAY="`tput bold``tput setaf 5`"	#language detected
 	declare -r C_CYAN_RAW="\033[1;36m" 		#forms
 	declare -r C_GRAY_RED_RAW="\033[1;35m"		#phrases
-	declare -r C_DARK_BLUE_RAW="$(tput setaf 7)"	#link for dictionary
+	declare -r C_DARK_BLUE_RAW="`tput setaf 7`"	#link for dictionary
 	declare -r C_BLUE_RAW="\033[1;34m"		#dictionary and vform1
-	declare -r C_BRIGHT_RAW="$(tput bold)"		#phrases, examples main part, vform2
-	declare -r C_GREEN="$(tput bold)"		#t_result
+	declare -r C_BRIGHT_RAW="`tput bold`"		#phrases, examples main part, vform2
+	declare -r C_GREEN="`tput bold`"		#t_result
 else #universal
-	declare -r C_RED="$(tput setaf 1)"		#highlight
-	declare -r C_YELLOW="$(tput bold)"		#highlight
+	declare -r C_RED="`tput setaf 1`"		#highlight
+	declare -r C_YELLOW="`tput bold`"		#highlight
 	declare -r C_GRAY=""			#language detected
 	declare -r C_CYAN_RAW="" 		#forms
 	declare -r C_GRAY_RED_RAW=""		#phrases
 	declare -r C_DARK_BLUE_RAW=""		#link for dictionary
 	declare -r C_BLUE_RAW=""		#dictionary and vform1
-	declare -r C_BRIGHT_RAW="$(tput bold)"	#phrases, examples main part, vform2
-	declare -r C_GREEN="$(tput bold)"	#t_result
+	declare -r C_BRIGHT_RAW="`tput bold`"	#phrases, examples main part, vform2
+	declare -r C_GREEN="`tput bold`"	#t_result
 fi
-declare -r C_NORMAL="$(tput sgr0)"
+declare -r C_NORMAL="`tput sgr0`"
 declare -r C_NORMAL_RAW="\033[0m"
 
 jsscript="var googlearr = eval(JSON.stringify(myJSONObject));
@@ -234,7 +234,7 @@ function options_for_one_word(arr){
 	if(typeof arr[5][0][2] !== 'undefined' && arr[5][0][2] !== null){
 		for (var a = 0; a < arr[5][0][2].length; a++){
 			if(typeof arr[5][0][2][a][0] !== 'undefined' && arr[5][0][2][a][0] !== null){
-				print(arr[5][0][2][a][0]);		
+				print(arr[5][0][2][a][0]);
 			}
 		}
 	}
@@ -302,7 +302,7 @@ while getopts :hlpsS:T: opt; do
 #			exit 1;;
 		?)	
 			echo "Invalid option: -$OPTARG" >&2
-			printf "Usage: %s: [-s] [-h] [-l] [-p] [-S language_2_chars] [-T language_2_chars] <text>\n" $(basename "$0")
+			printf "Usage: %s: [-s] [-h] [-l] [-p] [-S language_2_chars] [-T language_2_chars] <text>\n" `basename "$0"`
 			exit 2;;
 	esac
 done
@@ -311,7 +311,7 @@ request="$*"
 #rm $FIXED_STRING 2> /dev/null
 
 eng_sound_download(){ 			# $cachefile, 
-	[[ $(ls "$PR_DIR"/cache | wc -l) -gt $words_buffer ]] && find "$PR_DIR"/cache -mtime +20 -delete #cache cleaning. remove words older than 20 days.
+	[[ `ls "$PR_DIR"/cache | wc -l` -gt $words_buffer ]] && find "$PR_DIR"/cache -mtime +20 -delete #cache cleaning. remove words older than 20 days.
 	rm "$PR_DIR"/tmpcookie 2>/dev/null &
 	curl -s -c "$PR_DIR"/tmpcookie --connect-timeout $timeout -m $timeout --user-agent "$useragent" $httpsproxy -x "$httpproxy" -d "login=$flogin&password=$fpass" http://ru.forvo.com/login/ -o/dev/null
 	if [[ -e "$PR_DIR"/tmpcookie ]]; then
@@ -480,9 +480,9 @@ main_func(){
 				#forms
 				forms=$(echo $macmill | grep -o "id=\"wordsformslayer-head\".*End of DIV wordforms" | sed 's/INFLECTION-CONTENT/\n/g' | sed -e 's/.*INFLECTION-ENTRY\">\([^<]*\)<.*I-VARIANT-before\">\([^<]*\).*INFLECTION-ENTRY\">\([^<]*\).*/666\1\2\3,/' -e 's/.*INFLECTION-ENTRY\">\([^<]*\)<.*/666\1,/' | grep 666 | cut -c 4-)
 				fwc=$(echo "$forms" | wc -l)
-				firstf=$(echo "$forms" | head -n 1) #1
-				last1f=$(echo "$forms" | tail -n 2 | head -n 1) #end-1
-				lastf=$(echo "$forms" | tail -n 1) #end
+				firstf=`echo "$forms" | head -n 1` #1
+				last1f=`echo "$forms" | tail -n 2 | head -n 1` #end-1
+				lastf=`echo "$forms" | tail -n 1` #end
 				[[ (( fwc -eq 5 && (( ${firstf%?}"ed," != $lastf || ${firstf%?}"ed," != $last1f || $lastf != $last1f )) )) ||
 				   (( fwc -eq 3 && (( ${firstf%?}"er," != $last1f  || ${firstf%?}"est," != $lastf )) )) ||
 				   (( fwc -eq 2 && (( ${firstf%?}"s," != $lastf )) )) ||
