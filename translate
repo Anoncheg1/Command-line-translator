@@ -337,6 +337,7 @@ main_func(){
 		fi
 	fi
 
+	request=`echo "$request" | sed -e 's/^ *//g'`
 	tchar=${request:0:1} #language detection by the first character
 	tcharnum=$(printf "%d" "'${tchar}")
 	if [[ $tcharnum -ge 65 && $tcharnum -le 122 || (( $TLSOURCE == $LATIN_LANG && ! $TLTARGET )) ]]; then #if request is A-Za-z then it is LATIN_LANG... ("en,it" will not be detected here idk how to make it for now)
