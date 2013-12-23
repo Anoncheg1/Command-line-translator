@@ -310,14 +310,16 @@ shift $(($OPTIND - 1))
 request="$*"
 #rm $FIXED_STRING 2> /dev/null
 
-eng_sound_download(){ 			# $cachefile, 
+sound_download(){ 			# $cachefile, $request, $source
 	[[ `ls "$PR_DIR"/cache | wc -l` -gt $words_buffer ]] && find "$PR_DIR"/cache -mtime +20 -delete #cache cleaning. remove words older than 20 days.
-	rm "$PR_DIR"/tmpcookie 2>/dev/null &
-	curl -s -c "$PR_DIR"/tmpcookie --connect-timeout $timeout -m $timeout --user-agent "$useragent" $httpsproxy -x "$httpproxy" -d "login=$flogin&password=$fpass" http://ru.forvo.com/login/ -o/dev/null
-	if [[ -e "$PR_DIR"/tmpcookie ]]; then
-		slink=$(curl -s -b $PR_DIR/tmpcookie --connect-timeout $timeout -m $timeout --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://ru.forvo.com/word/"$(echo $request | tr ' ' _ )"/ | grep -o '[^"]*/download/mp3/'"$(echo $request | tr ' ' _ )"'/en/[^"]*' |head -n 1 )
-		if [[ ${#slink} -gt 5 ]];then
-			 curl -s -b "$PR_DIR"/tmpcookie --connect-timeout $timeout -m $timeout --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://ru.forvo.com"$slink" > "$cachefile".mp3
+	slink=$(curl -s -b $PR_DIR/tmpcookie --connect-timeout $timeout -m $timeout --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://www.forvo.com/word/"$(echo $request | tr ' ' _ )"/ | grep -o '[^"]*/download/mp3/[^"]*' ) #| grep -o '[^"]*/download/mp3/'"$(echo $request | tr ' ' _ )"'/'$source'/[^"]*'
+	slink=$(echo "$slink" | grep $source | head -n 1)
+	[[ ${#slink} -lt 6 ]] && slink=$(echo "$slink" | head -n 1);
+	if [[ ${#slink} -gt 5 ]];then
+		rm "$PR_DIR"/tmpcookie 2>/dev/null &
+		curl -s -c "$PR_DIR"/tmpcookie --connect-timeout $timeout -m $timeout --user-agent "$useragent" $httpsproxy -x "$httpproxy" -d "login=$flogin&password=$fpass" http://www.forvo.com/login/ -o/dev/null
+		if [[ -e "$PR_DIR"/tmpcookie ]]; then
+			curl -s -b "$PR_DIR"/tmpcookie --connect-timeout $timeout -m $timeout --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://www.forvo.com"$slink" > "$cachefile".mp3
 			return
 		fi
 	fi
@@ -374,7 +376,7 @@ main_func(){
 	
 		[[ ! -e "$cachefile".mp3 && $r_words_count -le 2 ]] &&
 			if [[ $sound == 1 || $SOUND_DOWNLOAD_AWS == 1 ]];then #getting sound from forvo.com
-				eng_sound_download &      # in background
+				sound_download &      # in background
 			fi
 	
 		if [[ ! -e "$cachefile" ]]; then
