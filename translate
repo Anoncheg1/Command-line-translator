@@ -428,20 +428,20 @@ main_func(){
 
 			cp -f "$PR_DIR"/tmpjsobj "$PR_DIR"/tmpjsobj2
 			echo -n "language_identification(googlearr);" >> "$PR_DIR"/tmpjsobj2
-			det_language=$(js -U "$PR_DIR"/tmpjsobj2 | tail -c3)		# detected language
+			det_language=$(js -f "$PR_DIR"/tmpjsobj2 | tail -c3)		# detected language
 			cp -f "$PR_DIR"/tmpjsobj "$PR_DIR"/tmpjsobj2
 			echo -n "translated_result(googlearr);" >> "$PR_DIR"/tmpjsobj2
-			t_result=$(js -U "$PR_DIR"/tmpjsobj2)				# translated text
+			t_result=$(js -f "$PR_DIR"/tmpjsobj2)				# translated text
 			cp -f "$PR_DIR"/tmpjsobj "$PR_DIR"/tmpjsobj2
 			echo -n "translit(googlearr);" >> "$PR_DIR"/tmpjsobj2
-			translit=$(js -U "$PR_DIR"/tmpjsobj2)				# translit
+			translit=$(js -f "$PR_DIR"/tmpjsobj2)				# translit
 			cp -f "$PR_DIR"/tmpjsobj "$PR_DIR"/tmpjsobj2
 			echo -n "dictionary(googlearr);" >> "$PR_DIR"/tmpjsobj2
-			dictionary=$(js -U "$PR_DIR"/tmpjsobj2)				# dictionary			
+			dictionary=$(js -f "$PR_DIR"/tmpjsobj2)				# dictionary			
 			if [[ $r_words_count -le 2 && $(echo "$dictionary" | wc -l) -le 3 ]];then
 				cp -f "$PR_DIR"/tmpjsobj "$PR_DIR"/tmpjsobj2
 				echo -n "options_for_one_word(googlearr);" >> "$PR_DIR"/tmpjsobj2
-				options_for_one_word=$(js -U "$PR_DIR"/tmpjsobj2)		# suggested variants from google
+				options_for_one_word=$(js -f "$PR_DIR"/tmpjsobj2)		# suggested variants from google
 			fi
 
 			#Language detection
