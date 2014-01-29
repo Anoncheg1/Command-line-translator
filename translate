@@ -371,7 +371,7 @@ main_func(){
 			httpproxy="" ; httpsproxy=""  #don't wanna proxy for 4 words.
 			request=$(echo "$request" | tr '[:upper:]' '[:lower:]') #lower request for short sentences
 		fi
-		cachefile="$PR_DIR/cache/$source-$target"_"$request"
+		cachefile="$PR_DIR/cache/$source-$target"_$(echo ${request//[-._\/]/})
 		r_words_count=$(echo "$request"  |wc -w)
 	
 		[[ ! -e "$cachefile".mp3 && $r_words_count -le 2 ]] &&
