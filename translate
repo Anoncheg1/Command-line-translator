@@ -612,7 +612,10 @@ main_func(){
 			else # with errors $fl_raw ;  words > 5
 				echo -e "$C_GREEN$t_result$C_NORMAL_RAW" #google translated text output
 				[[ $source != en && $r_words_count -le $TRANSLIT_WORDS_MAX && $(echo $t_result | sed 's/ //g' | tr '[:upper:]' '[:lower:]') !=  $(echo $translit | sed 's/ //g' | tr '[:upper:]' '[:lower:]') ]] && echo -e "$translit"	#google translit	output
-				echo -e "$fl" #empty line... cant fix it (:'d		#google fixed text 	output
+				if [[ $fl ]];then 
+					echo -e "$fl"
+					fl=""
+				fi
 			fi #main end
 		else #cache output
 			cat "$cachefile" #output
