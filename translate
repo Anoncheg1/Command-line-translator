@@ -460,8 +460,8 @@ main_func(){
 				if [[ $PROMPT_MODE_ACTIVATED == false ]]; then
 					if [[ $sound == 1 ]]; then $0 -s "$request" ; else $0 "$request" ;fi #second attempt to translate with detected language  #sound will be quiet...
 				#else det_language_request="$request" ;fi
-				fi
-				exit
+				fi				
+				continue;exit
 			fi
 
 			[[ $source == "auto" ]] && { source=$det_language; cachefile="$PR_DIR/cache/$source-$target"_"$request"; } #auto in cachefile fix #not necessary
