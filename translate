@@ -398,7 +398,7 @@ main_func(){
 
 			#Highlight
 			declare difftest
-			[[ $fl_raw ]] &&
+			if [[ $fl_raw ]]; then
 				if [[ $r_words_count -le 2 ]];then #for 1-2 words
 					fl=$(echo "$fl_raw" | sed 's/\\u003cb\\u003e\\u003ci\\u003e//g' | sed 's/\\u003c\/i\\u003e\\u003c\/b\\u003e//g' | sed 's/\\u0026//g' | sed "s/\#39;/'/g") #removing shit
 					[[ $(echo "$fl" | tr -d "'") == "$request" ]] && fl="" # skip highlight for ' char
@@ -417,6 +417,9 @@ main_func(){
 					fl=$(echo "$fl_raw" | sed 's/\\u003cb\\u003e\\u003ci\\u003e/'$C_YELLOW'/g' | sed 's/\\u003c\/i\\u003e\\u003c\/b\\u003e/'$C_NORMAL'/g' | sed 's/\\u0026//g' | sed "s/\#39;/'/g" ) #google fixed text
 					#echo "$fl" > $FIXED_STRING
 				fi
+			else
+			unset fl
+			fi
 #echo $difftest
 #echo $grespond | grep -o '\[.*\]' | enca -L russian
 #echo $grespond | grep -o '\[.*\]'
@@ -612,10 +615,7 @@ main_func(){
 			else # with errors $fl_raw ;  words > 5
 				echo -e "$C_GREEN$t_result$C_NORMAL_RAW" #google translated text output
 				[[ $source != en && $r_words_count -le $TRANSLIT_WORDS_MAX && $(echo $t_result | sed 's/ //g' | tr '[:upper:]' '[:lower:]') !=  $(echo $translit | sed 's/ //g' | tr '[:upper:]' '[:lower:]') ]] && echo -e "$translit"	#google translit	output
-				if [[ $fl ]];then 
-					echo -e "$fl"
-					fl=""
-				fi
+				echo -e "$fl"
 			fi #main end
 		else #cache output
 			cat "$cachefile" #output
