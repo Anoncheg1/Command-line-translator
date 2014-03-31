@@ -457,11 +457,12 @@ main_func(){
 					)) && ! $dictionary ]]; then
 				[[ $source != "auto" ]] && echo -e "trying with detected language" # I guess google "auto" is not working then we will do it by yourself mutely
 				export TLSOURCE=$det_language #TLTARGET=en #source and target language for second attempt
-				if [[ $PROMPT_MODE_ACTIVATED == false ]]; then
-					if [[ $sound == 1 ]]; then $0 -s "$request" ; else $0 "$request" ;fi #second attempt to translate with detected language  #sound will be quiet...
+				#if [[ $PROMPT_MODE_ACTIVATED == false ]]; then
+					#if [[ $sound == 1 ]]; then $0 -s "$request" ; else $0 "$request" ;fi #second attempt to translate with detected language  #sound will be quiet...
+				main_func #second attempt to translate with detected language
 				#else det_language_request="$request" ;fi
-				fi				
-				continue;exit
+				#fi				
+				exit
 			fi
 
 			[[ $source == "auto" ]] && { source=$det_language; cachefile="$PR_DIR/cache/$source-$target"_"$request"; } #auto in cachefile fix #not necessary
