@@ -314,11 +314,12 @@ sound_download(){ 			# $cachefile, $request, $source
 	local s=$source
 	[[ `ls "$PR_DIR"/cache | wc -l` -gt $words_buffer ]] && find "$PR_DIR"/cache -mtime +20 -delete #cache cleaning. remove words older than 20 days.
 	slink=$(curl -s -b $PR_DIR/tmpcookie --connect-timeout $timeout -m $timeout --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://www.forvo.com/word/"$(echo $request | tr ' ' _ )"/ | grep -o '[^"]*/download/mp3/[^"]*' )
-	if [[ $source -eq "zh" || $source -eq "zh-CN" ]];then s="zh"
-	elif [[ $source -eq "iw" ]];then  s="he"
-	elif [[ $source -eq "id" ]];then  s="ind"
+	if [[ $source == "zh" || $source == "zh-CN" ]];then s="zh"
+	elif [[ $source == "iw" ]];then  s="he"
+	elif [[ $source == "id" ]];then  s="ind"
 	fi
 	slink=$(echo "$slink" | grep $s | head -n 1)
+	
 	[[ ${#slink} -lt 6 ]] && slink=$(echo "$slink" | head -n 1);
 	if [[ ${#slink} -gt 5 ]];then
 		rm "$PR_DIR"/tmpcookie 2>/dev/null &
