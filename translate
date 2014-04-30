@@ -37,13 +37,13 @@
 #
 #:) translate.google.com, www.macmillandictionary.com/dictionary/british, thefreedictionary.com, lingvo-online.ru, www.forvo.com 
 
-help=`basename "$0"`' [-s] [-l] [-h] [-p] [-S language_2_chars] [-T language_2_chars] <text>
+help=`basename "$0"`' [-S] [-l] [-h] [-p] [-s language_2_chars] [-t language_2_chars] <text>
 if text is LATIN_LANG, then target language is FIRST_LANG
 otherwise, target language is LATIN_LANG
--s Enable sound for one word
+-S Enable sound for one word
 -p Prompt mode
--S lang Set source language
--T lang Set target language
+-s lang Set source language
+-t lang Set target language
 -l List of languages
 You can force the language with environment varibles by command:
 export TLSOURCE=en TLTARGET=ru
@@ -278,12 +278,12 @@ volume=0.8
 #eval set -- "$GETOPT"
 source=
 target=
-while getopts :hlpsS:T: opt; do
+while getopts :hlpSs:t: opt; do
 	case $opt in
 		h)
 			echo "$help"
 			exit;;
-		s)
+		S)
 			sound=1;;
 		p)
 			echo "Prompt mode activated"
@@ -293,16 +293,16 @@ while getopts :hlpsS:T: opt; do
 			echo -e "$i\t${ln_arr[$i]}"
 			done | sort -k2
 			exit;;
-		S)
-			TLSOURCE="$OPTARG";;
-		T)
-			TLTARGET="$OPTARG";;
+		s)
+			if [[ ln_arr[$OPTARG] ]]; then TLSOURCE="$OPTARG";fi;;
+		t)
+			if [[ ln_arr[$OPTARG] ]]; then TLTARGET="$OPTARG";fi;;
 #		\?)
 #			echo "Invalid option: -$OPTARG" >&2
 #			exit 1;;
 		?)	
 			echo "Invalid option: -$OPTARG" >&2
-			printf "Usage: %s: [-s] [-h] [-l] [-p] [-S language_2_chars] [-T language_2_chars] <text>\n" `basename "$0"`
+			printf "Usage: %s: [-S] [-h] [-l] [-p] [-s language_2_chars] [-t language_2_chars] <text>\n" `basename "$0"`
 			exit 2;;
 	esac
 done
@@ -457,8 +457,8 @@ main_func(){
 			[[ $det_language && $det_language != $source && $TLSOURCE ]] && echo -e "$C_GRAY*	$det_language ${ln_arr[$det_language]}$C_NORMAL"
 
 			if [[ $source != $det_language && ! $fl_raw && ((
-					$(echo $request | sed 's/ //g' | tr '[:upper:]' '[:lower:]') ==  $(echo $t_result | sed 's/ //g' | tr '[:upper:]' '[:lower:]') || 
-					$(echo $t_result | sed 's/ //g' | tr '[:upper:]' '[:lower:]') ==  $(echo $translit | sed 's/ //g' | tr '[:upper:]' '[:lower:]') ||
+					$(echo "$request" | sed 's/ //g' | tr '[:upper:]' '[:lower:]') ==  $(echo "$t_result" | sed 's/ //g' | tr '[:upper:]' '[:lower:]') || 
+					$(echo "$t_result" | sed 's/ //g' | tr '[:upper:]' '[:lower:]') ==  $(echo "$translit" | sed 's/ //g' | tr '[:upper:]' '[:lower:]') ||
 					${request:0:1} == ${t_result:0:1}
 					)) && ! $dictionary ]]; then
 				[[ $source != "auto" ]] && echo -e "trying with detected language" # I guess google "auto" is not working then we will do it by yourself mutely
@@ -659,7 +659,7 @@ if [[ $PROMPT_MODE_ACTIVATED == true ]]; then
 		#if [[ ${#request} -eq 0 && -z $det_language_request ]];then #using saved fixed string without parameters
 
 		f_w=$(echo "$request" | cut -f 1 -d " ")
-		if [[  $f_w == -s || $f_w == --sound ]];then #sound in prompt
+		if [[  $f_w == -S || $f_w == --sound ]];then #sound in prompt
 			if [[ $sound == 1 ]];then
 				sound=0
 				echo "Pronunciation disabled"

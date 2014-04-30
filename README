@@ -28,10 +28,10 @@ for english:
 for convenience:
 in ~/.bash_aliases
 alias t="/home/user/translate"
-alias ts="/home/user/translate -s"
+alias ts="/home/user/translate -S"
 
--S lang Set source language
--T lang Set target language
+-s lang Set source language
+-t lang Set target language
 -l List of languages
 Configure "FIRST_LANG" and "LATIN_LANG" in script for auto detection of direction by the first character!
 
@@ -41,7 +41,3 @@ in /etc/bash_completion.d/translate
 TR_ENG_WORDS="$HOME"/.translate/translated_words
 have t &&
 complete -W "$(cat $TR_ENG_WORDS)" t ts #autocompletion
-
-You can thank me with
-Webmoney: wmz Z253207064534, wmr R327158221146, wme E282089965215
-
