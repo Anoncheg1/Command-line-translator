@@ -308,6 +308,11 @@ while getopts :hlpSs:t: opt; do
 done
 shift $(($OPTIND - 1))
 request="$*"
+if [ -f "$request" ]
+then
+   request=$(cat "$request")
+fi
+
 #rm $FIXED_STRING 2> /dev/null
 
 sound_download(){ 			# $cachefile, $request, $source
