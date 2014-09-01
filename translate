@@ -54,8 +54,7 @@ You neeed UTF-8 support for required languages.
 # adjust to taste
 declare -r FIRST_LANG=ru			#target language for request in LATIN_LANG		NOT in A-z latin alphabet
 declare -r LATIN_LANG=en			#target for all not A-z latin requests			A-z latin alphabet will be detected!
-declare -r flogin=121212 			#forvo.com login and pass REQUIRED!
-declare -r fpass=121212
+
 TERMINAL_C="WOB"				#Your terminal - white on black:WOB, black on white:BOW, anything other:O
 declare PROMPT_MODE_ACTIVATED=false			#You may repeat your requests
 declare -r SUGGESTIONS_ACTIVATED=true			#Suggestions for ideoms and anything
