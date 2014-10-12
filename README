@@ -9,6 +9,7 @@ REQUIREMENTS:
 - html2text for large texts
 - mpg123 for playing pronunciation
 For Debian: #apt-get install curl spidermonkey-bin html2text mpg123
+For FreeBSD: #pkg install curl spidermonkey24 html2text mpg123
 - forvo.com account for pronunciation
 
 
