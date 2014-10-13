@@ -639,7 +639,7 @@ main_func(){
 		if [[ $sound == 1 ]]; then
 			wait
 			if [[ -e "$cachefile".mp3 ]]; then
-				if [[ $(du -b "$cachefile".mp3 | sed 's#\([0-9]*\)\(.*\)#\1#') -ge 9000 ]]; then #if .mp3 is corrrect
+				if [[ $(du "$cachefile".mp3 | sed 's#\([0-9]*\)\(.*\)#\1#') -ge 9 ]]; then #if .mp3 is corrrect
 					stat=$(mpg123 "$cachefile".mp3 2>&1)
 #					echo "$stat"
 					[[ ! $(echo "$stat" | grep -o 'Comment') ]] && rm "$cachefile".mp3
