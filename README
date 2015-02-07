@@ -5,10 +5,10 @@ mirror http://pastebin.com/kPTYjY6W
 REQUIREMENTS: 
 - UTF-8 support for required languages		For Debian: #dpkg-reconfigure locales
 - curl >= 7.21.0
-- SpiderMonkey >= Version: JavaScript-C24.2.0
-- html2text for large texts
+- SpiderMonkey or nodejs
 - mpg123 for playing pronunciation
-For Debian: #apt-get install curl spidermonkey-bin html2text mpg123
+For Debian sid: #apt-get install curl spidermonkey-bin html2text mpg123
+For Debian jessie: #apt-get install curl nodejs html2text mpg123
 For FreeBSD: #pkg install curl spidermonkey24 html2text mpg123
 - forvo.com account for pronunciation
 

@@ -59,7 +59,7 @@ declare -r fpass=121212
 TERMINAL_C="WOB"				#Your terminal - white on black:WOB, black on white:BOW, anything other:O
 declare PROMPT_MODE_ACTIVATED=false			#You may repeat your requests
 declare -r SUGGESTIONS_ACTIVATED=true			#Suggestions for ideoms and anything
-#httpproxy="127.0.0.1:4444"		#proxy for long strings
+#httpproxy=127.0.0.1:4444		#proxy for long strings
 #httpsproxy="--socks5 127.0.0.1:9050"	#socks5
 #
 declare -r words_buffer=4000		#4000 files max. there is removeing all files older than 20 days.
@@ -361,18 +361,19 @@ main_func(){
 	[[ $TLTARGET ]] && target=$TLTARGET; # export TLSOURCE=en TLTARGET=ru; will force the language
 #echo source=$source
 	
-	if [[ ${#request} -gt 300 ]]; then
-		if ! result=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" -d "sl=$source" -d "tl=$target" --data-urlencode "text=$request" http://translate.google.com) && [[ $httpproxy != "" ]] #getting google respond for short sentence
-		then	# second attempt without https proxy
-			httpsproxy=""
-			result=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" -d "sl=$source" -d "tl=$target" --data-urlencode "text=$request" http://translate.google.com)
-		fi
+	#if [[ ${#request} -gt 300 ]]; then
+	#	if ! result=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" -d "sl=$source" -d "tl=$target" --data-urlencode "text=$request" http://translate.google.com) && [[ $httpproxy != "" ]] #getting google respond for short sentence
+	#	then	# second attempt without https proxy
+	#		httpsproxy=""
+	#		result=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" -d "sl=$source" -d "tl=$target" --data-urlencode "text=$request" http://translate.google.com)
+	#	fi
 		#encoding=$(awk '/Content-Type: .* charset=/ {sub(/^.*charset=["'\'']?/,""); sub(/[ "'\''].*$/,""); print}' <<<"$result")
 		#iconv -f $encoding <<<"$result" | awk 'BEGIN {RS="<div"};/<span[^>]* id=["'\'']?result_box["'\'']?/ {sub(/^.*id=["'\'']?result_box["'\'']?(>| [^>]*>)([ \n\t]*<[^>]*>)*/,"");sub(/<.*$/,"");print}' | html2text -utf8
 		#echo -e "\033[32;1m"$(iconv -f "$encoding" <<<"$result" |  awk 'BEGIN {RS="</div>"};/<span[^>]* id=["'\'']?result_box["'\'']?/' | html2text -utf8)"$C_NORMAL_RAW"
-		echo -e "\033[32;1m"$(echo "$result" |  awk 'BEGIN {RS="</div>"};/<span[^>]* id=["'\'']?result_box["'\'']?/' | html2text -utf8)"$C_NORMAL_RAW"
+	#	echo "$result"
+	#	echo -e "\033[32;1m"$(echo "$result" |  awk 'BEGIN {RS="</div>"};/<span[^>]* id=["'\'']?result_box["'\'']?/' | html2text -utf8)"$C_NORMAL_RAW"
 
-	else
+	#else
 		if [[ $r_words_count -le 5 ]];then 
 			httpproxy="" ; httpsproxy=""  #don't wanna proxy for 4 words.
 			request=$(echo "$request" | tr '[:upper:]' '[:lower:]') #lower request for short sentences
@@ -430,33 +431,38 @@ main_func(){
 #echo $grespond | grep -o '\[.*\]' | enca -L russian
 #echo $grespond | grep -o '\[.*\]'
 
+			if hash smjs 2>/dev/null; then
+				js_sm="smjs -f"
+			elif hash js24 2>/dev/null; then
+				js_sm="js24 -f" #for FreeBSD
+			else
+				js_sm="nodejs"
+			fi
+			
 			echo -n "var myJSONObject = " > "$PR_DIR"/tmpjsobj
 			echo -n "$grespond" | grep -o '\[.*\]' >> "$PR_DIR"/tmpjsobj
 			echo ";">> "$PR_DIR"/tmpjsobj
 			echo -n "$jsscript" >> "$PR_DIR"/tmpjsobj
-
-			if hash js 2>/dev/null; then
-				js_sm="js"
-			else
-				js_sm="js24" #for FreeBSD
+			if [[ $js_sm == "nodejs" ]]; then 
+				 sed -i 's/print/console.log/g' tmpjsobj
 			fi
 
 			cp -f "$PR_DIR"/tmpjsobj "$PR_DIR"/tmpjsobj2
 			echo -n "language_identification(googlearr);" >> "$PR_DIR"/tmpjsobj2
-			det_language=$($js_sm -f "$PR_DIR"/tmpjsobj2 | tail -c3)		# detected language
+			det_language=$($js_sm "$PR_DIR"/tmpjsobj2 | tail -c3)		# detected language
 			cp -f "$PR_DIR"/tmpjsobj "$PR_DIR"/tmpjsobj2
 			echo -n "translated_result(googlearr);" >> "$PR_DIR"/tmpjsobj2
-			t_result=$($js_sm -f "$PR_DIR"/tmpjsobj2)				# translated text
+			t_result=$($js_sm "$PR_DIR"/tmpjsobj2)				# translated text
 			cp -f "$PR_DIR"/tmpjsobj "$PR_DIR"/tmpjsobj2
 			echo -n "translit(googlearr);" >> "$PR_DIR"/tmpjsobj2
-			translit=$($js_sm -f "$PR_DIR"/tmpjsobj2)				# translit
+			translit=$($js_sm "$PR_DIR"/tmpjsobj2)				# translit
 			cp -f "$PR_DIR"/tmpjsobj "$PR_DIR"/tmpjsobj2
 			echo -n "dictionary(googlearr);" >> "$PR_DIR"/tmpjsobj2
-			dictionary=$($js_sm -f "$PR_DIR"/tmpjsobj2)				# dictionary			
+			dictionary=$($js_sm "$PR_DIR"/tmpjsobj2)				# dictionary			
 			if [[ $r_words_count -le 2 && $(echo "$dictionary" | wc -l) -le 3 ]];then
 				cp -f "$PR_DIR"/tmpjsobj "$PR_DIR"/tmpjsobj2
 				echo -n "options_for_one_word(googlearr);" >> "$PR_DIR"/tmpjsobj2
-				options_for_one_word=$($js_sm -f "$PR_DIR"/tmpjsobj2)		# suggested variants from google
+				options_for_one_word=$($js_sm "$PR_DIR"/tmpjsobj2)		# suggested variants from google
 			fi
 
 			#Language detection
@@ -652,7 +658,7 @@ main_func(){
 				sleep 1 #to be able Ctrl+C to delete cache file
 			fi
 		fi
-	fi
+	#fi
 }
 
 if [[ $PROMPT_MODE_ACTIVATED == true ]]; then
