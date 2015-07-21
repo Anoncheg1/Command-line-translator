@@ -319,7 +319,7 @@ sound_download(){ 			# $cachefile, $request, $source
 	elif [[ $source == "id" ]];then  s="ind"
 	fi
 	slink=$(echo "$slink" | grep $s | head -n 1)
-	echo bb=$slink
+	
 	[[ ${#slink} -lt 6 ]] && slink=$(echo "$slink" | head -n 1);
 	if [[ ${#slink} -gt 5 ]];then
 		rm "$PR_DIR"/tmpcookie 2>/dev/null &
