@@ -65,7 +65,7 @@ declare -r SUGGESTIONS_ACTIVATED=true			#Suggestions for ideoms and anything
 declare -r words_buffer=4000		#4000 files max. there is removeing all files older than 20 days.
 declare -r timeout=6
 declare -r TRANSLIT_WORDS_MAX=10
-declare -r SOUND_DOWNLOAD_AWS=1		# 1 - always. 0 - on demand.
+declare -r SOUND_DOWNLOAD_AWS=0		# 1 - always. 0 - on demand.
 declare -r useragent="Mozilla/5.0 (X11; Linux i686) AppleWebKit/534.34 (KHTML, like Gecko) QupZilla/1.3.1 Safari/534.34"
 #
 CDIR="$HOME/.config"
@@ -313,19 +313,19 @@ request="$*"
 sound_download(){ 			# $cachefile, $request, $source
 	local s=$source
 	[[ `ls "$PR_DIR"/cache | wc -l` -gt $words_buffer ]] && find "$PR_DIR"/cache -mtime +20 -delete #cache cleaning. remove words older than 20 days.
-	slink=$(curl -s -b $PR_DIR/tmpcookie --connect-timeout $timeout -m $timeout --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://www.forvo.com/word/"$(echo $request | tr ' ' _ )"/ | grep -o '[^"]*/download/mp3/[^"]*' )
+	slink=$(curl -s -b $PR_DIR/tmpcookie --connect-timeout $timeout -m $timeout --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://forvo.com/word/"$(echo $request | tr ' ' _ )"/"#en" | grep -o '[^"]*/download/mp3/[^"]*' )
 	if [[ $source == "zh" || $source == "zh-CN" ]];then s="zh"
 	elif [[ $source == "iw" ]];then  s="he"
 	elif [[ $source == "id" ]];then  s="ind"
 	fi
 	slink=$(echo "$slink" | grep $s | head -n 1)
-	
+	echo bb=$slink
 	[[ ${#slink} -lt 6 ]] && slink=$(echo "$slink" | head -n 1);
 	if [[ ${#slink} -gt 5 ]];then
 		rm "$PR_DIR"/tmpcookie 2>/dev/null &
-		curl -s -c "$PR_DIR"/tmpcookie --connect-timeout $timeout -m $timeout --user-agent "$useragent" $httpsproxy -x "$httpproxy" -d "login=$flogin&password=$fpass" http://www.forvo.com/login/ -o/dev/null
+		curl -s -c "$PR_DIR"/tmpcookie --connect-timeout $timeout -m $timeout --user-agent "$useragent" $httpsproxy -x "$httpproxy" -d "login=$flogin&password=$fpass" http://forvo.com/login/ -o/dev/null
 		if [[ -e "$PR_DIR"/tmpcookie ]]; then
-			curl -s -b "$PR_DIR"/tmpcookie --connect-timeout $timeout -m $timeout --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://www.forvo.com"$slink" > "$cachefile".mp3
+			curl -s -b "$PR_DIR"/tmpcookie --connect-timeout $timeout -m $timeout --user-agent "$useragent" $httpsproxy -x "$httpproxy" "$slink" > "$cachefile".mp3
 			return
 		fi
 	fi
@@ -394,7 +394,7 @@ main_func(){
 				httpsproxy=""
 				grespond=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" -m $timeout --data-urlencode "text=$request" "http://translate.google.com/translate_a/t?client=t&hl=$target&sl=$source&tl=$target&ie=UTF-8&oe=UTF-8&multires=1&ssel=0&tsel=0&sc=1") #getting google respond for short sentence
 			fi
-			[[ ! $(echo "$grespond" | grep -o '\[.*\]') ]] && { echo "can't connect" ; exit; } #small connection check
+			[[ ! $(echo "$grespond" | grep -o '\[.*\]') ]] && { echo "can't connect google" ; exit; } #small connection check
 
 			#echo -n "var myJSONObject = " > "$PR_DIR"/tmpjsobj2
 			#echo [$(echo "$grespond" | grep -o '"[^"]*/i[^"]*"')"];" >> "$PR_DIR"/tmpjsobj2
@@ -501,7 +501,7 @@ main_func(){
 
 				#phrases, forms and a vform
 				macmill=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" -m $timeout http://www.macmillandictionary.com/dictionary/british/"$(echo $request | tr '[:upper:]' '[:lower:]' | tr ' ' - )" )
-				[[ $? != 0 ]] && { echo "cant get phrases" ; bashtrap; }
+				[[ $? != 0 ]] && { echo "cant get phrases macmillandictionary" ; bashtrap; }
 				#forms
 				forms=$(echo $macmill | grep -o "id=\"wordsformslayer-head\".*End of DIV wordforms" | sed 's/INFLECTION-CONTENT/\n/g' | sed -e 's/.*INFLECTION-ENTRY\">\([^<]*\)<.*I-VARIANT-before\">\([^<]*\).*INFLECTION-ENTRY\">\([^<]*\).*/666\1\2\3,/' -e 's/.*INFLECTION-ENTRY\">\([^<]*\)<.*/666\1,/' | grep 666 | cut -c 4-)
 				fwc=$(echo "$forms" | wc -l)
