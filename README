@@ -35,10 +35,3 @@ alias ts="/home/user/translate -S"
 -t lang Set target language
 -l List of languages
 Configure "FIRST_LANG" and "LATIN_LANG" in script for auto detection of direction by the first character!
-
-for auto-Tab-completion:
-in /etc/bash_completion.d/translate
-# t completion
-TR_ENG_WORDS="$HOME"/.translate/translated_words
-have t &&
-complete -W "$(cat $TR_ENG_WORDS)" t ts #autocompletion
