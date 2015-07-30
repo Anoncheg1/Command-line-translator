@@ -313,7 +313,8 @@ request="$*"
 sound_download(){ 			# $cachefile, $request, $source
 	local s=$source
 	[[ `ls "$PR_DIR"/cache | wc -l` -gt $words_buffer ]] && find "$PR_DIR"/cache -mtime +20 -delete #cache cleaning. remove words older than 20 days.
-	slink=$(curl -s -b $PR_DIR/tmpcookie --connect-timeout $timeout -m $timeout --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://forvo.com/word/"$(echo $request | tr ' ' _ )"/"#en" | grep -o '[^"]*/download/mp3/[^"]*' )
+	rm "$PR_DIR"/tmpcookie 2>/dev/null &
+	slink=$(curl -s -c $PR_DIR/tmpcookie --connect-timeout $timeout -m $timeout --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://ru.forvo.com/word/"$(echo $request | tr ' ' _ )"/"#en" | grep -o '[^"]*/download/mp3/[^"]*' )
 	if [[ $source == "zh" || $source == "zh-CN" ]];then s="zh"
 	elif [[ $source == "iw" ]];then  s="he"
 	elif [[ $source == "id" ]];then  s="ind"
@@ -322,9 +323,20 @@ sound_download(){ 			# $cachefile, $request, $source
 	
 	[[ ${#slink} -lt 6 ]] && slink=$(echo "$slink" | head -n 1);
 	if [[ ${#slink} -gt 5 ]];then
-		rm "$PR_DIR"/tmpcookie 2>/dev/null &
-		curl -s -c "$PR_DIR"/tmpcookie --connect-timeout $timeout -m $timeout --user-agent "$useragent" $httpsproxy -x "$httpproxy" -d "login=$flogin&password=$fpass" http://forvo.com/login/ -o/dev/null
+		#rm "$PR_DIR"/tmpcookie 2>/dev/null &
+		#curl -s -c "$PR_DIR"/tmpcookie --connect-timeout $timeout -m $timeout --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://ru.forvo.com/login/ -o/dev/null
+		#echo c1=
+		#cat "$PR_DIR"/tmpcookie
+		curl -s -b "$PR_DIR"/tmpcookie -c "$PR_DIR"/tmpcookie --connect-timeout $timeout -m $timeout --user-agent "$useragent" $httpsproxy -x "$httpproxy" -d "login=$flogin&password=$fpass" http://ru.forvo.com/login/ -o/dev/null
+		echo c2=
+		cat "$PR_DIR"/tmpcookie
+		#a=`curl -s -b "$PR_DIR"/tmpcookie --connect-timeout $timeout -m $timeout --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://ru.forvo.com/login/ -H 'Referer: http://ru.forvo.com/login/' -o/dev/null`
+		#curl 'http://ru.forvo.com/' -H 'Host: ru.forvo.com' -H 'User-Agent: Mozilla/5.0 (Windows NT 6.1; rv:31.0) Gecko/20100101 Firefox/31.0' -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' -H 'Accept-Language: en-us,en;q=0.5' -H 'Accept-Encoding: gzip, deflate' -H 'Referer: http://ru.forvo.com/login/' -H 'Cookie: PHPSESSID=hdad2a3576otgjgt0lp4nfuis4; forvo_cookies=1' -H 'Connection: keep-alive'
+		#echo $a > aa2
+		#echo c3=
+		#cat "$PR_DIR"/tmpcookie
 		if [[ -e "$PR_DIR"/tmpcookie ]]; then
+			echo getting $slink
 			curl -s -b "$PR_DIR"/tmpcookie --connect-timeout $timeout -m $timeout --user-agent "$useragent" $httpsproxy -x "$httpproxy" "$slink" > "$cachefile".mp3
 			return
 		fi
@@ -625,7 +637,11 @@ main_func(){
 								fi
 							fi	
 						fi
-					fi					
+					fi
+					
+					#exec urban.pl
+
+
 
 				fi
 				cat "$cachefile" 2>/dev/null #output 
