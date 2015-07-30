@@ -26,7 +26,6 @@
 #	curl >= 7.21.0,
 # 	SpiderMonkey >= Version: 17.0.8esr-2 
 #	mpg123
-#	html2text
 #	forvo.com account
 #features:
 #- translated text, fixed text with highlight, language detection, dictionary, translit
@@ -61,7 +60,7 @@ declare -r URBAN_DICTIONARY=true			#For bad words MAY BE VERY ANNOYING
 declare PROMPT_MODE_ACTIVATED=false			#You may repeat your requests
 declare -r SUGGESTIONS_ACTIVATED=true			#Suggestions for ideoms and anything
 #httpproxy=127.0.0.1:4444		#proxy for long strings
-httpsproxy="--socks5 127.0.0.1:9150"	#socks5
+#httpsproxy="--socks5 127.0.0.1:9150"	#socks5
 #
 declare -r words_buffer=4000		#4000 files max. there is removeing all files older than 20 days.
 declare -r timeout=6
