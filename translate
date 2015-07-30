@@ -61,7 +61,7 @@ declare -r URBAN_DICTIONARY=true			#For bad words MAY BE VERY ANNOYING
 declare PROMPT_MODE_ACTIVATED=false			#You may repeat your requests
 declare -r SUGGESTIONS_ACTIVATED=true			#Suggestions for ideoms and anything
 #httpproxy=127.0.0.1:4444		#proxy for long strings
-#httpsproxy="--socks5 127.0.0.1:9050"	#socks5
+httpsproxy="--socks5 127.0.0.1:9150"	#socks5
 #
 declare -r words_buffer=4000		#4000 files max. there is removeing all files older than 20 days.
 declare -r timeout=6
@@ -313,7 +313,7 @@ request="$*"
 
 sound_download(){ 			# $cachefile, $request, $source
 	local s=$source
-	[[ `ls "$PR_DIR"/cache | wc -l` -gt $words_buffer ]] && find "$PR_DIR"/cache -mtime +20 -delete #cache cleaning. remove words older than 20 days.
+	[[ `ls "$PR_DIR"/cache | wc -l` -gt $words_buffer ]] && find "$PR_DIR"/cache -mtime +30 -delete #cache cleaning. remove words older than 30 days.
 	rm "$PR_DIR"/tmpcookie 2>/dev/null &
 	slink=$(curl -s -c $PR_DIR/tmpcookie --connect-timeout $timeout -m $timeout --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://ru.forvo.com/word/"$(echo $request | tr ' ' _ )"/"#en" | grep -o '[^"]*/download/mp3/[^"]*' )
 	if [[ $source == "zh" || $source == "zh-CN" ]];then s="zh"
@@ -324,12 +324,13 @@ sound_download(){ 			# $cachefile, $request, $source
 	
 	[[ ${#slink} -lt 6 ]] && slink=$(echo "$slink" | head -n 1);
 	if [[ ${#slink} -gt 5 ]];then
-		#rm "$PR_DIR"/tmpcookie 2>/dev/null &
-		#curl -s -c "$PR_DIR"/tmpcookie --connect-timeout $timeout -m $timeout --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://ru.forvo.com/login/ -o/dev/null
 		#echo c1=
 		#cat "$PR_DIR"/tmpcookie
-		curl -s -b "$PR_DIR"/tmpcookie -c "$PR_DIR"/tmpcookie --connect-timeout $timeout -m $timeout --user-agent "$useragent" $httpsproxy -x "$httpproxy" -d "login=$flogin&password=$fpass" http://ru.forvo.com/login/ -o/dev/null
+		curl -s -c "$PR_DIR"/tmpcookie -c "$PR_DIR"/tmpcookie --connect-timeout $timeout -m $timeout --user-agent "$useragent" $httpsproxy -x "$httpproxy" -d "login=$flogin&password=$fpass" http://ru.forvo.com/login/ -o/dev/null
 		if [[ -e "$PR_DIR"/tmpcookie ]]; then
+			curl -s -b "$PR_DIR"/tmpcookie --connect-timeout $timeout -m $timeout --user-agent "$useragent" $httpsproxy -x "$httpproxy" 'http://ru.forvo.com/' -H 'Host: ru.forvo.com' -H 'Referer: http://ru.forvo.com/login/' -o/dev/null
+			#echo c2=
+			#cat "$PR_DIR"/tmpcookie
 			#echo getting $slink
 			curl -s -b "$PR_DIR"/tmpcookie --connect-timeout $timeout -m $timeout --user-agent "$useragent" $httpsproxy -x "$httpproxy" "$slink" > "$cachefile".mp3
 			return
