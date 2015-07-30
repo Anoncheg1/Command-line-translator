@@ -328,15 +328,8 @@ sound_download(){ 			# $cachefile, $request, $source
 		#echo c1=
 		#cat "$PR_DIR"/tmpcookie
 		curl -s -b "$PR_DIR"/tmpcookie -c "$PR_DIR"/tmpcookie --connect-timeout $timeout -m $timeout --user-agent "$useragent" $httpsproxy -x "$httpproxy" -d "login=$flogin&password=$fpass" http://ru.forvo.com/login/ -o/dev/null
-		echo c2=
-		cat "$PR_DIR"/tmpcookie
-		#a=`curl -s -b "$PR_DIR"/tmpcookie --connect-timeout $timeout -m $timeout --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://ru.forvo.com/login/ -H 'Referer: http://ru.forvo.com/login/' -o/dev/null`
-		#curl 'http://ru.forvo.com/' -H 'Host: ru.forvo.com' -H 'User-Agent: Mozilla/5.0 (Windows NT 6.1; rv:31.0) Gecko/20100101 Firefox/31.0' -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' -H 'Accept-Language: en-us,en;q=0.5' -H 'Accept-Encoding: gzip, deflate' -H 'Referer: http://ru.forvo.com/login/' -H 'Cookie: PHPSESSID=hdad2a3576otgjgt0lp4nfuis4; forvo_cookies=1' -H 'Connection: keep-alive'
-		#echo $a > aa2
-		#echo c3=
-		#cat "$PR_DIR"/tmpcookie
 		if [[ -e "$PR_DIR"/tmpcookie ]]; then
-			echo getting $slink
+			#echo getting $slink
 			curl -s -b "$PR_DIR"/tmpcookie --connect-timeout $timeout -m $timeout --user-agent "$useragent" $httpsproxy -x "$httpproxy" "$slink" > "$cachefile".mp3
 			return
 		fi
