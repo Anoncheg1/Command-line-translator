@@ -57,6 +57,7 @@ declare -r LATIN_LANG=en			#target for all not A-z latin requests			A-z latin al
 declare -r flogin=121212 			#forvo.com login and pass REQUIRED!
 declare -r fpass=121212
 TERMINAL_C="WOB"				#Your terminal - white on black:WOB, black on white:BOW, anything other:O
+declare -r URBAN_DICTIONARY=true			#For bad words MAY BE VERY ANNOYING
 declare PROMPT_MODE_ACTIVATED=false			#You may repeat your requests
 declare -r SUGGESTIONS_ACTIVATED=true			#Suggestions for ideoms and anything
 #httpproxy=127.0.0.1:4444		#proxy for long strings
@@ -473,6 +474,12 @@ main_func(){
 
 			#Language detection
 			[[ $det_language && $det_language != $source && $TLSOURCE ]] && echo -e "$C_GRAY*	$det_language ${ln_arr[$det_language]}$C_NORMAL"
+			
+			declare urban #urban dictionary for 1-4 words NO LANGUAGE DETECTIONS
+			if [[ $r_words_count -le 4 && ${#request} -gt 1 && $source == en && $URBAN_DICTIONARY == true && -x ${0%/*}"/urban.pl" ]];then
+				urban=$(perl ${0%/*}"/urban.pl" $(echo $request | tr ' ' + ))
+			fi
+			[[ $source != $det_language ]] && echo $urban
 
 			if [[ $source != $det_language && ! $fl_raw && ((
 					$(echo "$request" | sed 's/ //g' | tr '[:upper:]' '[:lower:]') ==  $(echo "$t_result" | sed 's/ //g' | tr '[:upper:]' '[:lower:]') || 
@@ -491,13 +498,13 @@ main_func(){
 
 			[[ $source == "auto" ]] && { source=$det_language; cachefile="$PR_DIR/cache/$source-$target"_"$request"; } #auto in cachefile fix #not necessary
 
-
 			declare trans
 			if [[ $r_words_count -le 2 && ${#request} -gt 1 && $source == en && ! $(echo "$difftest" | wc -l) -gt 1 ]];then #special check( expample: advise advice)
 			#transcription
 				trans=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://lingvo-online.ru/en/Translate/en-"$target"/"$request" | grep -o '"[^"]*/transcription\.gif.Text=[^"]*"' | sed 's/.*=\(.*\)"/\1/'| echo -n -e $(sed 's/+/ /g; s/%/\\x/g')) #getting transcription
 				[[ $? != 0 ]] &&  { echo "can't get transcription"; } #bashtrap;
 			fi
+			
 			# Main "Dictionary part" for english only. but it can be extended for every required language
 			if [[ $r_words_count -eq 1 && ${#request} -gt 1 && $source == en && (( ! $fl_raw || $trans )) ]]; then #dictionary
 
@@ -544,12 +551,14 @@ main_func(){
 					fi
 				fi
 			
+				#urban
+				[[ $urban ]] && echo $urban >> "$cachefile"
 				#transcription
 				[[ $trans ]] && echo "[$trans]" >> "$cachefile"
 
 				cat "$cachefile" 2>/dev/null #output for 1 word
 				echo -e "$C_DARK_BLUE_RAW"http://oxforddictionaries.com/definition/english/$(echo "$request" | sed "s/'/%27/" )$C_NORMAL_RAW # just another good english dictionary
-
+				
 				if [[ ${#request} -gt 2 || $r_words_count -le 2 ]] ; then
 
 					#saving words
@@ -632,10 +641,9 @@ main_func(){
 						fi
 					fi
 					
-					#exec urban.pl
-
-
-
+					#urban
+					[[ $urban ]] && echo $urban >> "$cachefile"
+					
 				fi
 				cat "$cachefile" 2>/dev/null #output 
 				[[ $r_words_count -gt 2 ]] && rm "$cachefile" 2> /dev/null #rm for more then 2 words
