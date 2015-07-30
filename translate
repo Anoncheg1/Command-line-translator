@@ -480,13 +480,15 @@ main_func(){
 			if [[ $r_words_count -le 4 && ${#request} -gt 1 && $source == en && $URBAN_DICTIONARY == true && -x ${0%/*}"/urban.pl" ]];then
 				urban=$(perl ${0%/*}"/urban.pl" $(echo $request | tr ' ' + ))
 			fi
-			[[ $source != $det_language ]] && echo $urban
+			#[[ $source != $det_language ]] && 
 
 			if [[ $source != $det_language && ! $fl_raw && ((
 					$(echo "$request" | sed 's/ //g' | tr '[:upper:]' '[:lower:]') ==  $(echo "$t_result" | sed 's/ //g' | tr '[:upper:]' '[:lower:]') || 
 					$(echo "$t_result" | sed 's/ //g' | tr '[:upper:]' '[:lower:]') ==  $(echo "$translit" | sed 's/ //g' | tr '[:upper:]' '[:lower:]') ||
 					${request:0:1} == ${t_result:0:1}
 					)) && ! $dictionary ]]; then
+					
+				echo $urban
 				[[ $source != "auto" ]] && echo -e "trying with detected language" # I guess google "auto" is not working then we will do it by yourself mutely
 				export TLSOURCE=$det_language #TLTARGET=en #source and target language for second attempt
 				#if [[ $PROMPT_MODE_ACTIVATED == false ]]; then
