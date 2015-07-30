@@ -452,7 +452,7 @@ main_func(){
 			echo ";">> "$PR_DIR"/tmpjsobj
 			echo -n "$jsscript" >> "$PR_DIR"/tmpjsobj
 			if [[ $js_sm == "nodejs" ]]; then 
-				 sed -i 's/print/console.log/g' tmpjsobj
+				 sed -i 's/print/console.log/g' "$PR_DIR"/tmpjsobj
 			fi
 
 			cp -f "$PR_DIR"/tmpjsobj "$PR_DIR"/tmpjsobj2
