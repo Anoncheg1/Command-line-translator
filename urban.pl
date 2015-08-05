@@ -34,9 +34,11 @@ if ($res->is_success){
     my $example = $el->look_down("class", "example")->as_text;
     my $thumbup = $el->look_down("class", "thumb up")->look_down("class", "count")->as_text;
     my $thumbdown = $el->look_down("class", "thumb down")->look_down("class", "count")->as_text;
-    if($thumbup < 10 || $thumbup > 8000){exit;} #silent exit if too many ppl like it
+    if($thumbup < 20 || $thumbup > 8000 || ($thumbup-$thumbdown) < 13 ){exit;} #silent exit if too many ppl like it
     $meaning =~ s/^\s+|\s+$//g;     #trim both sides
-    $example =~ s/^\s+|\s+$//g;     #trim both sides
+	$meaning =~ s/[#\-%&\$*+()]//g; #remove bad characters
+	$example =~ s/^\s+|\s+$//g;     #trim both sides
+	$example =~ s/[#\-%&\$*+()]//g;
     binmode(STDOUT, ":utf8");
     print "Urban ".$thumbup."/".$thumbdown.":\n";
     print $meaning."\n";
