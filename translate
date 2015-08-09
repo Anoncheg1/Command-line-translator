@@ -347,7 +347,7 @@ main_func(){
 			request=$(cat $FIXED_STRING 2>/dev/null)
 			echo -e "$(tput bold)$(tput setaf 3)$request$(tput sgr0)"
 		else
-			exit 1				
+			exit 1
 		fi
 	fi
 
@@ -516,7 +516,7 @@ main_func(){
 
 				#phrases, forms and a vform
 				macmill=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" -m $timeout http://www.macmillandictionary.com/dictionary/british/"$(echo $request | tr '[:upper:]' '[:lower:]' | tr ' ' - )" )
-				[[ $? != 0 ]] && { echo "cant get phrases macmillandictionary" ; bashtrap; }
+				[[ $? != 0 ]] && { echo "ERROR cant get phrases macmillandictionary" >> "$cachefile"; }
 				#forms
 				forms=$(echo $macmill | grep -o "id=\"wordsformslayer-head\".*End of DIV wordforms" | sed 's/INFLECTION-CONTENT/\n/g' | sed -e 's/.*INFLECTION-ENTRY\">\([^<]*\)<.*I-VARIANT-before\">\([^<]*\).*INFLECTION-ENTRY\">\([^<]*\).*/666\1\2\3,/' -e 's/.*INFLECTION-ENTRY\">\([^<]*\)<.*/666\1,/' | grep 666 | cut -c 4-)
 				fwc=$(echo "$forms" | wc -l)
