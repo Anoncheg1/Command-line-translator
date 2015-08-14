@@ -475,7 +475,7 @@ main_func(){
 			#Language detection
 			[[ $det_language && $det_language != $source && $TLSOURCE ]] && echo -e "$C_GRAY*	$det_language ${ln_arr[$det_language]}$C_NORMAL"
 			
-			declare urban #urban dictionary for 1-4 words NO LANGUAGE DETECTIONS
+			declare urban # dictionary for 1-4 words NO LANGUAGE DETECTIONS
 			if [[ $r_words_count -le 4 && ${#request} -gt 1 && $source == en && $URBAN_DICTIONARY == true && -x ${0%/*}"/urban.pl" ]];then
 				urban=$(perl ${0%/*}"/urban.pl" $(echo $request | tr ' ' + ))
 			fi
@@ -487,7 +487,7 @@ main_func(){
 					${request:0:1} == ${t_result:0:1}
 					)) && ! $dictionary ]]; then
 					
-				echo $urban
+				echo "$urban"
 				[[ $source != "auto" ]] && echo -e "trying with detected language" # I guess google "auto" is not working then we will do it by yourself mutely
 				export TLSOURCE=$det_language #TLTARGET=en #source and target language for second attempt
 				#if [[ $PROMPT_MODE_ACTIVATED == false ]]; then
@@ -553,8 +553,8 @@ main_func(){
 					fi
 				fi
 			
-				#urban
-				[[ $urban ]] && echo $urban >> "$cachefile"
+				#
+				[[ $urban ]] && echo "$urban" >> "$cachefile"
 				#transcription
 				[[ $trans ]] && echo "[$trans]" >> "$cachefile"
 
@@ -643,8 +643,8 @@ main_func(){
 						fi
 					fi
 					
-					#urban
-					[[ $urban ]] && echo $urban >> "$cachefile"
+					#
+					[[ $urban ]] && echo "$urban" >> "$cachefile"
 					
 				fi
 				cat "$cachefile" 2>/dev/null #output 

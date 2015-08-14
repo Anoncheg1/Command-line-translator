@@ -10,7 +10,9 @@ use LWP::UserAgent;
 use JSON;
 use utf8;
 use v5.16;
+#use Text::Unidecode;
 package main;
+#binmode(STDOUT, ":utf8");
 
 # adjust to taste
 my $FIRST_LANG='ru';			#target language for request in LATIN_LANG		NOT in A-z latin alphabet
@@ -19,6 +21,10 @@ my @PROXY ;#= ('http','http://127.0.0.1:4446');
 
 my $USERAGENT = 'Mozilla/5.0 (Windows NT 5.1; rv:5.0.1) Gecko/20100101 Firefox/5.0.1';
 
+
+#Solved problems:
+#  gppgle JSON converting problem ,,. Solved by hands.
+#  google JSON article=white space - problem. Solved by hands.
 
 my $name = basename($0);
 my %LANGS = (
@@ -162,6 +168,8 @@ $request= join(" ", @ARGV);
 $request =~ s/^\s+|\s+$//g;     #trim both sides
 exit 1 if ! length $request;
 
+my $w_count = scalar(split(/\s+/,$request));
+
 #Language detection by the first character (very simple)
 foreach my $ch (map {split //} split('\s',(substr $request,0,10))){
 #    print ord $ch, "\n"; #65 - 122 = Latin
@@ -169,29 +177,26 @@ foreach my $ch (map {split //} split('\s',(substr $request,0,10))){
     {	    $source = $LATIN_LANG;   $target = $FIRST_LANG;    last;
     }else{  $source = 'auto';        $target = $LATIN_LANG;   } # For any other language
 }
-print 'A'.$request."A\n";
+#print 'A'.$request."A\n";
 
 my $ua = LWP::UserAgent->new; #параметры подключения
 $ua->agent($USERAGENT);
 $ua->proxy([$PROXY[0]], $PROXY[1]) if @PROXY;
      
-my $ua2 = $ua->clone;
-
 my $url="https://translate.google.com/translate_a/single?client=t&sl=$source&tl=$target&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8";
 #my $req = HTTP::Request->new(POST => $url);
 #$req->content("text=$request");
 #my $response;
 #$response = $ua->request($req);
 #$response = $ua->request($req) if (! $response->is_success); #resent
-my $response = &google($ua, $url, $request) ; #$_[0] - ua    $_[1] - url   #$_[2] - request
+my $response = &google($ua->clone, $url, $request) ; #$_[0] - ua    $_[1] - url   #$_[2] - request
 
 my $g_array;
 if ($response->is_success) { #to array
     #print $response->decoded_content;
 #    if ($response->isa('HTTP::Response::JSON')) {
     #my $json = $response->json_content; #decoded
-    #    my $js = $response->decoded_content;
-    my $js = $response->content;
+    my $js = $response->decoded_content;
     $js =~ s/,,/,"",/g;
     $js =~ s/,,/,"",/g;
     $js =~ s/\[,/\["",/g;
@@ -200,8 +205,8 @@ if ($response->is_success) { #to array
     #my $g_array = decode_json($js);
     #my @objs = JSON->new->incr_parse ($js);
     $g_array =  JSON->new->decode($js);
-   # my $pp = $json->pretty->encode( $g_array ); # pretty-printing
-  #  print $pp;
+#    my $pp = JSON->new->pretty->encode( $g_array ); # pretty-printing
+#    print $pp;
     
     if(ref($g_array) eq 'ARRAY'){
 	for (my $row = 0; $row < @{$g_array}; $row++){
@@ -233,18 +238,29 @@ else {
 
 my $rsum; # translation
 if(ref($g_array) eq 'ARRAY'){
-    if(ref($g_array->[0]) eq 'ARRAY'){
-	for (my $col = 0; $col < @{$g_array->[0]}; $col++) {
-	    if($g_array->[0][$col][0]){
-		my $t=$g_array->[0][$col][0];
-		#print $t,"\n";
-		$t =~ s/\s+,/,/g;
-		$t =~ s/\s+\./\./g;
-		#print $t,"\n";
-		$rsum .= $t;
+    if(length $request < 1000){ # if <1000 we will fix english article problem if >1000 leave it be
+	if(ref($g_array->[5]) eq 'ARRAY'){
+	    for (my $col = 0; $col < @{$g_array->[5]}; $col++) {
+		if($g_array->[5][$col][2][0][0]){
+		    my $t=$g_array->[5][$col][2][0][0];
+		    $rsum .= $t." ";
+		}
+	    }
+	}
+    }else{
+	if(ref($g_array->[0]) eq 'ARRAY'){
+	    for (my $col = 0; $col < @{$g_array->[0]}; $col++) {
+		if($g_array->[0][$col][0]){
+		    my $t=$g_array->[0][$col][0];
+		    $rsum .= $t;
+		}
 	    }
 	}
     }
-    
 }else{ print $response,"\n"; exit 1;}
+$rsum =~ s/\s+,/,/g; #asd , asd
+$rsum =~ s/\s+\./\./g; #asdas .
+$rsum =~ s/\s+\?/?/g; #asdas ?
+$rsum =~ s/\s+\!/!/g; #asdas !
+$rsum =~ s/\s+\"\s+/ /g; #students’ are either   =  студенты " либо
 print $rsum,"\n";
