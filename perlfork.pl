@@ -5,9 +5,9 @@ use diagnostics; # выводить подробную диагностику о
 use Getopt::Std;
 use File::Basename;
 use LWP::UserAgent;
-#use Lingua::Identify;
 #libjson-perl
 use JSON;
+use HTML::Entities;
 use utf8;
 use v5.16;
 #use Text::Unidecode;
@@ -15,8 +15,11 @@ package main;
 #binmode(STDOUT, ":utf8");
 
 # adjust to taste
-my $FIRST_LANG='ru';			#target language for request in LATIN_LANG		NOT in A-z latin alphabet
-my $LATIN_LANG='en';			#target for all not A-z latin requests			A-z latin alphabet will be detected!
+my $FIRST_LANG='ru';		#target language for request in LATIN_LANG		NOT in A-z latin alphabet
+my $LATIN_LANG='en';		#target for all not A-z latin requests			A-z latin alphabet will be detected!
+my $TERMINAL_C="WOB";		#Your terminal - white on black:WOB, black on white:BOW, anything other:O
+
+my $TRANSLIT_WORDS_MAX = 10;
 my @PROXY ;#= ('http','http://127.0.0.1:4446');
 
 my $USERAGENT = 'Mozilla/5.0 (Windows NT 5.1; rv:5.0.1) Gecko/20100101 Firefox/5.0.1';
@@ -133,6 +136,73 @@ sub google($$$){#$_[0] - ua    $_[1] - url   #$_[2] - request
     return $response;
 }
 
+sub testing($){
+    my $g_array = $_[0];
+    if(ref($g_array) eq 'ARRAY'){
+	for (my $row = 0; $row < @{$g_array}; $row++){
+	    if(ref($g_array->[$row]) eq 'ARRAY'){
+		for (my $col = 0; $col < @{$g_array->[$row]}; $col++) {
+		    if(ref($g_array->[$row][$col]) eq 'ARRAY'){
+			for (my $i = 0; $i < @{$g_array->[$row][$col]}; $i++) {
+			    if(ref($g_array->[$row][$col][$i]) eq 'ARRAY'){
+				for (my $j = 0; $j < @{$g_array->[$row][$col][$i]}; $j++) {
+				    if(ref($g_array->[$row][$col][$i][$j]) eq 'ARRAY'){
+					for (my $s = 0; $s < @{$g_array->[$row][$col][$i][$j]}; $s++) {
+					    print "a5:$row,$col,$i,$j,$s:".$g_array->[$row][$col][$i][$j][$s]."\n";
+					}
+				    }else{print "e4:$row,$col,$i,$j:".$g_array->[$row][$col][$i][$j]."\n";}
+				}
+			    }else{ print "e3:$row,$col,$i:".$g_array->[$row][$col][$i]."\n";}
+			}
+		    }else{ print "e2:$row,$col:".$g_array->[$row][$col]."\n";}
+		}
+	    }else{ print "e1:$row:".$g_array->[$row]."\n";}
+	}
+    }
+}
+
+my $C_RED;            #highlight
+my $C_YELLOW;         #highlight
+my $C_GRAY;           #language detected
+my $C_CYAN_RAW;       #forms
+my $C_GRAY_RED_RAW;   #phrases
+my $C_DARK_BLUE_RAW;  #link for dictionary
+my $C_BLUE_RAW;       #dictionary and vform1, suggestions
+my $C_BRIGHT_RAW;     #phrases, examples main part, vform2
+my $C_GREEN;          #t_result
+if ($TERMINAL_C eq "WOB" ){
+    $C_RED=`tput bold`.`tput setaf 1`;
+    $C_YELLOW=`tput bold`.`tput setaf 3`;
+    $C_GRAY="`tput setaf 7`";
+    $C_CYAN_RAW="\033[1;36m";
+    $C_GRAY_RED_RAW="\033[1;35m";
+    $C_DARK_BLUE_RAW="\033[34m";
+    $C_BLUE_RAW="\033[1;34m";
+    $C_BRIGHT_RAW="\033[1;37m";
+    $C_GREEN="\033[1;32m";
+}elsif( $TERMINAL_C eq "BOW" ){
+    $C_RED="`tput bold``tput setaf 1`";
+    $C_YELLOW="`tput setaf 3`";
+    $C_GRAY="`tput bold``tput setaf 5`";
+    $C_CYAN_RAW="\033[1;36m";
+    $C_GRAY_RED_RAW="\033[1;35m";
+    $C_DARK_BLUE_RAW="`tput setaf 7`";
+    $C_BLUE_RAW="\033[1;34m";
+    $C_BRIGHT_RAW="`tput bold`";
+    $C_GREEN="`tput bold`";
+}else{ #universal
+    $C_RED="`tput setaf 1`";
+    $C_YELLOW="`tput bold`";
+    $C_GRAY="";
+    $C_CYAN_RAW="";
+    $C_GRAY_RED_RAW="";
+    $C_DARK_BLUE_RAW="";
+    $C_BLUE_RAW="";
+    $C_BRIGHT_RAW="`tput bold`";
+    $C_GREEN="`tput bold`";
+}
+my $C_NORMAL="`tput sgr0`";
+my $C_NORMAL_RAW="\033[0m";
 
 my %opt =();
 getopts( ":hlpSs:t:", \%opt ) or print "Usage: $name: [-S] [-h] [-l] [-p] [-s language_2_chars] [-t language_2_chars]\n" and exit;
@@ -179,7 +249,7 @@ foreach my $ch (map {split //} split('\s',(substr $request,0,10))){
 }
 #print 'A'.$request."A\n";
 
-my $ua = LWP::UserAgent->new; #параметры подключения
+my $ua = LWP::UserAgent->new; #Internet connection main object, we will clone it
 $ua->agent($USERAGENT);
 $ua->proxy([$PROXY[0]], $PROXY[1]) if @PROXY;
      
@@ -208,28 +278,7 @@ if ($response->is_success) { #to array
 #    my $pp = JSON->new->pretty->encode( $g_array ); # pretty-printing
 #    print $pp;
     
-    if(ref($g_array) eq 'ARRAY'){
-	for (my $row = 0; $row < @{$g_array}; $row++){
-	    if(ref($g_array->[$row]) eq 'ARRAY'){
-		for (my $col = 0; $col < @{$g_array->[$row]}; $col++) {
-		    if(ref($g_array->[$row][$col]) eq 'ARRAY'){
-			for (my $i = 0; $i < @{$g_array->[$row][$col]}; $i++) {
-			    if(ref($g_array->[$row][$col][$i]) eq 'ARRAY'){
-				for (my $j = 0; $j < @{$g_array->[$row][$col][$i]}; $j++) {
-				    if(ref($g_array->[$row][$col][$i][$j]) eq 'ARRAY'){
-					for (my $s = 0; $s < @{$g_array->[$row][$col][$i][$j]}; $s++) {
-					    print "a5:$row,$col,$i,$j,$s:".$g_array->[$row][$col][$i][$j][$s]."\n";
-					}
-				    }else{print "e4:$row,$col,$i,$j:".$g_array->[$row][$col][$i][$j]."\n";}
-				}
-			    }else{ print "e3:$row,$col,$i:".$g_array->[$row][$col][$i]."\n";}
-			}
-		    }else{ print "e2:$row,$col:".$g_array->[$row][$col]."\n";}
-		}
-	    }else{ print "e1:$row:".$g_array->[$row]."\n";}
-	}
-    }
-    
+#    &testing($g_array);
 
 }
 else {
@@ -237,12 +286,18 @@ else {
 }
 
 my $rsum; # translation
+my $translit; # translit
+my @suggest; #google suggestions. appears sometimes.(options_for_one_word)
+my $detected_language;
+my $error1; #error with highlight
+my $error2; #correct version
 if(ref($g_array) eq 'ARRAY'){
+    #translation
     if(length $request < 1000){ # if <1000 we will fix english article problem if >1000 leave it be
 	if(ref($g_array->[5]) eq 'ARRAY'){
 	    for (my $col = 0; $col < @{$g_array->[5]}; $col++) {
 		if($g_array->[5][$col][2][0][0]){
-		    my $t=$g_array->[5][$col][2][0][0];
+		    my $t = $g_array->[5][$col][2][0][0];
 		    $rsum .= $t." ";
 		}
 	    }
@@ -251,10 +306,65 @@ if(ref($g_array) eq 'ARRAY'){
 	if(ref($g_array->[0]) eq 'ARRAY'){
 	    for (my $col = 0; $col < @{$g_array->[0]}; $col++) {
 		if($g_array->[0][$col][0]){
-		    my $t=$g_array->[0][$col][0];
+		    my $t = $g_array->[0][$col][0];
 		    $rsum .= $t;
 		}
 	    }
+	}
+    }
+    #translit
+    if($w_count <= $TRANSLIT_WORDS_MAX){
+	if($g_array->[0][1][3]){
+	    $translit = $g_array->[0][1][3];
+	}
+    }
+    #suggestions
+    if(ref($g_array->[5][0][2]) eq 'ARRAY'){	
+	for (my $col = 0; $col < @{$g_array->[5][0][2]}; $col++) {
+	    if($g_array->[5][0][2][$col][0]){
+		@suggest=(@suggest,$g_array->[5][0][2][$col][0]);#add element
+	    }
+	}
+    }
+    #language detections
+    if($g_array->[8][0][0]){
+	$detected_language = $g_array->[8][0][0];
+    }else{ print "strange error in google json1";}
+    #error detection
+    if(ref($g_array->[7]) eq 'ARRAY'){	
+	if($g_array->[7][0] && $g_array->[7][1]){
+	    $error1 = decode_entities($g_array->[7][0]); #decode html character entities
+	    $error2 = $g_array->[7][1];
+	}else{ print "strange error in google json2";}
+	
+	#Highlight - error checking
+	if($w_count <= 2){
+	    my @request = split //,$request;
+	    my @right = split //, $error2;
+	    my @fixed = @right;#working array
+	    my $count = 0;    #insertions
+	    my $save = -1;
+	    my $n = scalar @right;
+	    my $pos;          #index + insertions
+	    for(my $i = 0; $i < $n; $i++){ #diff strings and highlight insertion
+		if($request[$i] && ($right[$i] ne $request[$i])){
+		    if ($save+1 != $i){		
+			$pos = $count+$i;
+			@fixed = (@fixed[0..$pos-1], $C_RED ,@fixed[$pos..$n+$count-1]);
+			$count++;
+		    }
+		    $save=$i;#error save position
+		}elsif($save+1 == $i){
+		    $pos = $count+$i;
+		    @fixed = (@fixed[0..$pos-1], $C_YELLOW ,@fixed[$pos..$n+$count-1]);
+		    $count++;
+		}
+	    }
+	    @fixed = (@fixed, $C_NORMAL_RAW);
+	    $error1 = join '', @fixed;
+	}else{
+	    $error1 =~ s|<b><i>|$C_YELLOW|g;
+	    $error1 =~ s|</i></b>|$C_NORMAL_RAW|g;
 	}
     }
 }else{ print $response,"\n"; exit 1;}
@@ -263,4 +373,16 @@ $rsum =~ s/\s+\./\./g; #asdas .
 $rsum =~ s/\s+\?/?/g; #asdas ?
 $rsum =~ s/\s+\!/!/g; #asdas !
 $rsum =~ s/\s+\"\s+/ /g; #students’ are either   =  студенты " либо
-print $rsum,"\n";
+
+
+
+#echo
+print $C_GREEN.$rsum.$C_NORMAL_RAW,"\n"; #echo resul
+if($error1){
+    print $error1,"\n"; #echo error
+    exit 0;#enough
+}
+if(scalar @suggest > 1){ #echo options or suggestions
+    print $C_BLUE_RAW."Options:".$C_NORMAL_RAW,"\n";
+    print $_,"\n" foreach @suggest 
+};
