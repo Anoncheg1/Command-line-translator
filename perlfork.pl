@@ -1,4 +1,38 @@
 #!/usr/bin/env perl
+
+# AWESOME GOOGLE TRANSLATE. This tool for access translate.google.com from terminal and additional English features.
+
+#    Copyright (C) 2012 Vitalij Chepelev.
+
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+# You can contact me there: 
+# http://www.unix.com/shell-programming-scripting/196823-completed-command-line-google-translation-tool.html                       654321 - profile name
+
+# https://github.com/Anoncheg1/Command-line-translator
+# requirements: 
+#	libjson-perl
+#	forvo.com account
+#features:
+#- translated text, fixed text with highlight, language detection, dictionary, translit
+# for english: 
+#- phrases, ideom, word forms, transcription, audio pronunciation
+#- cache for words
+#- saving words to file for learning
+#
+#:) translate.google.com, www.macmillandictionary.com/dictionary/british, thefreedictionary.com, lingvo-online.ru, www.forvo.com
+
 use strict; # ограничить применение небезопасных конструкций
 use warnings; # выводить подробные предупреждения компилятора
 use diagnostics; # выводить подробную диагностику ошибок
@@ -101,6 +135,7 @@ my %LANGS = (
     'yi' => 'Yiddish'
 );
 
+############ Functions
 $SIG{INT} = \&sig_handler;
 sub sig_handler { #Ctrl+C detection.
    print "Exit signal detected. Deleting cache files.\n";
@@ -148,7 +183,11 @@ sub testing($){
 				for (my $j = 0; $j < @{$g_array->[$row][$col][$i]}; $j++) {
 				    if(ref($g_array->[$row][$col][$i][$j]) eq 'ARRAY'){
 					for (my $s = 0; $s < @{$g_array->[$row][$col][$i][$j]}; $s++) {
-					    print "a5:$row,$col,$i,$j,$s:".$g_array->[$row][$col][$i][$j][$s]."\n";
+					    if(ref($g_array->[$row][$col][$i][$j][$s]) eq 'ARRAY'){
+						for (my $k = 0; $k < @{$g_array->[$row][$col][$i][$j][$s]}; $k++) {
+						    print "a5:$row,$col,$i,$j,$s,$k:".$g_array->[$row][$col][$i][$j][$s][$k]."\n";
+						}
+					    }else{print "e5:$row,$col,$i,$j,$s:".$g_array->[$row][$col][$i][$j][$s]."\n";}
 					}
 				    }else{print "e4:$row,$col,$i,$j:".$g_array->[$row][$col][$i][$j]."\n";}
 				}
@@ -259,6 +298,7 @@ my $url="https://translate.google.com/translate_a/single?client=t&sl=$source&tl=
 #my $response;
 #$response = $ua->request($req);
 #$response = $ua->request($req) if (! $response->is_success); #resent
+########### google request
 my $response = &google($ua->clone, $url, $request) ; #$_[0] - ua    $_[1] - url   #$_[2] - request
 
 my $g_array;
@@ -278,11 +318,11 @@ if ($response->is_success) { #to array
 #    my $pp = JSON->new->pretty->encode( $g_array ); # pretty-printing
 #    print $pp;
     
-#    &testing($g_array);
+    &testing($g_array);
 
 }
 else {
-    print $response->status_line, "\n"; exit 1;
+    print "Can't connect google: ".$response->status_line, "\n"; exit 1;
 }
 
 my $rsum; # translation
@@ -291,41 +331,8 @@ my @suggest; #google suggestions. appears sometimes.(options_for_one_word)
 my $detected_language;
 my $error1; #error with highlight
 my $error2; #correct version
+my @dictionary;
 if(ref($g_array) eq 'ARRAY'){
-    #translation
-    if(length $request < 1000){ # if <1000 we will fix english article problem if >1000 leave it be
-	if(ref($g_array->[5]) eq 'ARRAY'){
-	    for (my $col = 0; $col < @{$g_array->[5]}; $col++) {
-		if($g_array->[5][$col][2][0][0]){
-		    my $t = $g_array->[5][$col][2][0][0];
-		    $rsum .= $t." ";
-		}
-	    }
-	}
-    }else{
-	if(ref($g_array->[0]) eq 'ARRAY'){
-	    for (my $col = 0; $col < @{$g_array->[0]}; $col++) {
-		if($g_array->[0][$col][0]){
-		    my $t = $g_array->[0][$col][0];
-		    $rsum .= $t;
-		}
-	    }
-	}
-    }
-    #translit
-    if($w_count <= $TRANSLIT_WORDS_MAX){
-	if($g_array->[0][1][3]){
-	    $translit = $g_array->[0][1][3];
-	}
-    }
-    #suggestions
-    if(ref($g_array->[5][0][2]) eq 'ARRAY'){	
-	for (my $col = 0; $col < @{$g_array->[5][0][2]}; $col++) {
-	    if($g_array->[5][0][2][$col][0]){
-		@suggest=(@suggest,$g_array->[5][0][2][$col][0]);#add element
-	    }
-	}
-    }
     #language detections
     if($g_array->[8][0][0]){
 	$detected_language = $g_array->[8][0][0];
@@ -338,17 +345,17 @@ if(ref($g_array) eq 'ARRAY'){
 	}else{ print "strange error in google json2";}
 	
 	#Highlight - error checking
-	if($w_count <= 2){
+	if($w_count <= 2){ #complicated, I knew
 	    my @request = split //,$request;
 	    my @right = split //, $error2;
 	    my @fixed = @right;#working array
 	    my $count = 0;    #insertions
-	    my $save = -1;
-	    my $n = scalar @right;
+	    my $save = -1;    #last error position
 	    my $pos;          #index + insertions
+	    my $n = (scalar @right > scalar @request)? scalar @request : scalar @right; #lowest
 	    for(my $i = 0; $i < $n; $i++){ #diff strings and highlight insertion
-		if($request[$i] && ($right[$i] ne $request[$i])){
-		    if ($save+1 != $i){		
+		if($right[$i] ne $request[$i]){
+		    if ($save+1 != $i){
 			$pos = $count+$i;
 			@fixed = (@fixed[0..$pos-1], $C_RED ,@fixed[$pos..$n+$count-1]);
 			$count++;
@@ -367,22 +374,77 @@ if(ref($g_array) eq 'ARRAY'){
 	    $error1 =~ s|</i></b>|$C_NORMAL_RAW|g;
 	}
     }
-}else{ print $response,"\n"; exit 1;}
-$rsum =~ s/\s+,/,/g; #asd , asd
-$rsum =~ s/\s+\./\./g; #asdas .
-$rsum =~ s/\s+\?/?/g; #asdas ?
-$rsum =~ s/\s+\!/!/g; #asdas !
-$rsum =~ s/\s+\"\s+/ /g; #students’ are either   =  студенты " либо
+    if( ! defined $error1){
+	#translation
+	if(length $request < 1000){ # if <1000 we will fix english article problem if >1000 leave it be
+	    if(ref($g_array->[5]) eq 'ARRAY'){
+		for (my $col = 0; $col < @{$g_array->[5]}; $col++) {
+		    if($g_array->[5][$col][2][0][0]){
+			my $t = $g_array->[5][$col][2][0][0];
+			$rsum .= $t." ";
+		    }
+		}
+	    }
+	}else{
+	    if(ref($g_array->[0]) eq 'ARRAY'){
+		for (my $col = 0; $col < @{$g_array->[0]}; $col++) {
+		    if($g_array->[0][$col][0]){
+			my $t = $g_array->[0][$col][0];
+			$rsum .= $t;
+		    }
+		}
+	    }
+	}
+	$rsum =~ s/\s+,/,/g; #asd , asd
+	$rsum =~ s/\s+\./\./g; #asdas .
+	$rsum =~ s/\s+\?/?/g; #asdas ?
+	$rsum =~ s/\s+\!/!/g; #asdas !
+	$rsum =~ s/\s+\"\s+/ /g; #students’ are either   =  студенты " либо
+	#translit
+	if($w_count <= $TRANSLIT_WORDS_MAX){
+	    if($g_array->[0][1][3]){
+		$translit = $g_array->[0][1][3];
+	    }
+	}
+	#suggestions(working but sucks)
+#	if(ref($g_array->[5][0][2]) eq 'ARRAY'){	
+#	    for (my $col = 0; $col < @{$g_array->[5][0][2]}; $col++) {
+#		if($g_array->[5][0][2][$col][0]){
+#		    @suggest=(@suggest,$g_array->[5][0][2][$col][0]);#add element
+#		}
+#	    }
+#	}
+	#Dictionary
+	if(ref($g_array->[1]) eq 'ARRAY'){
+	    for (my $row = 0; $row < @{$g_array->[1]}; $row++) {
+		if($g_array->[1][$row][0]){
+		    @dictionary = (@dictionary, $C_BLUE_RAW.$g_array->[1][$row][0].$C_NORMAL_RAW); #noun, verb
+		    if(ref($g_array->[1][$row][2])){
+			for (my $col = 0; $col < @{$g_array->[1][$row][2]}; $col++) {
+			    my $freq = "";
+			    $freq = "*" if ($g_array->[1][$row][2][$col][3]);
+			    my @v;
+			    @v=(@v,$_) foreach @{$g_array->[1][$row][2][$col][1]};
+			    @dictionary = (@dictionary, $freq.$g_array->[1][$row][2][$col][0]." ".join(", ", @v));
+			}
+		    }
+		}
+	    }
+	}
+    }
+}else{ #print $response,"\n";
+    print "Wrong answer from google","\n"; exit 1;}
 
 
 
-#echo
-print $C_GREEN.$rsum.$C_NORMAL_RAW,"\n"; #echo resul
+############ Echo
 if($error1){
     print $error1,"\n"; #echo error
     exit 0;#enough
 }
-if(scalar @suggest > 1){ #echo options or suggestions
-    print $C_BLUE_RAW."Options:".$C_NORMAL_RAW,"\n";
-    print $_,"\n" foreach @suggest 
-};
+print $C_GREEN.$rsum.$C_NORMAL_RAW,"\n"; #echo result
+print $_,"\n" foreach @dictionary; #echo dictionary
+#if(scalar @suggest > 1){ #echo options or suggestions (working but sucks)
+#    print $C_BLUE_RAW."Options:".$C_NORMAL_RAW,"\n";
+#    print $_,"\n" foreach @suggest;
+#};
