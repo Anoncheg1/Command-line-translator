@@ -1,3 +1,9 @@
+FILES:
+*README
+*perlfork.pl - don't touch it
+*translate - this one
+*urban.pl - optional
+
 This tool for access translate.google.com from terminal and to have English dictionary.
 mirror https://github.com/Anoncheg1/Command-line-translator
 mirror http://pastebin.com/kPTYjY6W
