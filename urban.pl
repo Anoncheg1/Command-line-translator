@@ -28,9 +28,11 @@ if ($res->is_success){
     $tree->store_comments(0);
     $tree->parse($res->decoded_content);
     $tree->eof();
-    my $el = $tree->look_down("class", "jscroll-inner")->look_down("class", "def-panel"); #начинаем парсить
+    #$tree->dump;
+    my $el = $tree->look_down("class", "def-panel"); #начинаем парсить
     if(!$el){exit;}
     my $meaning = $el->look_down("class", "meaning")->as_text;
+    if($meaning =~ m/There aren't any definitions for/){exit;}
     my $example = $el->look_down("class", "example")->as_text;
     my $thumbup = $el->look_down("class", "thumb up")->look_down("class", "count")->as_text;
     my $thumbdown = $el->look_down("class", "thumb down")->look_down("class", "count")->as_text;
