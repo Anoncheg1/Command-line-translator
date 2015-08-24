@@ -515,15 +515,17 @@ main_func(){
 				[[ $(echo "$options_for_one_word" | wc -l) -gt 1 && $(echo "$dictionary" | wc -l) -le 3 ]] && echo -e "$C_BLUE_RAW"Options:"$C_NORMAL"'\n'"$options_for_one_word" >> "$cachefile" #google sugestions to cache
 
 				#phrases, forms and a vform
-				macmill=$(curl -si --user-agent "$useragent" $httpsproxy -x "$httpproxy" -m $timeout http://www.macmillandictionary.com/dictionary/british/"$(echo $request | tr '[:upper:]' '[:lower:]' | tr ' ' - )" )
+				macmill=$(curl -si --user-agent "$useragent" $httpsproxy -x "$httpproxy" -m $timeout http://www.macmillandictionary.com/search/british/direct/?q="$(echo $request | tr '[:upper:]' '[:lower:]' | tr ' ' + )" )
 				[[ $? != 0 ]] && { echo "ERROR cant get phrases macmillandictionary" >> "$cachefile"; }
 				location=$(echo "$macmill" | grep "Location: http://www.macmillandictionary.com/dictionary/british/" | grep -o "http.*" | tr -d '\r')
 				if [[ $location ]]; then
+					#echo $location
 					macmill=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" -m $timeout "$location" )
 					[[ $? != 0 ]] && { echo "ERROR cant get phrases macmillandictionary" >> "$cachefile"; }
 				fi
 				#forms
 				forms=$(echo $macmill | grep -o "id=\"wordsformslayer-head\".*End of DIV wordforms" | sed 's/INFLECTION-CONTENT/\n/g' | sed -e 's/.*INFLECTION-ENTRY\">\([^<]*\)<.*I-VARIANT-before\">\([^<]*\).*INFLECTION-ENTRY\">\([^<]*\).*/666\1\2\3,/' -e 's/.*INFLECTION-ENTRY\">\([^<]*\)<.*/666\1,/' | grep 666 | cut -c 4-)
+				#echo $forms
 				fwc=$(echo "$forms" | wc -l)
 				firstf=`echo "$forms" | head -n 1` #1
 				last1f=`echo "$forms" | tail -n 2 | head -n 1` #end-1
