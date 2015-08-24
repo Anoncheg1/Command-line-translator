@@ -515,8 +515,13 @@ main_func(){
 				[[ $(echo "$options_for_one_word" | wc -l) -gt 1 && $(echo "$dictionary" | wc -l) -le 3 ]] && echo -e "$C_BLUE_RAW"Options:"$C_NORMAL"'\n'"$options_for_one_word" >> "$cachefile" #google sugestions to cache
 
 				#phrases, forms and a vform
-				macmill=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" -m $timeout http://www.macmillandictionary.com/dictionary/british/"$(echo $request | tr '[:upper:]' '[:lower:]' | tr ' ' - )" )
+				macmill=$(curl -si --user-agent "$useragent" $httpsproxy -x "$httpproxy" -m $timeout http://www.macmillandictionary.com/dictionary/british/"$(echo $request | tr '[:upper:]' '[:lower:]' | tr ' ' - )" )
 				[[ $? != 0 ]] && { echo "ERROR cant get phrases macmillandictionary" >> "$cachefile"; }
+				location=$(echo "$macmill" | grep "Location: http://www.macmillandictionary.com/dictionary/british/" | grep -o "http.*" | tr -d '\r')
+				if [[ $location ]]; then
+					macmill=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" -m $timeout "$location" )
+					[[ $? != 0 ]] && { echo "ERROR cant get phrases macmillandictionary" >> "$cachefile"; }
+				fi
 				#forms
 				forms=$(echo $macmill | grep -o "id=\"wordsformslayer-head\".*End of DIV wordforms" | sed 's/INFLECTION-CONTENT/\n/g' | sed -e 's/.*INFLECTION-ENTRY\">\([^<]*\)<.*I-VARIANT-before\">\([^<]*\).*INFLECTION-ENTRY\">\([^<]*\).*/666\1\2\3,/' -e 's/.*INFLECTION-ENTRY\">\([^<]*\)<.*/666\1,/' | grep 666 | cut -c 4-)
 				fwc=$(echo "$forms" | wc -l)
@@ -532,15 +537,14 @@ main_func(){
 				vform_desc=$(echo "$macmill" | grep "span class=\"GREF-TYPE\"" | sed 's/.*<span class=\"GREF-TYPE\">\([^<]*\)<.*/\1/')
 				[[ $vform ]] && echo -e "$C_BLUE_RAW$vform_desc$C_NORMAL_RAW" "$C_BRIGHT_RAW$vform$C_NORMAL_RAW" >> "$cachefile"
 				#phrases
-				raw_phras=$(echo "$macmill" | grep -o '<li ID.*End of DIV SENSE--></li>' | sed 's/<.\?span[^>]*>//g')
-				#div class="P-HEAD" #| sed 's/End of DIV SENSE--><\/li>/\n/g' \ -e 's/.*\"h2\">\([^<]*\).*\"EXAMPLE\">\([^<]*\).*\"EXAMPLE\">\([^<]*\).*/**\'$C_BRIGHT_RAW'\1'$C_NORMAL'\. \2<FUCKINGSHIT>\t\3/' \ | nl -s ' ' | sed -e 's/<FUCKINGSHIT>/\n/' -e 's/^ *//'
-#-e 's/.*\"EXAMPLE\">\([^<]*\).*\"EXAMPLE\">\([^<]*\).*/**\1<FUCKINGSHIT>\t\2/' \
-				phras=$(echo $raw_phras | sed -e 's/<a[^>]*>//g' -e 's/<\/a>//g' | sed -e 's/div class=\"P-HEAD\"/\n?????/g' | grep "?????" | grep -n . | sed 's/^[0-9]*:/&\n/' | sed 's/End of DIV EXAMPLES/\n/g' | sed '/^[0-9]*:/{h;d;};G; s/^\(.*\)\n\([0-9]*:\)/\2 \1/' | sed \
--e 's/^\([0-9]*\):.*\"h2\">\([^<]*\).*\"h2\">\([^<]*\).*\"EXAMPLE\">\([^<]*\).*/**\1 \'$C_BRIGHT_RAW'\2\3'$C_NORMAL'\. \4/' \
--e 's/^\([0-9]*\):.*\"h2\">\([^<]*\).*\"EXAMPLE\">\([^<]*\).*/**\1 \'$C_BRIGHT_RAW'\2'$C_NORMAL'\. \3/' \
--e 's/^\([0-9]*\):.*\"h2\">\([^<]*\).*\"h2\">\([^<]*\).*class=\"SENSE-BODY\">\([^<]*\).*/**\1 \'$C_BRIGHT_RAW'\2\3'$C_NORMAL'\. \4/' \
--e 's/^\([0-9]*\):.*\"h2\">\([^<]*\).*class=\"SENSE-BODY\">\([^<]*\).*/**\1 \'$C_BRIGHT_RAW'\2'$C_NORMAL'\. \3/' \
--e 's/^\([0-9]*\):.*\"EXAMPLE\">\([^<]*\).*/**\1 \2/' | grep -o "^\*\*[0-9].*" | sed 's/^\*\*//' ) # doubleh2+exmaple, h2+exmaple, doubleh2+sentence, h2+sentence, only example
+				#raw_phras=$(echo "$macmill" | grep -o '<li ID.*End of DIV SENSE--></li>' | sed 's/<.\?span[^>]*>//g')
+				#phras=$(echo $raw_phras | sed -e 's/<a[^>]*>//g' -e 's/<\/a>//g' | sed -e 's/div class=\"P-HEAD\"/\n?????/g' | grep "?????" | grep -n . | sed 's/^[0-9]*:/&\n/' | sed 's/End of DIV EXAMPLES/\n/g' | sed '/^[0-9]*:/{h;d;};G; s/^\(.*\)\n\([0-9]*:\)/\2 \1/' | sed \
+#-e 's/^\([0-9]*\):.*\"h2\">\([^<]*\).*\"h2\">\([^<]*\).*\"EXAMPLE\">\([^<]*\).*/**\1 \'$C_BRIGHT_RAW'\2\3'$C_NORMAL'\. \4/' \
+#-e 's/^\([0-9]*\):.*\"h2\">\([^<]*\).*\"EXAMPLE\">\([^<]*\).*/**\1 \'$C_BRIGHT_RAW'\2'$C_NORMAL'\. \3/' \
+#-e 's/^\([0-9]*\):.*\"h2\">\([^<]*\).*\"h2\">\([^<]*\).*class=\"SENSE-BODY\">\([^<]*\).*/**\1 \'$C_BRIGHT_RAW'\2\3'$C_NORMAL'\. \4/' \
+#-e 's/^\([0-9]*\):.*\"h2\">\([^<]*\).*class=\"SENSE-BODY\">\([^<]*\).*/**\1 \'$C_BRIGHT_RAW'\2'$C_NORMAL'\. \3/' \
+#-e 's/^\([0-9]*\):.*\"EXAMPLE\">\([^<]*\).*/**\1 \2/' | grep -o "^\*\*[0-9].*" | sed 's/^\*\*//' ) # doubleh2+exmaple, h2+exmaple, doubleh2+sentence, h2+sentence, only example
+phras=$(echo "$macmill" | grep -o 'div id="phrases_container".*End of DIV --' | sed 's/<\/a>/\n/g' | sed 's/.*>//' | grep -o "^ .*")
 				if [[ $phras ]]; then 	#phrases
 					echo -e "$C_GRAY_RED_RAW"PHRASES:$C_NORMAL >> "$cachefile"
 					echo -e "$phras" >> "$cachefile"

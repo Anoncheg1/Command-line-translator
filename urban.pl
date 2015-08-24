@@ -9,12 +9,12 @@ use HTML::TreeBuilder;
 package main;
 
 # устанавливаем обработчик сигнала INT
-#$SIG{INT} = \&sig_handler; # ссылка на подпрограмму
-#sub sig_handler { # подпрограмма-обработчик сигнала
-#   print "Получен сигнал INT по нажатию Ctrl+C\n";
+$SIG{INT} = \&sig_handler; # ссылка на подпрограмму
+sub sig_handler { # подпрограмма-обработчик сигнала
+ #  print "Получен сигнал INT по нажатию Ctrl+C\n";
 #   print "Заканчиваю работу!\n";
-#   exit; # завершение выполнения программы
-#}
+   exit; # завершение выполнения программы
+}
 
 my $ua = LWP::UserAgent->new; #параметры подключения
 $ua->agent("Mozilla/5.0 (Windows NT 5.1; rv:5.0.1) Gecko/20100101 Firefox/5.0.1");
