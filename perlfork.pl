@@ -162,15 +162,6 @@ EOF
     exit 0;
 }
 
-sub google($$$){#$_[0] - ua    $_[1] - url   #$_[2] - request
-    my $req = HTTP::Request->new(POST => $_[1]);
-    $req->content("text=$_[2]");
-    my $response;
-    $response = $_[0]->request($req);
-    $response = $_[0]->request($req) if (! $response->is_success); #resent
-    return $response;
-}
-
 sub testing($){
     my $g_array = $_[0];
     if(ref($g_array) eq 'ARRAY'){
@@ -271,7 +262,7 @@ if (defined $opt{s}){
 #    print $TLSOURCE;
 }
 if ($opt{t}){
-    $TLSOURCE = $opt{t} if defined $LANGS{$opt{t}};    
+    $TLTARGET = $opt{t} if defined $LANGS{$opt{t}};    
 }
 $request= join(" ", @ARGV);
 $request =~ s/^\s+|\s+$//g;     #trim both sides
@@ -279,172 +270,236 @@ exit 1 if ! length $request;
 
 my $w_count = scalar(split(/\s+/,$request));
 
-#Language detection by the first character (very simple)
-foreach my $ch (map {split //} split('\s',(substr $request,0,10))){
-#    print ord $ch, "\n"; #65 - 122 = Latin
+$source = 'auto';   $target = $LATIN_LANG;   #default
+#Language detection by the first found Latin character
+my $rutf8 = $request; utf8::decode($rutf8); #- to utf8 solid chars
+foreach my $ch (map {split //} split('\s',(substr $rutf8,0,10))){
+    #print $ch,ord $ch, "\n"; #65 - 122 = Latin
     if (ord $ch > 65 && ord $ch < 122 )
-    {	    $source = $LATIN_LANG;   $target = $FIRST_LANG;    last;
-    }else{  $source = 'auto';        $target = $LATIN_LANG;   } # For any other language
+    {	    $source = $LATIN_LANG;   $target = $FIRST_LANG;    last;    }
 }
+$source = $TLSOURCE if $TLSOURCE;
+$target = $TLTARGET if $TLTARGET;
+
 #print 'A'.$request."A\n";
+
 
 my $ua = LWP::UserAgent->new; #Internet connection main object, we will clone it
 $ua->agent($USERAGENT);
 $ua->proxy([$PROXY[0]], $PROXY[1]) if @PROXY;
-     
-my $url="https://translate.google.com/translate_a/single?client=t&sl=$source&tl=$target&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8";
-#my $req = HTTP::Request->new(POST => $url);
-#$req->content("text=$request");
-#my $response;
-#$response = $ua->request($req);
-#$response = $ua->request($req) if (! $response->is_success); #resent
+
+
 ########### google request
-my $response = &google($ua->clone, $url, $request) ; #$_[0] - ua    $_[1] - url   #$_[2] - request
-
-my $g_array;
-if ($response->is_success) { #to array
-    #print $response->decoded_content;
-#    if ($response->isa('HTTP::Response::JSON')) {
-    #my $json = $response->json_content; #decoded
-    my $js = $response->decoded_content;
-    $js =~ s/,,/,"",/g;
-    $js =~ s/,,/,"",/g;
-    $js =~ s/\[,/\["",/g;
-    $js =~ s/,\]/,""\]/g;
-    print $js."\n";
-    #my $g_array = decode_json($js);
-    #my @objs = JSON->new->incr_parse ($js);
-    $g_array =  JSON->new->decode($js);
-#    my $pp = JSON->new->pretty->encode( $g_array ); # pretty-printing
-#    print $pp;
-    
-    &testing($g_array);
-
-}
-else {
-    print "Can't connect google: ".$response->status_line, "\n"; exit 1;
-}
-
+my $url="https://translate.google.com/translate_a/single?client=t&sl=$source&tl=$target&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8";
+##
+my $response;
 my $rsum; # translation
 my $translit; # translit
 my @suggest; #google suggestions. appears sometimes.(options_for_one_word)
-my $detected_language;
+my @detected_languages;
 my $error1; #error with highlight
 my $error2; #correct version
 my @dictionary;
-if(ref($g_array) eq 'ARRAY'){
-    #language detections
-    if($g_array->[8][0][0]){
-	$detected_language = $g_array->[8][0][0];
-    }else{ print "strange error in google json1";}
-    #error detection
-    if(ref($g_array->[7]) eq 'ARRAY'){	
-	if($g_array->[7][0] && $g_array->[7][1]){
-	    $error1 = decode_entities($g_array->[7][0]); #decode html character entities
-	    $error2 = $g_array->[7][1];
-	}else{ print "strange error in google json2";}
+##
+#side effect function
+&google($ua->clone, $url, $request); #$_[0] - ua    $_[1] - url   $_[2] - request
+
+############ Echo
+if($error1){
+    print $error1,"\n"; #echo error
+    exit 0;
+}else{
+    if($detected_languages[0] && $detected_languages[0] ne $source){
+	print "detected languages: ";
+	print $_,"\n" foreach @detected_languages;
+
+	$source = $detected_languages[0];
+	##
+	undef $response;
+	undef $rsum; # translation
+	undef $translit; # translit
+	undef @suggest; #google suggestions. appears sometimes.(options_for_one_word)
+	undef @detected_languages;
+	undef $error1; #error with highlight
+	undef $error2; #correct version
+	undef @dictionary;
+	##
+	#side effect function
+	my $url="https://translate.google.com/translate_a/single?client=t&sl=$source&tl=$target&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8";
+	&google($ua->clone, $url, $request); #$_[0] - ua    $_[1] - url   $_[2] - request
 	
-	#Highlight - error checking
-	if($w_count <= 2){ #complicated, I knew
-	    my @request = split //,$request;
-	    my @right = split //, $error2;
-	    my @fixed = @right;#working array
-	    my $count = 0;    #insertions
-	    my $save = -1;    #last error position
-	    my $pos;          #index + insertions
-	    my $n = (scalar @right > scalar @request)? scalar @request : scalar @right; #lowest
-	    for(my $i = 0; $i < $n; $i++){ #diff strings and highlight insertion
-		if($right[$i] ne $request[$i]){
-		    if ($save+1 != $i){
+	print $C_GREEN.$rsum.$C_NORMAL_RAW,"\n"; #echo result
+	print $_,"\n" foreach @dictionary; #echo dictionary
+	exit 0;
+    }
+}
+print $C_GREEN.$rsum.$C_NORMAL_RAW,"\n"; #echo result
+print $_,"\n" foreach @dictionary; #echo dictionary
+
+#if(scalar @suggest > 1){ #echo options or suggestions (working but sucks)
+#    print $C_BLUE_RAW."Options:".$C_NORMAL_RAW,"\n";
+#    print $_,"\n" foreach @suggest;
+#};
+
+
+#THE END
+
+
+
+
+
+
+
+
+#SIDE EFFECT:
+#$response
+#$rsum; # translation
+#$translit; # translit
+#@suggest; #google suggestions. appears sometimes.(options_for_one_word)
+#@detected_languages;
+#$error1; #error with highlight
+#$error2; #correct version
+#@dictionary;
+sub google($$$){#$_[0] - ua (object)    $_[1] - url      $_[2] - request
+    my $req = HTTP::Request->new(POST => $_[1]);
+    $req->content("text=$_[2]");
+    my $response;
+    $response = $_[0]->request($req);
+    $response = $_[0]->request($req) if (! $response->is_success); #resent
+ 
+    my $g_array;
+    if ($response->is_success) { #to array
+	#print $response->decoded_content;
+	#    if ($response->isa('HTTP::Response::JSON')) {
+	#my $json = $response->json_content; #decoded
+	my $js = $response->decoded_content;
+	$js =~ s/,,/,"",/g;
+	$js =~ s/,,/,"",/g;
+	$js =~ s/\[,/\["",/g;
+	$js =~ s/,\]/,""\]/g;
+	#    print $js."\n";
+	#my $g_array = decode_json($js);
+	#my @objs = JSON->new->incr_parse ($js);
+	$g_array =  JSON->new->decode($js);
+	#    my $pp = JSON->new->pretty->encode( $g_array ); # pretty-printing
+	#    print $pp;
+	
+	#    &testing($g_array);
+
+    }
+    else {
+	print "Can't connect google: ".$response->status_line, "\n"; exit 1;
+    }
+
+ #   my $rsum; # translation
+ #   my $translit; # translit
+ #   my @suggest; #google suggestions. appears sometimes.(options_for_one_word)
+ #   my @detected_languages;
+ #   my $error1; #error with highlight
+ #   my $error2; #correct version
+ #   my @dictionary;
+    if(ref($g_array) eq 'ARRAY'){
+	#language detections
+	if(ref($g_array->[8]) eq 'ARRAY'){
+	    if($g_array->[8][0][0]){
+		@detected_languages=(@detected_languages,$_) foreach @{$g_array->[8][0]};
+	    }else{ print "strange error in google json1";}
+	}
+	#error detection
+	if(ref($g_array->[7]) eq 'ARRAY'){	
+	    if($g_array->[7][0] && $g_array->[7][1]){
+		$error1 = decode_entities($g_array->[7][0]); #decode html character entities
+		$error2 = $g_array->[7][1];
+	    }else{ print "strange error in google json2";}
+	    
+	    #Highlight - error checking
+	    if($w_count <= 2){ #complicated, I knew
+		my @request = split //,$request;
+		my @right = split //, $error2;
+		my @fixed = @right;#working array
+		my $count = 0;    #insertions
+		my $save = -1;    #last error position
+		my $pos;          #index + insertions
+		my $n = (scalar @right > scalar @request)? scalar @request : scalar @right; #lowest
+		for(my $i = 0; $i < $n; $i++){ #diff strings and highlight insertion
+		    if($right[$i] ne $request[$i]){
+			if ($save+1 != $i){
+			    $pos = $count+$i;
+			    @fixed = (@fixed[0..$pos-1], $C_RED ,@fixed[$pos..$n+$count-1]);
+			    $count++;
+			}
+			$save=$i;#error save position
+		    }elsif($save+1 == $i){
 			$pos = $count+$i;
-			@fixed = (@fixed[0..$pos-1], $C_RED ,@fixed[$pos..$n+$count-1]);
+			@fixed = (@fixed[0..$pos-1], $C_YELLOW ,@fixed[$pos..$n+$count-1]);
 			$count++;
 		    }
-		    $save=$i;#error save position
-		}elsif($save+1 == $i){
-		    $pos = $count+$i;
-		    @fixed = (@fixed[0..$pos-1], $C_YELLOW ,@fixed[$pos..$n+$count-1]);
-		    $count++;
 		}
+		@fixed = (@fixed, $C_NORMAL_RAW);
+		$error1 = join '', @fixed;
+	    }else{
+		$error1 =~ s|<b><i>|$C_YELLOW|g;
+		$error1 =~ s|</i></b>|$C_NORMAL_RAW|g;
 	    }
-	    @fixed = (@fixed, $C_NORMAL_RAW);
-	    $error1 = join '', @fixed;
-	}else{
-	    $error1 =~ s|<b><i>|$C_YELLOW|g;
-	    $error1 =~ s|</i></b>|$C_NORMAL_RAW|g;
 	}
-    }
-    if( ! defined $error1){
-	#translation
-	if(length $request < 1000){ # if <1000 we will fix english article problem if >1000 leave it be
-	    if(ref($g_array->[5]) eq 'ARRAY'){
-		for (my $col = 0; $col < @{$g_array->[5]}; $col++) {
-		    if($g_array->[5][$col][2][0][0]){
-			my $t = $g_array->[5][$col][2][0][0];
-			$rsum .= $t." ";
+	if( ! defined $error1){
+	    #translation
+	    if(length $request < 1000){ # if <1000 we will fix english article problem if >1000 leave it be
+		if(ref($g_array->[5]) eq 'ARRAY'){
+		    for (my $col = 0; $col < @{$g_array->[5]}; $col++) {
+			if($g_array->[5][$col][2][0][0]){
+			    my $t = $g_array->[5][$col][2][0][0];
+			    $rsum .= $t." ";
+			}
+		    }
+		}
+	    }else{
+		if(ref($g_array->[0]) eq 'ARRAY'){
+		    for (my $col = 0; $col < @{$g_array->[0]}; $col++) {
+			if($g_array->[0][$col][0]){
+			    my $t = $g_array->[0][$col][0];
+			    $rsum .= $t;
+			}
 		    }
 		}
 	    }
-	}else{
-	    if(ref($g_array->[0]) eq 'ARRAY'){
-		for (my $col = 0; $col < @{$g_array->[0]}; $col++) {
-		    if($g_array->[0][$col][0]){
-			my $t = $g_array->[0][$col][0];
-			$rsum .= $t;
-		    }
+	    $rsum =~ s/\s+,/,/g; #asd , asd
+	    $rsum =~ s/\s+\./\./g; #asdas .
+	    $rsum =~ s/\s+\?/?/g; #asdas ?
+	    $rsum =~ s/\s+\!/!/g; #asdas !
+	    $rsum =~ s/\s+\"\s+/ /g; #students’ are either   =  студенты " либо
+	    #translit
+	    if($w_count <= $TRANSLIT_WORDS_MAX){
+		if($g_array->[0][1][3]){
+		    $translit = $g_array->[0][1][3];
 		}
 	    }
-	}
-	$rsum =~ s/\s+,/,/g; #asd , asd
-	$rsum =~ s/\s+\./\./g; #asdas .
-	$rsum =~ s/\s+\?/?/g; #asdas ?
-	$rsum =~ s/\s+\!/!/g; #asdas !
-	$rsum =~ s/\s+\"\s+/ /g; #students’ are either   =  студенты " либо
-	#translit
-	if($w_count <= $TRANSLIT_WORDS_MAX){
-	    if($g_array->[0][1][3]){
-		$translit = $g_array->[0][1][3];
-	    }
-	}
-	#suggestions(working but sucks)
-#	if(ref($g_array->[5][0][2]) eq 'ARRAY'){	
-#	    for (my $col = 0; $col < @{$g_array->[5][0][2]}; $col++) {
-#		if($g_array->[5][0][2][$col][0]){
-#		    @suggest=(@suggest,$g_array->[5][0][2][$col][0]);#add element
-#		}
-#	    }
-#	}
-	#Dictionary
-	if(ref($g_array->[1]) eq 'ARRAY'){
-	    for (my $row = 0; $row < @{$g_array->[1]}; $row++) {
-		if($g_array->[1][$row][0]){
-		    @dictionary = (@dictionary, $C_BLUE_RAW.$g_array->[1][$row][0].$C_NORMAL_RAW); #noun, verb
-		    if(ref($g_array->[1][$row][2])){
-			for (my $col = 0; $col < @{$g_array->[1][$row][2]}; $col++) {
-			    my $freq = "";
-			    $freq = "*" if ($g_array->[1][$row][2][$col][3]);
-			    my @v;
-			    @v=(@v,$_) foreach @{$g_array->[1][$row][2][$col][1]};
-			    @dictionary = (@dictionary, $freq.$g_array->[1][$row][2][$col][0]." ".join(", ", @v));
+	    #suggestions(working but sucks)
+	    #	if(ref($g_array->[5][0][2]) eq 'ARRAY'){	
+	    #	    for (my $col = 0; $col < @{$g_array->[5][0][2]}; $col++) {
+	    #		if($g_array->[5][0][2][$col][0]){
+	    #		    @suggest=(@suggest,$g_array->[5][0][2][$col][0]);#add element
+	    #		}
+	    #	    }
+	    #	}
+	    #Dictionary
+	    if(ref($g_array->[1]) eq 'ARRAY'){
+		for (my $row = 0; $row < @{$g_array->[1]}; $row++) {
+		    if($g_array->[1][$row][0]){
+			@dictionary = (@dictionary, $C_BLUE_RAW.$g_array->[1][$row][0].$C_NORMAL_RAW); #noun, verb
+			if(ref($g_array->[1][$row][2])){
+			    for (my $col = 0; $col < @{$g_array->[1][$row][2]}; $col++) {
+				my $freq = "";
+				$freq = "*" if ($g_array->[1][$row][2][$col][3]);
+				my @v;
+				@v=(@v,$_) foreach @{$g_array->[1][$row][2][$col][1]};
+				@dictionary = (@dictionary, $freq.$g_array->[1][$row][2][$col][0]." ".join(", ", @v));
+			    }
 			}
 		    }
 		}
 	    }
 	}
-    }
-}else{ #print $response,"\n";
-    print "Wrong answer from google","\n"; exit 1;}
-
-
-
-############ Echo
-if($error1){
-    print $error1,"\n"; #echo error
-    exit 0;#enough
+    }else{ #print $response,"\n";
+	print "Wrong answer from google","\n"; exit 1;}
 }
-print $C_GREEN.$rsum.$C_NORMAL_RAW,"\n"; #echo result
-print $_,"\n" foreach @dictionary; #echo dictionary
-#if(scalar @suggest > 1){ #echo options or suggestions (working but sucks)
-#    print $C_BLUE_RAW."Options:".$C_NORMAL_RAW,"\n";
-#    print $_,"\n" foreach @suggest;
-#};

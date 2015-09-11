@@ -60,7 +60,7 @@ declare -r URBAN_DICTIONARY=true			#For bad words MAY BE VERY ANNOYING
 declare PROMPT_MODE_ACTIVATED=false			#You may repeat your requests
 declare -r SUGGESTIONS_ACTIVATED=true			#Suggestions for ideoms and anything
 #httpproxy=127.0.0.1:4444		#proxy for long strings
-#httpsproxy="--socks5 127.0.0.1:9150"	#socks5
+httpsproxy="--socks5 127.0.0.1:9150"	#socks5
 #
 declare -r words_buffer=4000		#4000 files max. there is removeing all files older than 20 days.
 declare -r timeout=6
@@ -423,7 +423,7 @@ main_func(){
 						#[[ ${fl:$diffnum-1:1} == ' ' ]] && let diffnum-- #white space correction
 						for (( i=$(echo "$difftest" | wc -l); i>=1; i--)); do
 							pos=$(($(echo "$difftest" | sed -n $i'p' | sed -E 's/(([^ ]+ )).*/\1/' ) - 1))
-							fl=$(echo "$fl" | sed 's/^\(.\{'$pos'\}\).\(.*\)/\1'$C_RED"${fl:$pos:1}"$C_NORMAL$C_YELLOW'\2/') #highlight difference in one word
+							fl=$(echo "$fl" | sed 's/^\(.\{'$pos'\}\).\(.*\)/\1'$C_RED"${fl:$pos:1}"$C_NORMAL$C_YELLOW'\2/' 2>/dev/null) #highlight difference in one word
 						done
 					fi
 					fl="$C_YELLOW$fl$C_NORMAL"
@@ -488,7 +488,7 @@ main_func(){
 					)) && ! $dictionary ]]; then
 					
 				echo "$urban"
-				[[ $source != "auto" ]] && echo -e "trying with detected language" # I guess google "auto" is not working then we will do it by yourself mutely
+				[[ $source != "auto" ]] && echo -e "trying with detected language: ${ln_arr[$det_language]}" # I guess google "auto" is not working then we will do it by yourself mutely
 				export TLSOURCE=$det_language #TLTARGET=en #source and target language for second attempt
 				#if [[ $PROMPT_MODE_ACTIVATED == false ]]; then
 					#if [[ $sound == 1 ]]; then $0 -s "$request" ; else $0 "$request" ;fi #second attempt to translate with detected language  #sound will be quiet...
