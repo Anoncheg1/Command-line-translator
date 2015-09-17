@@ -52,16 +52,18 @@ if ($res->is_success){
     }
     $thumbdown = $thumbdown->look_down("class", "count")->as_text;
     if($thumbup < 20 || $thumbup > 9000 || ($thumbup-$thumbdown) < 13 ){exit;} #silent exit if too many ppl like it
+    
     $meaning =~ s/^\s+|\s+$//g;     #trim both sides
-	#$meaning =~ s/[#\-%&\$*+()]//g; #remove bad characters
-	$example =~ s/^\s+|\s+$//g;     #trim both sides
-	#$example =~ s/[#\-%&\$*+()]//g;
+    $example =~ s/^\s+|\s+$//g;     #trim both sides
+    #$meaning =~ s/[#\-%&\$*+()]//g; #remove bad characters
+    #$example = quotemeta($example); #remove bad characters
+    #remove bad characters
     binmode(STDOUT, ":utf8");
     print "Urban ".$thumbup."/".$thumbdown.":\n";
     print $meaning."\n";
     print $example."\n";
     #$tree->dump;
-}else{print (($res->status_line)." Can't connect urban.\n")};
+}else{ print (($res->status_line)." Can't connect urban.\n")};
 
 
 

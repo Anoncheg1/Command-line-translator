@@ -149,11 +149,17 @@ sub usage()
 $name [-S] [-l] [-h] [-p] [-s language_2_chars] [-t language_2_chars]
 if text is LATIN_LANG, then target language is FIRST_LANG
 otherwise, target language is LATIN_LANG
--S Enable sound for one word
-//-p Prompt mode
--s lang Set source language
--t lang Set target language
--l List of languages
+-S
+  enable sound for one word
+//-p prompt mode
+-s CODE
+  source language
+-t CODE
+  target language
+-l
+  list of language codes
+-o FILE 
+    read request from file
 You can force the language with environment varibles by command:
 export TLSOURCE=en TLTARGET=ru
 but better configure "FIRST_LANG" and "LATIN_LANG" in script for auto detection of direction by the first character!
@@ -235,7 +241,7 @@ my $C_NORMAL="`tput sgr0`";
 my $C_NORMAL_RAW="\033[0m";
 
 my %opt =();
-getopts( ":hlpSs:t:", \%opt ) or print "Usage: $name: [-S] [-h] [-l] [-p] [-s language_2_chars] [-t language_2_chars]\n" and exit;
+getopts( ":hlpSs:t:o:", \%opt ) or print "Usage: $name: [-S] [-h] [-l] [-p] [-s language_2_chars] [-t language_2_chars] [-o source_FILE]\n" and exit;
 
 my $source;
 my $target;
@@ -244,6 +250,7 @@ my $sound = 0;
 my $TLSOURCE;
 my $TLTARGET;
 my $request;
+my $filesource;
 
 #Switch options
 usage() if defined $opt{h};
@@ -261,14 +268,22 @@ if (defined $opt{s}){
     $TLSOURCE = $opt{s} if defined $LANGS{$opt{s}};
 #    print $TLSOURCE;
 }
-if ($opt{t}){
+if (defined $opt{t}){
     $TLTARGET = $opt{t} if defined $LANGS{$opt{t}};    
 }
-$request= join(" ", @ARGV);
+
+if (defined $opt{o}){
+    open FILE, $opt{o} or die "-o argument: couldn't open file: $!";
+    local $/ = undef;
+    $request = <FILE>;
+}else{
+    $request = join(" ", @ARGV);
+    $request =~ tr/\x{a}/\n/;
+}
 $request =~ s/^\s+|\s+$//g;     #trim both sides
 exit 1 if ! length $request;
 
-my $w_count = scalar(split(/\s+/,$request));
+my $w_count = scalar(split(/\s+/,$request)); #REQUEST LENGHT IN WORDS
 
 $source = 'auto';   $target = $LATIN_LANG;   #default
 #Language detection by the first found Latin character
@@ -302,39 +317,36 @@ my $error2; #correct version
 my @dictionary;
 ##
 #side effect function
+#print $request;
 &google($ua->clone, $url, $request); #$_[0] - ua    $_[1] - url   $_[2] - request
 
 ############ Echo
-if($error1){
-    print $error1,"\n"; #echo error
-    exit 0;
-}else{
-    if($detected_languages[0] && $detected_languages[0] ne $source){
-	print "detected languages: ";
-	print $_,"\n" foreach @detected_languages;
-
-	$source = $detected_languages[0];
-	##
-	undef $response;
-	undef $rsum; # translation
-	undef $translit; # translit
-	undef @suggest; #google suggestions. appears sometimes.(options_for_one_word)
-	undef @detected_languages;
-	undef $error1; #error with highlight
-	undef $error2; #correct version
-	undef @dictionary;
-	##
-	#side effect function
-	my $url="https://translate.google.com/translate_a/single?client=t&sl=$source&tl=$target&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8";
-	&google($ua->clone, $url, $request); #$_[0] - ua    $_[1] - url   $_[2] - request
-	
-	print $C_GREEN.$rsum.$C_NORMAL_RAW,"\n"; #echo result
-	print $_,"\n" foreach @dictionary; #echo dictionary
-	exit 0;
-    }
+if( ! $error1 && $detected_languages[0] && $detected_languages[0] ne $source){
+    print "detected languages: "; print $_."," foreach @detected_languages; print "\n";
+    
+    $source = $LANGS{$detected_languages[0]};
+    print "trying with:".$source,"\n";
+    ##
+    undef $response;
+    undef $rsum; # translation
+    undef $translit; # translit
+    undef @suggest; #google suggestions. appears sometimes.(options_for_one_word)
+    undef @detected_languages;
+    undef $error1; #error with highlight
+    undef $error2; #correct version
+    undef @dictionary;
+    ##
+    #side effect function
+    my $url="https://translate.google.com/translate_a/single?client=t&sl=$source&tl=$target&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8";
+    &google($ua->clone, $url, $request); #$_[0] - ua    $_[1] - url   $_[2] - request
 }
+
 print $C_GREEN.$rsum.$C_NORMAL_RAW,"\n"; #echo result
-print $_,"\n" foreach @dictionary; #echo dictionary
+if($error1){ 
+    print $error1,"\n"; #echo error   
+}else{ 
+    print $_,"\n" foreach @dictionary;  #echo dictionary
+}
 
 #if(scalar @suggest > 1){ #echo options or suggestions (working but sucks)
 #    print $C_BLUE_RAW."Options:".$C_NORMAL_RAW,"\n";
@@ -384,7 +396,7 @@ sub google($$$){#$_[0] - ua (object)    $_[1] - url      $_[2] - request
 	#    my $pp = JSON->new->pretty->encode( $g_array ); # pretty-printing
 	#    print $pp;
 	
-	#    &testing($g_array);
+	#&testing($g_array); #TESTING
 
     }
     else {
@@ -442,59 +454,60 @@ sub google($$$){#$_[0] - ua (object)    $_[1] - url      $_[2] - request
 		$error1 =~ s|</i></b>|$C_NORMAL_RAW|g;
 	    }
 	}
-	if( ! defined $error1){
-	    #translation
-	    if(length $request < 1000){ # if <1000 we will fix english article problem if >1000 leave it be
-		if(ref($g_array->[5]) eq 'ARRAY'){
-		    for (my $col = 0; $col < @{$g_array->[5]}; $col++) {
-			if($g_array->[5][$col][2][0][0]){
-			    my $t = $g_array->[5][$col][2][0][0];
-			    $rsum .= $t." ";
-			}
-		    }
-		}
-	    }else{
-		if(ref($g_array->[0]) eq 'ARRAY'){
-		    for (my $col = 0; $col < @{$g_array->[0]}; $col++) {
-			if($g_array->[0][$col][0]){
-			    my $t = $g_array->[0][$col][0];
-			    $rsum .= $t;
-			}
+
+#	if( ! defined $error1){
+	#translation
+	$_=$request; my $nc = tr/\x{a}//;   #check for \x{a} unicode or \n
+	if(! defined $error1 && (length $request < 1000) && ($nc == 0) ){ # if <1000 we will fix english article problem if >1000 leave it be
+	    if(ref($g_array->[5]) eq 'ARRAY'){
+		for (my $col = 0; $col < @{$g_array->[5]}; $col++) {
+		    if($g_array->[5][$col][2][0][0]){
+			my $t = $g_array->[5][$col][2][0][0];
+			$rsum .= $t." ";
 		    }
 		}
 	    }
-	    $rsum =~ s/\s+,/,/g; #asd , asd
-	    $rsum =~ s/\s+\./\./g; #asdas .
-	    $rsum =~ s/\s+\?/?/g; #asdas ?
-	    $rsum =~ s/\s+\!/!/g; #asdas !
-	    $rsum =~ s/\s+\"\s+/ /g; #students’ are either   =  студенты " либо
-	    #translit
-	    if($w_count <= $TRANSLIT_WORDS_MAX){
-		if($g_array->[0][1][3]){
-		    $translit = $g_array->[0][1][3];
+	}else{ # >1000
+	    if(ref($g_array->[0]) eq 'ARRAY'){
+		for (my $col = 0; $col < @{$g_array->[0]}; $col++) {
+		    if($g_array->[0][$col][0]){
+			my $t = $g_array->[0][$col][0];
+			$rsum .= $t;
+		    }
 		}
 	    }
-	    #suggestions(working but sucks)
-	    #	if(ref($g_array->[5][0][2]) eq 'ARRAY'){	
-	    #	    for (my $col = 0; $col < @{$g_array->[5][0][2]}; $col++) {
-	    #		if($g_array->[5][0][2][$col][0]){
-	    #		    @suggest=(@suggest,$g_array->[5][0][2][$col][0]);#add element
-	    #		}
-	    #	    }
-	    #	}
-	    #Dictionary
-	    if(ref($g_array->[1]) eq 'ARRAY'){
-		for (my $row = 0; $row < @{$g_array->[1]}; $row++) {
-		    if($g_array->[1][$row][0]){
-			@dictionary = (@dictionary, $C_BLUE_RAW.$g_array->[1][$row][0].$C_NORMAL_RAW); #noun, verb
-			if(ref($g_array->[1][$row][2])){
-			    for (my $col = 0; $col < @{$g_array->[1][$row][2]}; $col++) {
-				my $freq = "";
-				$freq = "*" if ($g_array->[1][$row][2][$col][3]);
-				my @v;
-				@v=(@v,$_) foreach @{$g_array->[1][$row][2][$col][1]};
-				@dictionary = (@dictionary, $freq.$g_array->[1][$row][2][$col][0]." ".join(", ", @v));
-			    }
+	}
+	$rsum =~ s/\s+,/,/g; #asd , asd
+	$rsum =~ s/\s+\./\./g; #asdas .
+	$rsum =~ s/\s+\?/?/g; #asdas ?
+	$rsum =~ s/\s+\!/!/g; #asdas !
+	$rsum =~ s/\s+\"\s+/ /g; #students’ are either   =  студенты " либо
+	#translit
+	if($w_count <= $TRANSLIT_WORDS_MAX){
+	    if($g_array->[0][1][3]){
+		$translit = $g_array->[0][1][3];
+	    }
+	}
+	#suggestions(working but sucks)
+	#	if(ref($g_array->[5][0][2]) eq 'ARRAY'){	
+	#	    for (my $col = 0; $col < @{$g_array->[5][0][2]}; $col++) {
+	#		if($g_array->[5][0][2][$col][0]){
+	#		    @suggest=(@suggest,$g_array->[5][0][2][$col][0]);#add element
+	#		}
+	#	    }
+	#	}
+	#Dictionary
+	if(ref($g_array->[1]) eq 'ARRAY'){
+	    for (my $row = 0; $row < @{$g_array->[1]}; $row++) {
+		if($g_array->[1][$row][0]){
+		    @dictionary = (@dictionary, $C_BLUE_RAW.$g_array->[1][$row][0].$C_NORMAL_RAW); #noun, verb
+		    if(ref($g_array->[1][$row][2])){
+			for (my $col = 0; $col < @{$g_array->[1][$row][2]}; $col++) {
+			    my $freq = "";
+			    $freq = "*" if ($g_array->[1][$row][2][$col][3]);
+			    my @v;
+			    @v=(@v,$_) foreach @{$g_array->[1][$row][2][$col][1]};
+			    @dictionary = (@dictionary, $freq.$g_array->[1][$row][2][$col][0]." ".join(", ", @v));
 			}
 		    }
 		}

@@ -39,11 +39,16 @@
 help=`basename "$0"`' [-S] [-l] [-h] [-p] [-s language_2_chars] [-t language_2_chars] <text>
 if text is LATIN_LANG, then target language is FIRST_LANG
 otherwise, target language is LATIN_LANG
--S Enable sound for one word
--p Prompt mode
--s lang Set source language
--t lang Set target language
--l List of languages
+-S
+  enable sound for one word
+-p
+  prompt mode
+-s CODE
+  source language
+-t CODE
+  target language
+-l
+  list of language codes
 You can force the language with environment varibles by command:
 export TLSOURCE=en TLTARGET=ru
 but better configure "FIRST_LANG" and "LATIN_LANG" in script for auto detection of direction by the first character!
@@ -487,7 +492,8 @@ main_func(){
 					${request:0:1} == ${t_result:0:1}
 					)) && ! $dictionary ]]; then
 					
-				echo "$urban"
+				if [[ "$urban" ]]; then echo "$urban"; fi
+				
 				[[ $source != "auto" ]] && echo -e "trying with detected language: ${ln_arr[$det_language]}" # I guess google "auto" is not working then we will do it by yourself mutely
 				export TLSOURCE=$det_language #TLTARGET=en #source and target language for second attempt
 				#if [[ $PROMPT_MODE_ACTIVATED == false ]]; then
