@@ -3,7 +3,7 @@ Command-line google translate, quick translate, very simple scripts, scripts for
 
 FILES:
 *README
-*perlfork.pl - Perl5 version. Under development. OS Windows support. No requrements. + translate from file.
+*perlfork.pl - Perl5 version. Google translate only. OS Windows support. No requrements. + translate from file.
 *translate - Bash version. Complete and stable.
 *urban.pl - optional for bash version.
 

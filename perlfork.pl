@@ -42,6 +42,8 @@ use LWP::UserAgent;
 #libjson-perl
 use JSON;
 use HTML::Entities;
+#Debian: liblwp-protocol-socks-perl
+use LWP::Protocol::socks;
 use utf8;
 use v5.16;
 #use Text::Unidecode;
@@ -54,7 +56,8 @@ my $LATIN_LANG='en';		#target for all not A-z latin requests			A-z latin alphabe
 my $TERMINAL_C="WOB";		#Your terminal - white on black:WOB, black on white:BOW, anything other:O
 
 my $TRANSLIT_WORDS_MAX = 10;
-my @PROXY ;#= ('http','http://127.0.0.1:4446');
+#my @PROXY ;#= ('http','http://127.0.0.1:4446'); #i2p
+#my @PROXY =([qw(http https)] => "socks://172.16.0.1:9150"); #tor
 
 my $USERAGENT = 'Mozilla/5.0 (Windows NT 5.1; rv:5.0.1) Gecko/20100101 Firefox/5.0.1';
 
@@ -160,9 +163,7 @@ otherwise, target language is LATIN_LANG
   list of language codes
 -o FILE 
     read request from file
-You can force the language with environment varibles by command:
-export TLSOURCE=en TLTARGET=ru
-but better configure "FIRST_LANG" and "LATIN_LANG" in script for auto detection of direction by the first character!
+Configure "FIRST_LANG" and "LATIN_LANG" in script for auto detection of direction by the first character!
 You neeed UTF-8 support for required languages.
 EOF
     exit 0;
@@ -287,8 +288,8 @@ my $w_count = scalar(split(/\s+/,$request)); #REQUEST LENGHT IN WORDS
 
 $source = 'auto';   $target = $LATIN_LANG;   #default
 #Language detection by the first found Latin character
-my $rutf8 = $request; utf8::decode($rutf8); #- to utf8 solid chars
-foreach my $ch (map {split //} split('\s',(substr $rutf8,0,10))){
+my $rutf8 = $request; utf8::decode($rutf8); #- to utf8 solid characters
+foreach my $ch (map {split //} split('\s',(substr $rutf8,0,10))){ #first 10 characters
     #print $ch,ord $ch, "\n"; #65 - 122 = Latin
     if (ord $ch > 65 && ord $ch < 122 )
     {	    $source = $LATIN_LANG;   $target = $FIRST_LANG;    last;    }
@@ -301,8 +302,14 @@ $target = $TLTARGET if $TLTARGET;
 
 my $ua = LWP::UserAgent->new; #Internet connection main object, we will clone it
 $ua->agent($USERAGENT);
-$ua->proxy([$PROXY[0]], $PROXY[1]) if @PROXY;
+$ua->proxy(@PROXY) if @PROXY;
 
+#my $url="https://check.torproject.org/";
+#my $req = HTTP::Request->new(GET => $url);
+#my $response = $ua->request($req);
+#if ($response->is_success) {
+#    print $response->decoded_content;
+#}
 
 ########### google request
 my $url="https://translate.google.com/translate_a/single?client=t&sl=$source&tl=$target&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8";
@@ -326,7 +333,8 @@ if( ! $error1 && $detected_languages[0] && $detected_languages[0] ne $source){
     
     $source = $LANGS{$detected_languages[0]};
     print "trying with:".$source,"\n";
-    ##
+	
+    ###side effect function
     undef $response;
     undef $rsum; # translation
     undef $translit; # translit
@@ -335,8 +343,6 @@ if( ! $error1 && $detected_languages[0] && $detected_languages[0] ne $source){
     undef $error1; #error with highlight
     undef $error2; #correct version
     undef @dictionary;
-    ##
-    #side effect function
     my $url="https://translate.google.com/translate_a/single?client=t&sl=$source&tl=$target&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8";
     &google($ua->clone, $url, $request); #$_[0] - ua    $_[1] - url   $_[2] - request
 }
@@ -503,16 +509,22 @@ sub google($$$){#$_[0] - ua (object)    $_[1] - url      $_[2] - request
 		    @dictionary = (@dictionary, $C_BLUE_RAW.$g_array->[1][$row][0].$C_NORMAL_RAW); #noun, verb
 		    if(ref($g_array->[1][$row][2])){
 			for (my $col = 0; $col < @{$g_array->[1][$row][2]}; $col++) {
-			    my $freq = "";
-			    $freq = "*" if ($g_array->[1][$row][2][$col][3]);
+			    my $freq;
+			    if ($g_array->[1][$row][2][$col][3]){
+				$freq=$g_array->[1][$row][2][$col][3];
+				$freq=sprintf ('%.0f', ($freq*100000)/10);
+				$freq=sprintf ('%.0f', $freq/3) if ($freq > 1 );
+				$freq=sprintf ('%.0f', $freq/3) if ($freq > 1 ); #dowble operation
+			    }
+			    $freq = $freq ? " ".$freq : "";  #delete 0
 			    my @v;
 			    @v=(@v,$_) foreach @{$g_array->[1][$row][2][$col][1]};
-			    @dictionary = (@dictionary, $freq.$g_array->[1][$row][2][$col][0]." ".join(", ", @v));
+			    @dictionary = (@dictionary, $g_array->[1][$row][2][$col][0]." ".join(", ", @v).$freq);
 			}
 		    }
 		}
 	    }
 	}
     }else{ #print $response,"\n";
-	print "Wrong answer from google","\n"; exit 1;}
+		print "Wrong answer from google","\n"; exit 1;}
 }
