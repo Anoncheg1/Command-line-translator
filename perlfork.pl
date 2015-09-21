@@ -33,6 +33,8 @@
 #
 #:) translate.google.com, www.macmillandictionary.com/dictionary/british, thefreedictionary.com, lingvo-online.ru, www.forvo.com
 
+package GoogleTranslator;
+
 use strict; # ограничить применение небезопасных конструкций
 use warnings; # выводить подробные предупреждения компилятора
 use diagnostics; # выводить подробную диагностику ошибок
@@ -47,7 +49,6 @@ use LWP::Protocol::socks;
 use utf8;
 use v5.16;
 #use Text::Unidecode;
-package main;
 #binmode(STDOUT, ":utf8");
 
 # adjust to taste
@@ -328,14 +329,13 @@ my @dictionary;
 &google($ua->clone, $url, $request); #$_[0] - ua    $_[1] - url   $_[2] - request
 
 ############ Echo
-if( ! $error1 && $detected_languages[0] && $detected_languages[0] ne $source){
+if( ! $error1 && $detected_languages[0] && $detected_languages[0] ne $source && ((lc $rsum) eq (lc $request))){
     print "detected languages: "; print $_."," foreach @detected_languages; print "\n";
-    
+
     $source = $LANGS{$detected_languages[0]};
     print "trying with:".$source,"\n";
-	
+
     ###side effect function
-    undef $response;
     undef $rsum; # translation
     undef $translit; # translit
     undef @suggest; #google suggestions. appears sometimes.(options_for_one_word)
@@ -344,13 +344,13 @@ if( ! $error1 && $detected_languages[0] && $detected_languages[0] ne $source){
     undef $error2; #correct version
     undef @dictionary;
     my $url="https://translate.google.com/translate_a/single?client=t&sl=$source&tl=$target&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8";
-    &google($ua->clone, $url, $request); #$_[0] - ua    $_[1] - url   $_[2] - request
+    #&google($ua->clone, $url, $request); #$_[0] - ua    $_[1] - url   $_[2] - request
 }
 
-print $C_GREEN.$rsum.$C_NORMAL_RAW,"\n"; #echo result
-if($error1){ 
+#print $C_GREEN.$rsum.$C_NORMAL_RAW,"\n"; #echo result
+if($error1){
     print $error1,"\n"; #echo error   
-}else{ 
+}else{
     print $_,"\n" foreach @dictionary;  #echo dictionary
 }
 
@@ -370,7 +370,6 @@ if($error1){
 
 
 #SIDE EFFECT:
-#$response
 #$rsum; # translation
 #$translit; # translit
 #@suggest; #google suggestions. appears sometimes.(options_for_one_word)
@@ -512,9 +511,9 @@ sub google($$$){#$_[0] - ua (object)    $_[1] - url      $_[2] - request
 			    my $freq;
 			    if ($g_array->[1][$row][2][$col][3]){
 				$freq=$g_array->[1][$row][2][$col][3];
-				$freq=sprintf ('%.0f', ($freq*100000)/10);
-				$freq=sprintf ('%.0f', $freq/3) if ($freq > 1 );
-				$freq=sprintf ('%.0f', $freq/3) if ($freq > 1 ); #dowble operation
+				$freq=sprintf ('%.2f', ($freq*100000)/10);
+				$freq=sprintf ('%.2f', $freq/3) if ($freq > 1 );
+				$freq=sprintf ('%.0f', $freq);
 			    }
 			    $freq = $freq ? " ".$freq : "";  #delete 0
 			    my @v;
