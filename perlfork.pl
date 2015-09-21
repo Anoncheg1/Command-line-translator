@@ -46,6 +46,7 @@ use JSON;
 use HTML::Entities;
 #Debian: liblwp-protocol-socks-perl
 use LWP::Protocol::socks;
+use URI::Escape;
 use utf8;
 use v5.16;
 #use Text::Unidecode;
@@ -57,7 +58,7 @@ my $LATIN_LANG='en';		#target for all not A-z latin requests			A-z latin alphabe
 my $TERMINAL_C="WOB";		#Your terminal - white on black:WOB, black on white:BOW, anything other:O
 
 my $TRANSLIT_WORDS_MAX = 10;
-#my @PROXY ;#= ('http','http://127.0.0.1:4446'); #i2p
+my @PROXY ;#= ('http','http://127.0.0.1:4446'); #i2p
 #my @PROXY =([qw(http https)] => "socks://172.16.0.1:9150"); #tor
 
 my $USERAGENT = 'Mozilla/5.0 (Windows NT 5.1; rv:5.0.1) Gecko/20100101 Firefox/5.0.1';
@@ -282,10 +283,11 @@ if (defined $opt{o}){
     $request = join(" ", @ARGV);
     $request =~ tr/\x{a}/\n/;
 }
+#$request = quotemeta($request);
 $request =~ s/^\s+|\s+$//g;     #trim both sides
 exit 1 if ! length $request;
 
-my $w_count = scalar(split(/\s+/,$request)); #REQUEST LENGHT IN WORDS
+my $w_count = scalar(split(/\s+/,$request)); #LENGHT OF REQUEST IN WORDS
 
 $source = 'auto';   $target = $LATIN_LANG;   #default
 #Language detection by the first found Latin character
@@ -297,8 +299,6 @@ foreach my $ch (map {split //} split('\s',(substr $rutf8,0,10))){ #first 10 char
 }
 $source = $TLSOURCE if $TLSOURCE;
 $target = $TLTARGET if $TLTARGET;
-
-#print 'A'.$request."A\n";
 
 
 my $ua = LWP::UserAgent->new; #Internet connection main object, we will clone it
@@ -325,7 +325,6 @@ my $error2; #correct version
 my @dictionary;
 ##
 #side effect function
-#print $request;
 &google($ua->clone, $url, $request); #$_[0] - ua    $_[1] - url   $_[2] - request
 
 ############ Echo
@@ -344,10 +343,10 @@ if( ! $error1 && $detected_languages[0] && $detected_languages[0] ne $source && 
     undef $error2; #correct version
     undef @dictionary;
     my $url="https://translate.google.com/translate_a/single?client=t&sl=$source&tl=$target&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8";
-    #&google($ua->clone, $url, $request); #$_[0] - ua    $_[1] - url   $_[2] - request
+    &google($ua->clone, $url, $request); #$_[0] - ua    $_[1] - url   $_[2] - request
 }
 
-#print $C_GREEN.$rsum.$C_NORMAL_RAW,"\n"; #echo result
+print $C_GREEN.$rsum.$C_NORMAL_RAW,"\n"; #echo result
 if($error1){
     print $error1,"\n"; #echo error   
 }else{
@@ -379,7 +378,8 @@ if($error1){
 #@dictionary;
 sub google($$$){#$_[0] - ua (object)    $_[1] - url      $_[2] - request
     my $req = HTTP::Request->new(POST => $_[1]);
-    $req->content("text=$_[2]");
+    $req->content("text=".uri_escape("$_[2]")); #encode to url REQUIRED
+
     my $response;
     $response = $_[0]->request($req);
     $response = $_[0]->request($req) if (! $response->is_success); #resent
@@ -401,7 +401,7 @@ sub google($$$){#$_[0] - ua (object)    $_[1] - url      $_[2] - request
 	#    my $pp = JSON->new->pretty->encode( $g_array ); # pretty-printing
 	#    print $pp;
 	
-	#&testing($g_array); #TESTING
+	&testing($g_array); #TESTING
 
     }
     else {
@@ -462,7 +462,7 @@ sub google($$$){#$_[0] - ua (object)    $_[1] - url      $_[2] - request
 
 #	if( ! defined $error1){
 	#translation
-	$_=$request; my $nc = tr/\x{a}//;   #check for \x{a} unicode or \n
+	$_=$request; my $nc = tr/\n//;   #check for \x{a} unicode or \n
 	if(! defined $error1 && (length $request < 1000) && ($nc == 0) ){ # if <1000 we will fix english article problem if >1000 leave it be
 	    if(ref($g_array->[5]) eq 'ARRAY'){
 		for (my $col = 0; $col < @{$g_array->[5]}; $col++) {

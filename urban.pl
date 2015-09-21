@@ -21,10 +21,11 @@ sub sig_handler { # подпрограмма-обработчик сигнала
 
 my $ua = LWP::UserAgent->new; #параметры подключения
 $ua->agent("Mozilla/5.0 (Windows NT 5.1; rv:5.0.1) Gecko/20100101 Firefox/5.0.1");
-#my @PROXY =([qw(http https)] => "socks://172.16.0.1:9150"); #tor
+my @PROXY;
+#@PROXY =(['http'], "http://127.0.0.1:4446"); #tor
+#@PROXY =([qw(http https)] => "socks://172.16.0.1:9150"); #tor
 $ua->proxy(@PROXY) if @PROXY;
 #$ua->proxy(['http'], "http://127.0.0.1:4446");
-#$ua->proxy([qw(http https)] => "socks://172.16.0.1:9150"); #tor
 
 my $url="http://www.urbandictionary.com/define.php?term=".join ('+', @ARGV);
 my $req = HTTP::Request->new(GET => $url);
