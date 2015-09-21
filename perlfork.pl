@@ -59,7 +59,7 @@ my $TERMINAL_C="WOB";		#Your terminal - white on black:WOB, black on white:BOW, 
 
 my $TRANSLIT_WORDS_MAX = 10;
 my @PROXY ;#= ('http','http://127.0.0.1:4446'); #i2p
-#my @PROXY =([qw(http https)] => "socks://172.16.0.1:9150"); #tor
+#@PROXY =([qw(http https)] => "socks://172.16.0.1:9150"); #tor
 
 my $USERAGENT = 'Mozilla/5.0 (Windows NT 5.1; rv:5.0.1) Gecko/20100101 Firefox/5.0.1';
 
@@ -401,7 +401,7 @@ sub google($$$){#$_[0] - ua (object)    $_[1] - url      $_[2] - request
 	#    my $pp = JSON->new->pretty->encode( $g_array ); # pretty-printing
 	#    print $pp;
 	
-	&testing($g_array); #TESTING
+	#&testing($g_array); #TESTING
 
     }
     else {

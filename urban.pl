@@ -25,7 +25,6 @@ my @PROXY;
 #@PROXY =(['http'], "http://127.0.0.1:4446"); #tor
 #@PROXY =([qw(http https)] => "socks://172.16.0.1:9150"); #tor
 $ua->proxy(@PROXY) if @PROXY;
-#$ua->proxy(['http'], "http://127.0.0.1:4446");
 
 my $url="http://www.urbandictionary.com/define.php?term=".join ('+', @ARGV);
 my $req = HTTP::Request->new(GET => $url);
