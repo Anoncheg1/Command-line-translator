@@ -163,7 +163,9 @@ my %LANGS = (
     'yi' => 'Yiddish',
     'yo' => 'Yoruba',
     'zu' => 'Zulu',
-    'zh' => 'Chinese'
+    'zh' => 'Chinese',
+	'am' => 'Amharic',
+	'fo' => 'Faroese'
 );
 
 ############ Functions
@@ -391,32 +393,34 @@ if($error1){
     print $_,"\n" foreach @dictionary;  #echo dictionary
 }
 
-print "  ".$translit_s,"\n" if $translit_s;
-print "  ".$translit_t,"\n" if $translit_t;
+if( (lc $rsum) ne (lc $request) ) {
+    print "  ".$translit_s,"\n" if $translit_s;
+    print "  ".$translit_t,"\n" if $translit_t;
 
 
-########## Text-To-Speach ##############
-#url = HttpProtocol HttpHost "/translate_tts?ie=UTF-8&client=t"	\
- #       "&tl=" tl "&q=" preprocess(text)
-#    my $url="https://translate.google.com//translate_tts?ie=UTF-8&client=t&tl=en&q=cat";
-if($sound){
-    $url="https://translate.google.com//translate_tts?ie=UTF-8&client=t&tl=".$source."&q=".uri_escape($request);
-    my $req = HTTP::Request->new(GET => $url);
+    ########## Text-To-Speach ##############
+    #url = HttpProtocol HttpHost "/translate_tts?ie=UTF-8&client=t"	\
+    #       "&tl=" tl "&q=" preprocess(text)
+    #    my $url="https://translate.google.com//translate_tts?ie=UTF-8&client=t&tl=en&q=cat";
+    if($sound){
+	$url="https://translate.google.com//translate_tts?ie=UTF-8&client=t&tl=".$source."&q=".uri_escape($request);
+	my $req = HTTP::Request->new(GET => $url);
 
-    my $uac = $ua->clone;
-    my $response;
-    $response = $uac->request($req);
-    $response = $uac->request($req) if (! $response->is_success); #resent
+	my $uac = $ua->clone;
+	my $response;
+	$response = $uac->request($req);
+	$response = $uac->request($req) if (! $response->is_success); #resent
 
-    if ($response->is_success) {
-	open(FOO, "|mpg123 - 2>/dev/null") || die "Failed: $!\n";
-	print FOO $response->content;
+	if ($response->is_success) {
+	    open(FOO, "|mpg123 - 2>/dev/null") || die "Failed: $!\n";
+	    print FOO $response->content;
+	}
+	else {
+	    print "Can't get sound from google: ".$response->status_line, "\n"; exit 1;
+	}
     }
-    else {
-	print "Can't get sound from google: ".$response->status_line, "\n"; exit 1;
-    }
+
 }
-
 #if(scalar @suggest > 1){ #echo options or suggestions (working but sucks)
 #    print $C_BLUE_RAW."Options:".$C_NORMAL_RAW,"\n";
 #    print $_,"\n" foreach @suggest;
