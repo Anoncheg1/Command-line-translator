@@ -67,22 +67,25 @@ my $USERAGENT = 'Mozilla/5.0 (Windows NT 5.1; rv:5.0.1) Gecko/20100101 Firefox/5
 #Solved problems:
 #  gppgle JSON converting problem ,,. Solved by hands.
 #  google JSON article=white space - problem. Solved by hands.
+#  google special characters in request. Solved by url encode.
 
 my $name = basename($0);
 my %LANGS = (
     'af' => 'Afrikaans',
     'sq' => 'Albanian',
-    'am' => 'Amharic',
     'ar' => 'Arabic',
     'hy' => 'Armenian',
     'az' => 'Azerbaijani',
     'eu' => 'Basque',
     'be' => 'Belarusian',
     'bn' => 'Bengali',
+    'bs' => 'Bosnian',
     'bg' => 'Bulgarian',
     'ca' => 'Catalan',
+    'ceb' => 'Cebuano',
+    'ny' => 'Chichewa',
     'zh-CN' => 'Chinese (Simplified)',
-    'zh' => 'Chinese',
+    'zh-TW' => 'Chinese (Traditional)',
     'hr' => 'Croatian',
     'cs' => 'Czech',
     'da' => 'Danish',
@@ -90,7 +93,6 @@ my %LANGS = (
     'en' => 'English',
     'eo' => 'Esperanto',
     'et' => 'Estonian',
-    'fo' => 'Faroese',
     'tl' => 'Filipino',
     'fi' => 'Finnish',
     'fr' => 'French',
@@ -100,44 +102,67 @@ my %LANGS = (
     'el' => 'Greek',
     'gu' => 'Gujarati',
     'ht' => 'Haitian Creole',
+    'ha' => 'Hausa',
     'iw' => 'Hebrew',
     'hi' => 'Hindi',
+    'hmn' => 'Hmong',
     'hu' => 'Hungarian',
     'is' => 'Icelandic',
+    'ig' => 'Igbo',
     'id' => 'Indonesian',
     'ga' => 'Irish',
     'it' => 'Italian',
     'ja' => 'Japanese',
+    'jw' => 'Javanese',
     'kn' => 'Kannada',
+    'kk' => 'Kazakh',
+    'km' => 'Khmer',
     'ko' => 'Korean',
-    'lo' => 'Laothian',
+    'lo' => 'Lao',
     'la' => 'Latin',
     'lv' => 'Latvian',
     'lt' => 'Lithuanian',
     'mk' => 'Macedonian',
+    'mg' => 'Malagasy',
     'ms' => 'Malay',
+    'ml' => 'Malayalam',
     'mt' => 'Maltese',
+    'mi' => 'Maori',
+    'mr' => 'Marathi',
+    'mn' => 'Mongolian',
+    'my' => 'Myanmar (Burmese)',
+    'ne' => 'Nepali',
     'no' => 'Norwegian',
     'fa' => 'Persian',
     'pl' => 'Polish',
     'pt' => 'Portuguese',
+    'pa' => 'Punjabi',
     'ro' => 'Romanian',
     'ru' => 'Russian',
     'sr' => 'Serbian',
+    'st' => 'Sesotho',
+    'si' => 'Sinhala',
     'sk' => 'Slovak',
     'sl' => 'Slovenian',
+    'so' => 'Somali',
     'es' => 'Spanish',
+    'su' => 'Sundanese',
     'sw' => 'Swahili',
     'sv' => 'Swedish',
+    'tg' => 'Tajik',
     'ta' => 'Tamil',
     'te' => 'Telugu',
     'th' => 'Thai',
     'tr' => 'Turkish',
     'uk' => 'Ukrainian',
     'ur' => 'Urdu',
+    'uz' => 'Uzbek',
     'vi' => 'Vietnamese',
     'cy' => 'Welsh',
-    'yi' => 'Yiddish'
+    'yi' => 'Yiddish',
+    'yo' => 'Yoruba',
+    'zu' => 'Zulu',
+    'zh' => 'Chinese'
 );
 
 ############ Functions
@@ -289,7 +314,8 @@ exit 1 if ! length $request;
 
 my $w_count = scalar(split(/\s+/,$request)); #LENGHT OF REQUEST IN WORDS
 
-$source = 'auto';   $target = $LATIN_LANG;   #default
+$source = $FIRST_LANG; #'auto'; #default
+$target = $LATIN_LANG;          #default
 #Language detection by the first found Latin character
 my $rutf8 = $request; utf8::decode($rutf8); #- to utf8 solid characters
 foreach my $ch (map {split //} split('\s',(substr $rutf8,0,10))){ #first 10 characters
@@ -313,11 +339,12 @@ $ua->proxy(@PROXY) if @PROXY;
 #}
 
 ########### google request
-my $url="https://translate.google.com/translate_a/single?client=t&sl=$source&tl=$target&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8";
+my $url="https://translate.google.com/translate_a/single?client=t&sl=".$source."&tl=".$target."&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8";
 ##
 my $response;
 my $rsum; # translation
-my $translit; # translit
+my $translit_s; # translit source
+my $translit_t; # translit target
 my @suggest; #google suggestions. appears sometimes.(options_for_one_word)
 my @detected_languages;
 my $error1; #error with highlight
@@ -328,30 +355,43 @@ my @dictionary;
 &google($ua->clone, $url, $request); #$_[0] - ua    $_[1] - url   $_[2] - request
 
 ############ Echo
-if( ! $error1 && $detected_languages[0] && $detected_languages[0] ne $source && ((lc $rsum) eq (lc $request))){
-    print "detected languages: "; print $_."," foreach @detected_languages; print "\n";
-
-    $source = $LANGS{$detected_languages[0]};
-    print "trying with:".$source,"\n";
-
-    ###side effect function
-    undef $rsum; # translation
-    undef $translit; # translit
-    undef @suggest; #google suggestions. appears sometimes.(options_for_one_word)
-    undef @detected_languages;
-    undef $error1; #error with highlight
-    undef $error2; #correct version
-    undef @dictionary;
-    my $url="https://translate.google.com/translate_a/single?client=t&sl=$source&tl=$target&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8";
-    &google($ua->clone, $url, $request); #$_[0] - ua    $_[1] - url   $_[2] - request
+#$rsum =~ s/(.)/sprintf("%x",ord($1))/eg;
+my $source_save = $source;
+my @d_l;
+if( ! $error1 && ! @dictionary && $detected_languages[0] && $detected_languages[0] ne $source && ((lc $rsum) eq (lc $request))){
+    @d_l = @detected_languages;
+    print "detected languages: "; print $_."," foreach @d_l; print "\n";
+    
+    foreach $source (@d_l){
+	$target = "en";
+	print "trying with:".$LANGS{$source},"\n";
+	###side effect function
+	undef $rsum; # translation
+	undef $translit_s; # translit source
+	undef $translit_t; # translit target
+	undef @suggest; #google suggestions. appears sometimes.(options_for_one_word)
+	undef @detected_languages;
+	undef $error1; #error with highlight
+	undef $error2; #correct version
+	undef @dictionary;
+	$url="https://translate.google.com/translate_a/single?client=t&sl=".$source."&tl=".$target."&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8";
+	&google($ua->clone, $url, $request); #$_[0] - ua    $_[1] - url   $_[2] - request
+	last if ((lc $rsum) ne (lc $request) || @dictionary);
+    }
 }
 
-print $C_GREEN.$rsum.$C_NORMAL_RAW,"\n"; #echo result
+if( ! @d_l && $detected_languages[0] && $detected_languages[0] ne $source_save ){ #for 1 try without loop.
+    print "Language was detected: ".$LANGS{$detected_languages[0]},"\n";
+}
+print $C_GREEN.$rsum.$C_NORMAL_RAW,"\n" if $rsum; #echo result
 if($error1){
     print $error1,"\n"; #echo error   
 }else{
     print $_,"\n" foreach @dictionary;  #echo dictionary
 }
+
+print "  ".$translit_s,"\n" if $translit_s;
+print "  ".$translit_t,"\n" if $translit_t;
 
 #if(scalar @suggest > 1){ #echo options or suggestions (working but sucks)
 #    print $C_BLUE_RAW."Options:".$C_NORMAL_RAW,"\n";
@@ -370,7 +410,8 @@ if($error1){
 
 #SIDE EFFECT:
 #$rsum; # translation
-#$translit; # translit
+#$translit_s; # translit source
+#$translit_t; # translit target
 #@suggest; #google suggestions. appears sometimes.(options_for_one_word)
 #@detected_languages;
 #$error1; #error with highlight
@@ -409,7 +450,8 @@ sub google($$$){#$_[0] - ua (object)    $_[1] - url      $_[2] - request
     }
 
  #   my $rsum; # translation
- #   my $translit; # translit
+ #   my $translit_s; # translit source
+ #   my $translit_t; # translit target
  #   my @suggest; #google suggestions. appears sometimes.(options_for_one_word)
  #   my @detected_languages;
  #   my $error1; #error with highlight
@@ -437,9 +479,10 @@ sub google($$$){#$_[0] - ua (object)    $_[1] - url      $_[2] - request
 		my $count = 0;    #insertions
 		my $save = -1;    #last error position
 		my $pos;          #index + insertions
-		my $n = (scalar @right > scalar @request)? scalar @request : scalar @right; #lowest
-		for(my $i = 0; $i < $n; $i++){ #diff strings and highlight insertion
-		    if($right[$i] ne $request[$i]){
+		my $n = scalar @right;
+		for(my $i = 0, my $j = 0; $i < $n; $i++, $j++){ #diff strings and highlight insertion
+		    if(! $request[$i]){ $j--; }
+		    if($right[$i] ne $request[$j]){
 			if ($save+1 != $i){
 			    $pos = $count+$i;
 			    @fixed = (@fixed[0..$pos-1], $C_RED ,@fixed[$pos..$n+$count-1]);
@@ -482,15 +525,21 @@ sub google($$$){#$_[0] - ua (object)    $_[1] - url      $_[2] - request
 		}
 	    }
 	}
+	if ($rsum){
+	$rsum =~ s/^\s+|\s+$//g; #trim both sides
 	$rsum =~ s/\s+,/,/g; #asd , asd
 	$rsum =~ s/\s+\./\./g; #asdas .
 	$rsum =~ s/\s+\?/?/g; #asdas ?
 	$rsum =~ s/\s+\!/!/g; #asdas !
-	$rsum =~ s/\s+\"\s+/ /g; #students’ are either   =  студенты " либо
+	$rsum =~ s/\s+\"\s+/' /g; #students’ are either   =  студенты " либо
+	}
 	#translit
 	if($w_count <= $TRANSLIT_WORDS_MAX){
 	    if($g_array->[0][1][3]){
-		$translit = $g_array->[0][1][3];
+		$translit_s = $g_array->[0][1][3];
+	    }
+	    if($g_array->[0][1][2]){
+		$translit_t = $g_array->[0][1][2];
 	    }
 	}
 	#suggestions(working but sucks)
@@ -512,7 +561,7 @@ sub google($$$){#$_[0] - ua (object)    $_[1] - url      $_[2] - request
 			    if ($g_array->[1][$row][2][$col][3]){
 				$freq=$g_array->[1][$row][2][$col][3];
 				$freq=sprintf ('%.2f', ($freq*100000)/10);
-				$freq=sprintf ('%.2f', $freq/3) if ($freq > 1 );
+				$freq=sprintf ('%.2f', $freq/3);
 				$freq=sprintf ('%.0f', $freq);
 			    }
 			    $freq = $freq ? " ".$freq : "";  #delete 0
