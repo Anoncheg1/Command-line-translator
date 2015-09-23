@@ -3,15 +3,32 @@ Command-line google translate, quick translate, very simple scripts, scripts for
 
 FILES:
 *README
-*perlfork.pl - Perl5 version. Google translate only. OS Windows support. No requrements. + translate from file.
+*perlfork.pl - Perl5 version. Google translate only. OS Windows support(planned).
 *translate - Bash version. Complete and stable.
 *urban.pl - optional for bash version.
 
 This tool for access translate.google.com from terminal and to have English dictionary.
 mirror https://github.com/Anoncheg1/Command-line-translator
-mirror http://pastebin.com/kPTYjY6W
 
-REQUIREMENTS: 
+*************** Perl version ****************
+REQUIREMENTS:
+- perl5 >= v5.16
+- perl LWP::Protocol::socks
+- perl JSON
+- mpg123 for sound(in development)
+
+FEATURES:
+  - Windows support(planned),
+  - translated text,
+  - fixed text with highlight,
+  - language detection,
+  - dictionary,
+  - translit,
+  - google text-to-speach
+  - read from file
+
+*************** Bash version ****************
+REQUIREMENTS:
 - UTF-8 support for required languages		For Debian: #dpkg-reconfigure locales
 - curl >= 7.21.0
 - SpiderMonkey or nodejs
@@ -20,7 +37,7 @@ For Debian sid: #apt-get install curl spidermonkey-bin html2text mpg123
 For Debian jessie: #apt-get install curl nodejs html2text mpg123
 For FreeBSD: #pkg install curl spidermonkey24 html2text mpg123
 - forvo.com account for pronunciation
-
+- urban.pl(optional)
 
 FEATURES:
   - translated text,
@@ -31,9 +48,10 @@ FEATURES:
   - execution without parameters will translate fixed string for 1-2 words
   - prompt mode
 for english: 
-- phrases, ideom, transcription, audio pronunciation
+- phrases, forms, ideom, transcription, audio pronunciation
 - cache for words
 - saving english words to file for learning
+- urban dictionary
 
 for convenience:
 in ~/.bash_aliases

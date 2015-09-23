@@ -63,11 +63,12 @@ my @PROXY ;#= ('http','http://127.0.0.1:4446'); #i2p
 
 my $USERAGENT = 'Mozilla/5.0 (Windows NT 5.1; rv:5.0.1) Gecko/20100101 Firefox/5.0.1';
 
-
 #Solved problems:
 #  gppgle JSON converting problem ,,. Solved by hands.
 #  google JSON article=white space - problem. Solved by hands.
 #  google special characters in request. Solved by url encode.
+#TODO
+#  при установке детектировать выставленный язык в уникоде. китайский, японский, немецкий?
 
 my $name = basename($0);
 my %LANGS = (
@@ -273,7 +274,7 @@ getopts( ":hlpSs:t:o:", \%opt ) or print "Usage: $name: [-S] [-h] [-l] [-p] [-s 
 
 my $source;
 my $target;
-my $sound = 0;
+my $sound = 1;
 #my $PROMPT_MODE_ACTIVATED;
 my $TLSOURCE;
 my $TLTARGET;
@@ -392,6 +393,29 @@ if($error1){
 
 print "  ".$translit_s,"\n" if $translit_s;
 print "  ".$translit_t,"\n" if $translit_t;
+
+
+########## Text-To-Speach ##############
+#url = HttpProtocol HttpHost "/translate_tts?ie=UTF-8&client=t"	\
+ #       "&tl=" tl "&q=" preprocess(text)
+#    my $url="https://translate.google.com//translate_tts?ie=UTF-8&client=t&tl=en&q=cat";
+if($sound){
+    $url="https://translate.google.com//translate_tts?ie=UTF-8&client=t&tl=".$source."&q=".uri_escape($request);
+    my $req = HTTP::Request->new(GET => $url);
+
+    my $uac = $ua->clone;
+    my $response;
+    $response = $uac->request($req);
+    $response = $uac->request($req) if (! $response->is_success); #resent
+
+    if ($response->is_success) {
+	open(FOO, "|mpg123 - 2>/dev/null") || die "Failed: $!\n";
+	print FOO $response->content;
+    }
+    else {
+	print "Can't get sound from google: ".$response->status_line, "\n"; exit 1;
+    }
+}
 
 #if(scalar @suggest > 1){ #echo options or suggestions (working but sucks)
 #    print $C_BLUE_RAW."Options:".$C_NORMAL_RAW,"\n";
