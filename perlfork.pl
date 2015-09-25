@@ -55,10 +55,10 @@ use v5.16;
 # adjust to taste
 my $FIRST_LANG='ru';		#target language for request in LATIN_LANG		NOT in A-z latin alphabet
 my $LATIN_LANG='en';		#target for all not A-z latin requests			A-z latin alphabet will be detected!
-my $TERMINAL_C="WOB";		#Your terminal - white on black:WOB, black on white:BOW, anything other:O
+my $TERMINAL_C="WOB";		#Your terminal - white on black:WOB, black on white:BOW, other unix:O, Windows:"".
 my $SOUND_ALWAYS = 1;
 
-my $TRANSLIT_WORDS_MAX = 10;
+my $TRANSLIT_LENGTH_MAX = 10;
 my @PROXY ;#= ('http','http://127.0.0.1:4446'); #i2p
 #@PROXY =([qw(http https)] => "socks://172.16.0.1:9150"); #tor
 
@@ -229,15 +229,19 @@ sub testing($){
     }
 }
 
-my $C_RED;            #highlight
-my $C_YELLOW;         #highlight
-my $C_GRAY;           #language detected
-my $C_CYAN_RAW;       #forms
-my $C_GRAY_RED_RAW;   #phrases
-my $C_DARK_BLUE_RAW;  #link for dictionary
-my $C_BLUE_RAW;       #dictionary and vform1, suggestions
-my $C_BRIGHT_RAW;     #phrases, examples main part, vform2
-my $C_GREEN;          #t_result
+my $C_RED = "";            #highlight
+my $C_YELLOW = "";         #highlight
+my $C_GRAY = "";           #language detected
+my $C_CYAN_RAW = "";       #forms
+my $C_GRAY_RED_RAW = "";   #phrases
+my $C_DARK_BLUE_RAW = "";  #link for dictionary
+my $C_BLUE_RAW = "";       #dictionary and vform1, suggestions
+my $C_BRIGHT_RAW = "";     #phrases, examples main part, vform2
+my $C_GREEN = "";          #t_result
+
+my $C_NORMAL="`tput sgr0`"; #erase
+my $C_NORMAL_RAW="\033[0m";
+
 if ($TERMINAL_C eq "WOB" ){
     $C_RED=`tput bold`.`tput setaf 1`;
     $C_YELLOW=`tput bold`.`tput setaf 3`;
@@ -258,7 +262,7 @@ if ($TERMINAL_C eq "WOB" ){
     $C_BLUE_RAW="\033[1;34m";
     $C_BRIGHT_RAW="`tput bold`";
     $C_GREEN="`tput bold`";
-}else{ #universal
+}elsif( $TERMINAL_C eq "O" ){ #universal unix
     $C_RED="`tput setaf 1`";
     $C_YELLOW="`tput bold`";
     $C_GRAY="";
@@ -268,9 +272,10 @@ if ($TERMINAL_C eq "WOB" ){
     $C_BLUE_RAW="";
     $C_BRIGHT_RAW="`tput bold`";
     $C_GREEN="`tput bold`";
+}else{
+    $C_NORMAL = ""; #erase
+    $C_NORMAL_RAW = "";
 }
-my $C_NORMAL="`tput sgr0`";
-my $C_NORMAL_RAW="\033[0m";
 
 my %opt =();
 getopts( ":hlpSs:t:o:", \%opt ) or print "Usage: $name: [-S] [-h] [-l] [-p] [-s language_2_chars] [-t language_2_chars] [-o source_FILE]\n" and exit;
@@ -316,20 +321,21 @@ if (defined $opt{o}){
 $request =~ s/^\s+|\s+$//g;     #trim both sides
 exit 1 if ! length $request;
 
-my $w_count = scalar(split(/\s+/,$request)); #LENGHT OF REQUEST IN WORDS
+#my $w_count = scalar(split(/\s+/,$request)); #LENGHT OF REQUEST IN WORDS
 
-$source = $FIRST_LANG; #'auto'; #default
-$target = $LATIN_LANG;          #default
-#Language detection by the first found Latin character
+$source = 'auto'; #default
+$target = 'en';   #default
+###### LANGUAGE DETECTION by the first found character
 my $rutf8 = $request; utf8::decode($rutf8); #- to utf8 solid characters
 foreach my $ch (map {split //} split('\s',(substr $rutf8,0,10))){ #first 10 characters
     #print $ch,ord $ch, "\n"; #65 - 122 = Latin
-    if (ord $ch > 65 && ord $ch < 122 )
-    {	    $source = $LATIN_LANG;   $target = $FIRST_LANG;    last;    }
+    if (ord $ch >= 65 && ord $ch <= 122 )        #Latin
+    {	    $source = $LATIN_LANG;   $target = $FIRST_LANG;    last;
+    }elsif(ord $ch >= 1040 && ord $ch <= 1103 ){ #Russian
+            $source = 'ru';   $target = $LATIN_LANG;    last; }
 }
 $source = $TLSOURCE if $TLSOURCE;
 $target = $TLTARGET if $TLTARGET;
-
 
 my $ua = LWP::UserAgent->new; #Internet connection main object, we will clone it
 $ua->agent($USERAGENT);
@@ -358,13 +364,13 @@ my @dictionary;
 #side effect function
 &google($ua->clone, $url, $request); #$_[0] - ua    $_[1] - url   $_[2] - request
 
-############ Echo
+
 #$rsum =~ s/(.)/sprintf("%x",ord($1))/eg;
 my $source_save = $source;
 my @d_l;
 if( ! $error1 && ! @dictionary && $detected_languages[0] && $detected_languages[0] ne $source && ((lc $rsum) eq (lc $request))){
     @d_l = @detected_languages;
-    print "detected languages: "; print $_."," foreach @d_l; print "\n";
+    print "Detected languages: "; print $_."," foreach @d_l; print "\n";
     
     foreach $source (@d_l){
 	$target = "en";
@@ -384,8 +390,10 @@ if( ! $error1 && ! @dictionary && $detected_languages[0] && $detected_languages[
     }
 }
 
+############ Echo
+
 if( ! @d_l && $detected_languages[0] && $detected_languages[0] ne $source_save ){ #for 1 try without loop.
-    print "Language was detected: ".$LANGS{$detected_languages[0]},"\n";
+    print "Language: ".$LANGS{$detected_languages[0]},"\n";
 }
 print $C_GREEN.$rsum.$C_NORMAL_RAW,"\n" if $rsum; #echo result
 if($error1){
@@ -399,11 +407,11 @@ if( (lc $rsum) ne (lc $request) ) {
     print "  ".$translit_t,"\n" if $translit_t;
 
 
-    ########## Text-To-Speach ##############
+    ### Text-To-Speach
     #url = HttpProtocol HttpHost "/translate_tts?ie=UTF-8&client=t"	\
     #       "&tl=" tl "&q=" preprocess(text)
     #    my $url="https://translate.google.com//translate_tts?ie=UTF-8&client=t&tl=en&q=cat";
-    if($sound){
+    if($sound && length($request) < 18){
 	$url="https://translate.google.com//translate_tts?ie=UTF-8&client=t&tl=".$source."&q=".uri_escape($request);
 	my $req = HTTP::Request->new(GET => $url);
 
@@ -429,6 +437,22 @@ if( (lc $rsum) ne (lc $request) ) {
 
 
 #THE END
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -501,7 +525,7 @@ sub google($$$){#$_[0] - ua (object)    $_[1] - url      $_[2] - request
 	    }else{ print "strange error in google json2";}
 	    
 	    #Highlight - error checking
-	    if($w_count <= 2){ #complicated, I knew
+	    if(length($request) < 18){ #bad for Japanese and Chinese, fix it late
 		my @request = split //,$request;
 		my @right = split //, $error2;
 		my @fixed = @right;#working array
@@ -563,7 +587,7 @@ sub google($$$){#$_[0] - ua (object)    $_[1] - url      $_[2] - request
 	$rsum =~ s/\s+\"\s+/' /g; #students’ are either   =  студенты " либо
 	}
 	#translit
-	if($w_count <= $TRANSLIT_WORDS_MAX){
+	if( length($request) <= $TRANSLIT_LENGTH_MAX){
 	    if($g_array->[0][1][3]){
 		$translit_s = $g_array->[0][1][3];
 	    }
