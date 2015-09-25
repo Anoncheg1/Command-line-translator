@@ -1,4 +1,6 @@
-Google translate, google translate shell, command-line translator powered by Google Translate, Linux, Windows, easy to use, fast and comfortable.
+Google translate script.
+
+Google translate shell, command-line translator powered by Google Translate, Linux, Windows, easy to use, fast and comfortable.
 Command-line google translate, quick translate, very simple scripts, scripts for assess Google Translate.
 
 FILES:
@@ -15,7 +17,7 @@ REQUIREMENTS:
 - perl5 >= v5.16
 - perl LWP::Protocol::socks
 - perl JSON
-- mpg123 for sound(in development)
+- mpg123 for sound
 
 FEATURES:
   - Windows support(planned),
@@ -28,6 +30,7 @@ FEATURES:
   - read from file
 
 *************** Bash version ****************
+(good for English dictionary)
 REQUIREMENTS:
 - UTF-8 support for required languages		For Debian: #dpkg-reconfigure locales
 - curl >= 7.21.0

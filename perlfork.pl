@@ -1,8 +1,8 @@
 #!/usr/bin/env perl
 
-# AWESOME GOOGLE TRANSLATE. This tool for access translate.google.com from terminal and additional English features.
+# GOOGLE TRANSLATE SCRIPT. This tool for access Google Translate from terminal.
 
-#    Copyright (C) 2012 Vitalij Chepelev.
+#    Copyright (C) 2015 Vitalij Chepelev.
 
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -56,6 +56,7 @@ use v5.16;
 my $FIRST_LANG='ru';		#target language for request in LATIN_LANG		NOT in A-z latin alphabet
 my $LATIN_LANG='en';		#target for all not A-z latin requests			A-z latin alphabet will be detected!
 my $TERMINAL_C="WOB";		#Your terminal - white on black:WOB, black on white:BOW, anything other:O
+my $SOUND_ALWAYS = 1;
 
 my $TRANSLIT_WORDS_MAX = 10;
 my @PROXY ;#= ('http','http://127.0.0.1:4446'); #i2p
@@ -276,7 +277,7 @@ getopts( ":hlpSs:t:o:", \%opt ) or print "Usage: $name: [-S] [-h] [-l] [-p] [-s 
 
 my $source;
 my $target;
-my $sound = 1;
+my $sound = $SOUND_ALWAYS;
 #my $PROMPT_MODE_ACTIVATED;
 my $TLSOURCE;
 my $TLTARGET;
@@ -595,7 +596,7 @@ sub google($$$){#$_[0] - ua (object)    $_[1] - url      $_[2] - request
 			    $freq = $freq ? " ".$freq : "";  #delete 0
 			    my @v;
 			    @v=(@v,$_) foreach @{$g_array->[1][$row][2][$col][1]};
-			    @dictionary = (@dictionary, $g_array->[1][$row][2][$col][0]." ".join(", ", @v).$freq);
+			    @dictionary = (@dictionary, $g_array->[1][$row][2][$col][0]." ".join(",", @v).$freq); #dictionary style
 			}
 		    }
 		}
