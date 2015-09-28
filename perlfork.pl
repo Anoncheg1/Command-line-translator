@@ -47,6 +47,7 @@ use HTML::Entities;
 #Debian: liblwp-protocol-socks-perl
 use LWP::Protocol::socks;
 use URI::Escape;
+use Clone 'clone';
 use utf8;
 use v5.16;
 #use Text::Unidecode;
@@ -165,21 +166,21 @@ my %LANGS = (
     'yo' => 'Yoruba',
     'zu' => 'Zulu',
     'zh' => 'Chinese',
-	'am' => 'Amharic',
-	'fo' => 'Faroese'
+    'am' => 'Amharic',
+    'fo' => 'Faroese'
 );
 
 ############ Functions
-$SIG{INT} = \&sig_handler;
-sub sig_handler { #Ctrl+C detection.
-   print "Exit signal detected. Deleting cache files.\n";
-   exit;
-}
+#$SIG{INT} = \&sig_handler;
+#sub sig_handler { #Ctrl+C detection.
+#   print "Exit signal detected. Deleting cache files.\n";
+#   exit;
+#}
 
 # Message about this program and how to use it
 sub usage()
 {
-    print STDERR << "EOF";
+    print STDOUT << "EOF";
 $name [-S] [-l] [-h] [-p] [-s language_2_chars] [-t language_2_chars]
 if text is LATIN_LANG, then target language is FIRST_LANG
 otherwise, target language is LATIN_LANG
@@ -197,7 +198,7 @@ otherwise, target language is LATIN_LANG
 Configure "FIRST_LANG" and "LATIN_LANG" in script for auto detection of direction by the first character!
 You neeed UTF-8 support for required languages.
 EOF
-    exit 0;
+    exit;
 }
 
 sub testing($){
@@ -278,7 +279,7 @@ if ($TERMINAL_C eq "WOB" ){
 }
 
 my %opt =();
-getopts( ":hlpSs:t:o:", \%opt ) or print "Usage: $name: [-S] [-h] [-l] [-p] [-s language_2_chars] [-t language_2_chars] [-o source_FILE]\n" and exit;
+getopts( ":hlpSs:t:o:", \%opt ) or print STDERR "Usage: $name: [-S] [-h] [-l] [-p] [-s language_2_chars] [-t language_2_chars] [-o source_FILE]\n" and exit 1;
 
 my $source;
 my $target;
@@ -310,7 +311,7 @@ if (defined $opt{t}){
 }
 
 if (defined $opt{o}){
-    open FILE, $opt{o} or die "-o argument: couldn't open file: $!";
+    open FILE, $opt{o} or print STDERR "-o argument: couldn't open file: $!" and exit 1;
     local $/ = undef;
     $request = <FILE>;
 }else{
@@ -362,7 +363,7 @@ my $error2; #correct version
 my @dictionary;
 ##
 #side effect function
-&google($ua->clone, $url, $request); #$_[0] - ua    $_[1] - url   $_[2] - request
+&google(clone($ua), $url, $request); #$_[0] - ua    $_[1] - url   $_[2] - request
 
 
 #$rsum =~ s/(.)/sprintf("%x",ord($1))/eg;
@@ -385,7 +386,7 @@ if( ! $error1 && ! @dictionary && $detected_languages[0] && $detected_languages[
 	undef $error2; #correct version
 	undef @dictionary;
 	$url="https://translate.google.com/translate_a/single?client=t&sl=".$source."&tl=".$target."&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8";
-	&google($ua->clone, $url, $request); #$_[0] - ua    $_[1] - url   $_[2] - request
+	&google(clone($ua), $url, $request); #$_[0] - ua    $_[1] - url   $_[2] - request
 	last if ((lc $rsum) ne (lc $request) || @dictionary);
     }
 }
@@ -415,17 +416,20 @@ if( (lc $rsum) ne (lc $request) ) {
 	$url="https://translate.google.com//translate_tts?ie=UTF-8&client=t&tl=".$source."&q=".uri_escape($request);
 	my $req = HTTP::Request->new(GET => $url);
 
-	my $uac = $ua->clone;
+	my $uac = clone($ua);
 	my $response;
 	$response = $uac->request($req);
 	$response = $uac->request($req) if (! $response->is_success); #resent
 
 	if ($response->is_success) {
-	    open(FOO, "|mpg123 - 2>/dev/null") || die "Failed: $!\n";
+	    #open FILE, ">", "a.mpga";
+	    #print FILE $response->content;
+	    #close FILE;
+	    
+	    open(FOO, "|mpg123 - 2>/dev/null") || ( print STDERR "Failed: $!\n" and exit 1 );
 	    print FOO $response->content;
-	}
-	else {
-	    print "Can't get sound from google: ".$response->status_line, "\n"; exit 1;
+	}else{
+	    print STDERR "Can't get sound from google: ".$response->status_line, "\n"; exit 1;
 	}
     }
 
