@@ -57,7 +57,7 @@ my $SOUND_ALWAYS = 1;
 
 my $TRANSLIT_LENGTH_MAX = 10;
 my @PROXY ;#= ('http','http://127.0.0.1:4446'); #i2p
-@PROXY =([qw(http https)] => "socks://172.16.0.1:9150"); #tor
+#@PROXY =([qw(http https)] => "socks://172.16.0.1:9150"); #tor
 
 my $USERAGENT = 'Mozilla/5.0 (Windows NT 5.1; rv:5.0.1) Gecko/20100101 Firefox/5.0.1';
 
