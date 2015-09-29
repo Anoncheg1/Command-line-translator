@@ -32,7 +32,7 @@ FEATURES:
 *************** Bash version ****************
 (good for English dictionary)
 REQUIREMENTS:
-- UTF-8 support for required languages		For Debian: #dpkg-reconfigure locales
+- UTF-8 support for required languages
 - curl >= 7.21.0
 - SpiderMonkey or nodejs
 - mpg123 for playing pronunciation
@@ -65,3 +65,9 @@ alias ts="/home/user/translate -S"
 -t lang Set target language
 -l List of languages
 Configure "FIRST_LANG" and "LATIN_LANG" in script for auto detection of direction by the first character!
+
+Debian Cyrillic support in tty shell:
+1)	#dpkg-reconfigure locales
+Install en_US.utf8, ru_RU.utf8
+2)  #dpkg-reconfigure console-setup
+Install . Combined - latin slavic Cyrillic; Greek

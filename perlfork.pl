@@ -18,20 +18,16 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # You can contact me there: 
-# http://www.unix.com/shell-programming-scripting/196823-completed-command-line-google-translation-tool.html                       654321 - profile name
-
 # https://github.com/Anoncheg1/Command-line-translator
+#
 # requirements: 
 #	libjson-perl
-#	forvo.com account
-#features:
-#- translated text, fixed text with highlight, language detection, dictionary, translit
-# for english: 
-#- phrases, ideom, word forms, transcription, audio pronunciation
-#- cache for words
-#- saving words to file for learning
+#	liblwp-protocol-socks-perl
 #
-#:) translate.google.com, www.macmillandictionary.com/dictionary/british, thefreedictionary.com, lingvo-online.ru, www.forvo.com
+#features:
+#- translated text, fixed text with highlight, language detection, dictionary, translit, read from file, text-to-speach
+#
+#:) translate.google.com
 
 package GoogleTranslator;
 
@@ -61,7 +57,7 @@ my $SOUND_ALWAYS = 1;
 
 my $TRANSLIT_LENGTH_MAX = 10;
 my @PROXY ;#= ('http','http://127.0.0.1:4446'); #i2p
-#@PROXY =([qw(http https)] => "socks://172.16.0.1:9150"); #tor
+@PROXY =([qw(http https)] => "socks://172.16.0.1:9150"); #tor
 
 my $USERAGENT = 'Mozilla/5.0 (Windows NT 5.1; rv:5.0.1) Gecko/20100101 Firefox/5.0.1';
 
@@ -70,7 +66,7 @@ my $USERAGENT = 'Mozilla/5.0 (Windows NT 5.1; rv:5.0.1) Gecko/20100101 Firefox/5
 #  google JSON article=white space - problem. Solved by hands.
 #  google special characters in request. Solved by url encode.
 #TODO
-#  при установке детектировать выставленный язык в уникоде. китайский, японский, немецкий?
+#  asynchronous HTTP::Request http://search.cpan.org/dist/HTTP-Async/lib/HTTP/Async.pm
 
 my $name = basename($0);
 my %LANGS = (
