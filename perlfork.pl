@@ -496,7 +496,7 @@ sub google($$$){#$_[0] - ua (object)    $_[1] - url      $_[2] - request
 	#    my $pp = JSON->new->pretty->encode( $g_array ); # pretty-printing
 	#    print $pp;
 	
-	#&testing($g_array); #TESTING
+	&testing($g_array); #TESTING
 
     }
     else {
@@ -526,7 +526,10 @@ sub google($$$){#$_[0] - ua (object)    $_[1] - url      $_[2] - request
 		
 		#Highlight - error checking
 		if(length($request) < 18){ #bad for Japanese and Chinese, fix it late
-		    my @request = split //,$request;
+			my $r = $request; 
+			utf8::decode($reqtmp);
+			utf8::decode($error2);
+		    my @request = split //,$r;
 		    my @right = split //, $error2;
 		    my @fixed = @right;#working array
 		    my $count = 0;    #insertions
@@ -550,6 +553,7 @@ sub google($$$){#$_[0] - ua (object)    $_[1] - url      $_[2] - request
 		    }
 		    @fixed = (@fixed, $C_NORMAL_RAW);
 		    $error1 = join '', @fixed;
+			utf8::encode($error1);
 		}else{
 		    $error1 =~ s|<b><i>|$C_YELLOW|g;
 		    $error1 =~ s|</i></b>|$C_NORMAL_RAW|g;
