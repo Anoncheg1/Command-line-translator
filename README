@@ -1,14 +1,13 @@
-[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/Anoncheg1/Command-line-translator?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![Gitter chat](https://badges.gitter.im/cli/sonews.png)](https://gitter.im/Anoncheg1/Command-line-translator)
 Google translate script.
 
 Google translate shell, command-line translator Google Translate, Linux, Windows, easy to use, fast and comfortable.
 Command-line google translate, quick translate, very simple scripts, scripts for assess Google Translate.
 
 FILES:
-*README
-*perlfork.pl - Perl5 version. Google translate only. OS Windows support(planned).
-*translate - Bash version. Complete and stable.
-*urban.pl - optional for bash version.
+perlfork.pl - Perl5 version. Google translate only.
+translate - Bash version. Complete and stable.
+urban.pl - optional plugin for bash version.
 
 This tool for access translate.google.com from terminal and to have English dictionary.
 mirror https://github.com/Anoncheg1/Command-line-translator
@@ -16,7 +15,7 @@ mirror https://github.com/Anoncheg1/Command-line-translator
 *************** Perl version ****************
 REQUIREMENTS:
 - perl5 >= v5.16
-- perl LWP::Protocol::socks
+- perl LWP::Protocol::socks -for proxy only
 - perl JSON
 - mpg123 for sound
 
