@@ -56,8 +56,9 @@ my $TERMINAL_C="WOB";		#Your terminal - white on black:WOB, black on white:BOW, 
 my $SOUND_ALWAYS = 1;
 
 my $TRANSLIT_LENGTH_MAX = 10;
-my @PROXY ;#= ('http','http://127.0.0.1:4446'); #i2p
+my @PROXY ;
 #@PROXY =([qw(http https)] => "socks://172.16.0.1:9150"); #tor
+#@PROXY = ('http','http://127.0.0.1:4444'); #i2p
 
 my $USERAGENT = 'Mozilla/5.0 (Windows NT 5.1; rv:5.0.1) Gecko/20100101 Firefox/5.0.1';
 
@@ -346,7 +347,7 @@ $ua->proxy(@PROXY) if @PROXY;
 #}
 
 ########### google request
-my $url="https://translate.google.com/translate_a/single?client=t&sl=".$source."&tl=".$target."&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8";
+my $url="https://translate.google.com/translate_a/single?client=t&sl=".$source."&tl=".$target."&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8&tk";
 ##
 my $response;
 my $rsum; # translation

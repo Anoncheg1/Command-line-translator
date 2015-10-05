@@ -399,11 +399,11 @@ main_func(){
 	
 		if [[ ! -e "$cachefile" ]]; then
 
-			if ! grespond=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" -m $timeout --compressed --data-urlencode "text=$request" "https://translate.google.com/translate_a/single?client=t&sl=$source&tl=$target&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8") && [[ "$httpproxy" != "" ]] #getting google respond for short sentence
+			if ! grespond=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" -m $timeout --compressed --data-urlencode "text=$request" "https://translate.google.com/translate_a/single?client=t&sl=$source&tl=$target&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8&tk") && [[ "$httpproxy" != "" ]] #getting google respond for short sentence
 			then	# second attempt without https proxy
 				#echo https proxy not working. using http proxy.
 				httpsproxy=""
-				grespond=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" -m $timeout --compressed --data-urlencode "text=$request" "https://translate.google.com/translate_a/single?client=t&sl=$source&tl=$target&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8") #getting google respond for short sentence
+				grespond=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" -m $timeout --compressed --data-urlencode "text=$request" "https://translate.google.com/translate_a/single?client=t&sl=$source&tl=$target&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8&tk") #getting google respond for short sentence
 				
 			fi
 			[[ ! $(echo "$grespond" | grep -o '\[.*\]') ]] && { echo "can't connect google" ; exit; } #small connection check
