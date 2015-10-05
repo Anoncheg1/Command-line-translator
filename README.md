@@ -63,8 +63,8 @@ for english:
 Configure "FIRST_LANG" and "LATIN_LANG" in script for auto detection.
 
 for convenience. Add to ~/.bash_aliases:
-~ alias t="/home/user/translate"
-~ alias ts="/home/user/translate -S"
+- alias t="/home/user/translate"
+- alias ts="/home/user/translate -S"
 
 Commands:
 - -s lang Set source language
