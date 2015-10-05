@@ -527,7 +527,7 @@ sub google($$$){#$_[0] - ua (object)    $_[1] - url      $_[2] - request
 		#Highlight - error checking
 		if(length($request) < 18){ #bad for Japanese and Chinese, fix it late
 			my $r = $request; 
-			utf8::decode($reqtmp);
+			utf8::decode($r);
 			utf8::decode($error2);
 		    my @request = split //,$r;
 		    my @right = split //, $error2;
