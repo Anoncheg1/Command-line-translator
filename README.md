@@ -29,7 +29,7 @@ FEATURES:
   - dictionary,
   - translit,
   - google text-to-speach
-  - read from file
+	  - read from file
 
 *************** Bash version ****************
 
@@ -60,19 +60,19 @@ for english:
 - saving english words to file for learning
 - urban dictionary
 
+Configure "FIRST_LANG" and "LATIN_LANG" in script for auto detection.
+
 for convenience. Add to ~/.bash_aliases:
 ~ alias t="/home/user/translate"
 ~ alias ts="/home/user/translate -S"
 
-~ -s lang Set source language
-~ -t lang Set target language
-~ -l List of languages
-Configure "FIRST_LANG" and "LATIN_LANG" in script for auto detection.
+Commands:
+- -s lang Set source language
+- -t lang Set target language
+- -l List of languages
 
 Debian Cyrillic support in tty shell:
-~ 1)	#dpkg-reconfigure locales
-
-Install en_US.utf8, ru_RU.utf8
-~2)  #dpkg-reconfigure console-setup
-
-Install . Combined - latin slavic Cyrillic; Greek
+- 1)	#dpkg-reconfigure locales
+- Install en_US.utf8, ru_RU.utf8
+- 2)  #dpkg-reconfigure console-setup
+- Install . Combined - latin slavic Cyrillic; Greek
