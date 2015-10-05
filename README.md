@@ -1,4 +1,5 @@
 [![Gitter chat](https://badges.gitter.im/cli/sonews.png)](https://gitter.im/Anoncheg1/Command-line-translator)
+
 Google translate script.
 
 Google translate shell, command-line translator Google Translate, Linux, Windows, easy to use, fast and comfortable.
@@ -13,6 +14,7 @@ This tool for access translate.google.com from terminal and to have English dict
 mirror https://github.com/Anoncheg1/Command-line-translator
 
 *************** Perl version ****************
+
 REQUIREMENTS:
 - perl5 >= v5.16
 - perl LWP::Protocol::socks -for proxy only
@@ -30,6 +32,7 @@ FEATURES:
   - read from file
 
 *************** Bash version ****************
+
 (good for English dictionary)
 REQUIREMENTS:
 - UTF-8 support for required languages
@@ -50,24 +53,26 @@ FEATURES:
   - translit,
   - execution without parameters will translate fixed string for 1-2 words
   - prompt mode
+  
 for english: 
 - phrases, forms, ideom, transcription, audio pronunciation
 - cache for words
 - saving english words to file for learning
 - urban dictionary
 
-for convenience:
-in ~/.bash_aliases
-alias t="/home/user/translate"
-alias ts="/home/user/translate -S"
+for convenience. Add to ~/.bash_aliases:
+~ alias t="/home/user/translate"
+~ alias ts="/home/user/translate -S"
 
--s lang Set source language
--t lang Set target language
--l List of languages
-Configure "FIRST_LANG" and "LATIN_LANG" in script for auto detection of direction by the first character!
+~ -s lang Set source language
+~ -t lang Set target language
+~ -l List of languages
+Configure "FIRST_LANG" and "LATIN_LANG" in script for auto detection.
 
 Debian Cyrillic support in tty shell:
-1)	#dpkg-reconfigure locales
+~ 1)	#dpkg-reconfigure locales
+
 Install en_US.utf8, ru_RU.utf8
-2)  #dpkg-reconfigure console-setup
+~2)  #dpkg-reconfigure console-setup
+
 Install . Combined - latin slavic Cyrillic; Greek
