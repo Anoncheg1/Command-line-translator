@@ -523,38 +523,41 @@ sub google($$$){#$_[0] - ua (object)    $_[1] - url      $_[2] - request
 	    if($g_array->[7][0] && $g_array->[7][1]){
 		$error1 = decode_entities($g_array->[7][0]); #decode html character entities
 		$error2 = $g_array->[7][1];
-	    }else{ print "strange error in google json2";}
-	    
-	    #Highlight - error checking
-	    if(length($request) < 18){ #bad for Japanese and Chinese, fix it late
-		my @request = split //,$request;
-		my @right = split //, $error2;
-		my @fixed = @right;#working array
-		my $count = 0;    #insertions
-		my $save = -1;    #last error position
-		my $pos;          #index + insertions
-		my $n = scalar @right;
-		for(my $i = 0, my $j = 0; $i < $n; $i++, $j++){ #diff strings and highlight insertion
-		    if(! $request[$i]){ $j--; }
-		    if($right[$i] ne $request[$j]){
-			if ($save+1 != $i){
+		
+		#Highlight - error checking
+		if(length($request) < 18){ #bad for Japanese and Chinese, fix it late
+		    my @request = split //,$request;
+		    my @right = split //, $error2;
+		    my @fixed = @right;#working array
+		    my $count = 0;    #insertions
+		    my $save = -1;    #last error position
+		    my $pos;          #index + insertions
+		    my $n = scalar @right;
+		    for(my $i = 0, my $j = 0; $i < $n; $i++, $j++){ #diff strings and highlight insertion
+			if(! $request[$i]){ $j--; }
+			if($right[$i] ne $request[$j]){
+			    if ($save+1 != $i){
+				$pos = $count+$i;
+				@fixed = (@fixed[0..$pos-1], $C_RED ,@fixed[$pos..$n+$count-1]);
+				$count++;
+			    }
+			    $save=$i;#error save position
+			}elsif($save+1 == $i){
 			    $pos = $count+$i;
-			    @fixed = (@fixed[0..$pos-1], $C_RED ,@fixed[$pos..$n+$count-1]);
+			    @fixed = (@fixed[0..$pos-1], $C_YELLOW ,@fixed[$pos..$n+$count-1]);
 			    $count++;
 			}
-			$save=$i;#error save position
-		    }elsif($save+1 == $i){
-			$pos = $count+$i;
-			@fixed = (@fixed[0..$pos-1], $C_YELLOW ,@fixed[$pos..$n+$count-1]);
-			$count++;
 		    }
+		    @fixed = (@fixed, $C_NORMAL_RAW);
+		    $error1 = join '', @fixed;
+		}else{
+		    $error1 =~ s|<b><i>|$C_YELLOW|g;
+		    $error1 =~ s|</i></b>|$C_NORMAL_RAW|g;
 		}
-		@fixed = (@fixed, $C_NORMAL_RAW);
-		$error1 = join '', @fixed;
-	    }else{
-		$error1 =~ s|<b><i>|$C_YELLOW|g;
-		$error1 =~ s|</i></b>|$C_NORMAL_RAW|g;
-	    }
+	    }elsif($g_array->[7][1]){
+		$error1 = $g_array->[7][1];
+		$error2 = $error1;
+	    } #else{ print "strange error in google json2 [7][1] error"; exit 1;}
 	}
 
 #	if( ! defined $error1){

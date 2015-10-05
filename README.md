@@ -28,7 +28,7 @@ FEATURES:
   - dictionary,
   - translit,
   - google text-to-speach
-	  - read from file
+  - read from file
 
 *************** Bash version ****************
 
