@@ -496,7 +496,7 @@ sub google($$$){#$_[0] - ua (object)    $_[1] - url      $_[2] - request
 	#    my $pp = JSON->new->pretty->encode( $g_array ); # pretty-printing
 	#    print $pp;
 	
-	&testing($g_array); #TESTING
+	#&testing($g_array); #TESTING
 
     }
     else {
