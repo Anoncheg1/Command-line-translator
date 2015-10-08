@@ -178,7 +178,7 @@ my %LANGS = (
 sub usage()
 {
     print STDOUT << "EOF";
-$name [-S] [-l] [-h] [-p] [-s language_2_chars] [-t language_2_chars]
+$name [-S] [-l] [-h] [-p] [-s language_2_chars] [-t language_2_chars] [-]
 if text is LATIN_LANG, then target language is FIRST_LANG
 otherwise, target language is LATIN_LANG
 -S
@@ -192,6 +192,8 @@ otherwise, target language is LATIN_LANG
   list of language codes
 -o FILE 
     read request from file
+-
+	read from STDIN pipe
 Configure "FIRST_LANG" and "LATIN_LANG" in script for auto detection of direction by the first character!
 You neeed UTF-8 support for required languages.
 EOF
@@ -301,21 +303,23 @@ if (defined $opt{l}){
 }
 if (defined $opt{s}){
     $TLSOURCE = $opt{s} if defined $LANGS{$opt{s}};
-#    print $TLSOURCE;
 }
 if (defined $opt{t}){
     $TLTARGET = $opt{t} if defined $LANGS{$opt{t}};    
 }
-
-if (defined $opt{o}){
+if (defined $opt{o}){ #read from file
     open FILE, $opt{o} or print STDERR "-o argument: couldn't open file: $!" and exit 1;
     local $/ = undef;
     $request = <FILE>;
-}else{
+}elsif($ARGV[0] eq "-"){ #read from pipe
+	#$request = do{ local $/; <STDIN> }; #multiline
+	$request = <STDIN>;#one line
+}else{ #read from arguments
     $request = join(" ", @ARGV);
-    $request =~ tr/\x{a}/\n/;
+    #$request =~ tr/\x{a}/\n/; #remove new line MAYBE I must replase with "chomp"?   WTF is that.
 }
 #$request = quotemeta($request);
+
 $request =~ s/^\s+|\s+$//g;     #trim both sides
 exit 1 if ! length $request;
 
@@ -360,7 +364,7 @@ my $error2; #correct version
 my @dictionary;
 ##
 #side effect function
-&google(clone($ua), $url, $request); #$_[0] - ua    $_[1] - url   $_[2] - request
+&google(clone($ua), $url); #$_[0] - ua    $_[1] - url
 
 
 #$rsum =~ s/(.)/sprintf("%x",ord($1))/eg;
@@ -383,7 +387,7 @@ if( ! $error1 && ! @dictionary && $detected_languages[0] && $detected_languages[
 	undef $error2; #correct version
 	undef @dictionary;
 	$url="https://translate.google.com/translate_a/single?client=t&sl=".$source."&tl=".$target."&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8";
-	&google(clone($ua), $url, $request); #$_[0] - ua    $_[1] - url   $_[2] - request
+	&google(clone($ua), $url); #$_[0] - ua    $_[1] - url
 	last if ((lc $rsum) ne (lc $request) || @dictionary);
     }
 }
@@ -400,7 +404,7 @@ if($error1){
     print $_,"\n" foreach @dictionary;  #echo dictionary
 }
 
-if( (lc $rsum) ne (lc $request) ) {
+if( $rsum && (lc $rsum) ne (lc $request) ) {
     print "  ".$translit_s,"\n" if $translit_s;
     print "  ".$translit_t,"\n" if $translit_t;
 
@@ -471,9 +475,11 @@ if( (lc $rsum) ne (lc $request) ) {
 #$error1; #error with highlight
 #$error2; #correct version
 #@dictionary;
-sub google($$$){#$_[0] - ua (object)    $_[1] - url      $_[2] - request
+#READ:
+#$request
+sub google($$$){#$_[0] - ua (object)    $_[1] - url
     my $req = HTTP::Request->new(POST => $_[1]);
-    $req->content("text=".uri_escape("$_[2]")); #encode to url REQUIRED
+    $req->content("text=".uri_escape($request)); #encode to url REQUIRED
 
     my $response;
     $response = $_[0]->request($req);

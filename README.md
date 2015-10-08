@@ -1,15 +1,15 @@
 [![Gitter chat](https://badges.gitter.im/cli/sonews.png)](https://gitter.im/Anoncheg1/Command-line-translator)
 
-Google translate script.
+Google translate script. This tool for access translate.google.com from terminal and to have English dictionary.
 
-This tool for access translate.google.com from terminal and to have English dictionary.
+https://github.com/Anoncheg1/Command-line-translator
 
 Google translate shell, command-line translator Google Translate, Linux, Windows, easy to use, fast and comfortable.
 Command-line google translate, quick translate, very simple scripts, scripts for assess Google Translate.
 
 FILES:
-- perlfork.pl - Perl5 version. Google translate only.
-- translate - Bash version. Complete and stable.
+- perlfork.pl - Perl5 version. Google translate only. Better language detection.
+- translate - Bash version. Complete and stable. Good for English dictionary.
 - urban.pl - optional plugin for bash version.
 
 *************** Perl version ****************
@@ -28,11 +28,9 @@ FEATURES:
   - dictionary,
   - translit,
   - google text-to-speach
-  - read from file
 
 *************** Bash version ****************
 
-(good for English dictionary)
 REQUIREMENTS:
 - UTF-8 support for required languages
 - curl >= 7.21.0
@@ -42,7 +40,7 @@ For Debian sid: #apt-get install curl spidermonkey-bin html2text mpg123
 For Debian jessie: #apt-get install curl nodejs html2text mpg123
 For FreeBSD: #pkg install curl spidermonkey24 html2text mpg123
 - forvo.com account for pronunciation
-- urban.pl(optional)
+- urban.pl(optional, see URBAN_DICTIONARY)
 
 FEATURES:
   - translated text,
