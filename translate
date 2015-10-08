@@ -36,7 +36,7 @@
 #
 #:) translate.google.com, www.macmillandictionary.com/dictionary/british, thefreedictionary.com, lingvo-online.ru, www.forvo.com 
 
-help=`basename "$0"`' [-S] [-l] [-h] [-p] [-s language_2_chars] [-t language_2_chars] <text> | <->
+help=`basename "$0"`' [-S] [-l] [-h] [-p] [-u] [-s language_2_chars] [-t language_2_chars] <text> | <->
 if text is LATIN_LANG, then target language is FIRST_LANG
 otherwise, target language is LATIN_LANG
 -S
