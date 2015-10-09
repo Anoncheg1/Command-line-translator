@@ -313,10 +313,10 @@ if (defined $opt{o}){ #read from file
     $request = <FILE>;
 }elsif(defined $ARGV[0] && $ARGV[0] eq "-"){ #read from pipe
 	#$request = do{ local $/; <STDIN> }; #multiline
-	$request = <STDIN>;#one line
+	$request = <STDIN>; #one line
 }else{ #read from arguments
     $request = join(" ", @ARGV);
-    #$request =~ tr/\x{a}/\n/; #remove new line MAYBE I must replase with "chomp"?   WTF is that.
+    #$request =~ tr/\x{a}/\n/; #I forgot what is that.
 }
 #$request = quotemeta($request);
 
@@ -361,7 +361,6 @@ my $error1; #error with highlight
 my $error2; #correct version
 my @dictionary;
 my $url = "https://translate.google.com/translate_a/single?client=t&sl=".$source."&tl=".$target."&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8&tk";
-print $TLTARGET;
 ##
 #side effect function
 &google(clone($ua), $url); #$_[0] - ua    $_[1] - url
@@ -373,7 +372,7 @@ my @d_l;
 if( ! $error1 && ! @dictionary && $detected_languages[0] && $detected_languages[0] ne $source && ((lc $rsum) eq (lc $request))){
     @d_l = @detected_languages;
     print "Detected languages: "; print $_."," foreach @d_l; print "\n";
-    
+
     foreach $source (@d_l){
 	$target = "en";
 	print "trying with:".$LANGS{$source},"\n";
@@ -573,7 +572,7 @@ sub google($$$){#$_[0] - ua (object)    $_[1] - url
 
 #	if( ! defined $error1){
 	#translation
-	$_=$request; my $nc = tr/\n//;   #check for \x{a} unicode or \n - we will skip multiline too.
+	$_=$request; my $nc = tr/\n|\x{a}//;   #check for \x{a} unicode or \n - we will skip multiline too.
 	if(! defined $error1 && (length $request < 1000) && ($nc == 0) ){ # if <1000 we will fix english article problem if >1000 leave it be
 	    if(ref($g_array->[5]) eq 'ARRAY'){
 			for (my $col = 0; $col < @{$g_array->[5]}; $col++) {
