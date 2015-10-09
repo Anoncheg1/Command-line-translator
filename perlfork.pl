@@ -351,8 +351,6 @@ $ua->proxy(@PROXY) if @PROXY;
 #}
 
 ########### google request
-my $url="https://translate.google.com/translate_a/single?client=t&sl=".$source."&tl=".$target."&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8&tk";
-##
 my $response;
 my $rsum; # translation
 my $translit_s; # translit source
@@ -362,6 +360,7 @@ my @detected_languages;
 my $error1; #error with highlight
 my $error2; #correct version
 my @dictionary;
+my $url = "https://translate.google.com/translate_a/single?client=t&sl=".$source."&tl=".$target."&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8&tk";
 ##
 #side effect function
 &google(clone($ua), $url); #$_[0] - ua    $_[1] - url
@@ -386,7 +385,7 @@ if( ! $error1 && ! @dictionary && $detected_languages[0] && $detected_languages[
 	undef $error1; #error with highlight
 	undef $error2; #correct version
 	undef @dictionary;
-	$url="https://translate.google.com/translate_a/single?client=t&sl=".$source."&tl=".$target."&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8";
+	$url = "https://translate.google.com/translate_a/single?client=t&sl=".$source."&tl=".$target."&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8&tk";
 	&google(clone($ua), $url); #$_[0] - ua    $_[1] - url
 	last if ((lc $rsum) ne (lc $request) || @dictionary);
     }
@@ -414,24 +413,25 @@ if( $rsum && (lc $rsum) ne (lc $request) ) {
     #       "&tl=" tl "&q=" preprocess(text)
     #    my $url="https://translate.google.com//translate_tts?ie=UTF-8&client=t&tl=en&q=cat";
     if($sound && length($request) < 18){
-	$url="https://translate.google.com//translate_tts?ie=UTF-8&client=t&tl=".$source."&q=".uri_escape($request);
-	my $req = HTTP::Request->new(GET => $url);
+		$url="https://translate.google.com//translate_tts?ie=UTF-8&client=t&tk&tl=".$source."&q=".uri_escape($request); #strange &tk very important
+		
+		my $req = HTTP::Request->new(GET => $url);
 
-	my $uac = clone($ua);
-	my $response;
-	$response = $uac->request($req);
-	$response = $uac->request($req) if (! $response->is_success); #resent
+		my $uac = clone($ua);
+		my $response;
+		$response = $uac->request($req);
+		$response = $uac->request($req) if (! $response->is_success); #resent
 
-	if ($response->is_success) {
-	    #open FILE, ">", "a.mpga";
-	    #print FILE $response->content;
-	    #close FILE;
-	    
-	    open(FOO, "|mpg123 - 2>/dev/null") || ( print STDERR "Failed: $!\n" and exit 1 );
-	    print FOO $response->content;
-	}else{
-	    print STDERR "Can't get sound from google: ".$response->status_line, "\n"; exit 1;
-	}
+		if ($response->is_success) {
+		    #open FILE, ">", "a.mpga";
+		    #print FILE $response->content;
+		    #close FILE;
+
+		    open(FOO, "|mpg123 - 2>/dev/null") || ( print STDERR "Failed: $!\n" and exit 1 );
+		    print FOO $response->content;
+		}else{
+		    print STDERR "Can't get sound from google: ".$response->status_line, "\n"; exit 1;
+		}
     }
 
 }
