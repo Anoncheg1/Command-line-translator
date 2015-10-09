@@ -302,10 +302,10 @@ if (defined $opt{l}){
     exit;
 }
 if (defined $opt{s}){
-    $TLSOURCE = $opt{s} if defined $LANGS{$opt{s}};
+    $TLSOURCE = $opt{s} if (defined $LANGS{$opt{s}} || $opt{s} == "auto") ;
 }
 if (defined $opt{t}){
-    $TLTARGET = $opt{t} if defined $LANGS{$opt{t}};    
+    $TLTARGET = $opt{t} if defined $LANGS{$opt{t}};
 }
 if (defined $opt{o}){ #read from file
     open FILE, $opt{o} or print STDERR "-o argument: couldn't open file: $!" and exit 1;
@@ -361,6 +361,7 @@ my $error1; #error with highlight
 my $error2; #correct version
 my @dictionary;
 my $url = "https://translate.google.com/translate_a/single?client=t&sl=".$source."&tl=".$target."&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8&tk";
+print $TLTARGET;
 ##
 #side effect function
 &google(clone($ua), $url); #$_[0] - ua    $_[1] - url
