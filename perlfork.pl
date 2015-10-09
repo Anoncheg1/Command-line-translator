@@ -178,7 +178,7 @@ my %LANGS = (
 sub usage()
 {
     print STDOUT << "EOF";
-$name [-S] [-l] [-h] [-p] [-s language_2_chars] [-t language_2_chars] [-]
+$name [-S] [-l] [-h] [-p] [-s language_2_chars] [-t language_2_chars] text | -
 if text is LATIN_LANG, then target language is FIRST_LANG
 otherwise, target language is LATIN_LANG
 -S
@@ -191,16 +191,16 @@ otherwise, target language is LATIN_LANG
 -l
   list of language codes
 -o FILE 
-    read request from file
+  read request from file
 -
-	read from STDIN pipe
+  read from STDIN pipe
 Configure "FIRST_LANG" and "LATIN_LANG" in script for auto detection of direction by the first character!
 You neeed UTF-8 support for required languages.
 EOF
     exit;
 }
 
-sub testing($){
+sub testing($){  #not used
     my $g_array = $_[0];
     if(ref($g_array) eq 'ARRAY'){
 	for (my $row = 0; $row < @{$g_array}; $row++){
@@ -273,7 +273,7 @@ if ($TERMINAL_C eq "WOB" ){
     $C_BRIGHT_RAW="`tput bold`";
     $C_GREEN="`tput bold`";
 }else{
-    $C_NORMAL = ""; #erase
+    $C_NORMAL = ""; #nothing at all
     $C_NORMAL_RAW = "";
 }
 
@@ -311,7 +311,7 @@ if (defined $opt{o}){ #read from file
     open FILE, $opt{o} or print STDERR "-o argument: couldn't open file: $!" and exit 1;
     local $/ = undef;
     $request = <FILE>;
-}elsif($ARGV[0] eq "-"){ #read from pipe
+}elsif(defined $ARGV[0] && $ARGV[0] eq "-"){ #read from pipe
 	#$request = do{ local $/; <STDIN> }; #multiline
 	$request = <STDIN>;#one line
 }else{ #read from arguments
@@ -411,9 +411,9 @@ if( $rsum && (lc $rsum) ne (lc $request) ) {
     ### Text-To-Speach
     #url = HttpProtocol HttpHost "/translate_tts?ie=UTF-8&client=t"	\
     #       "&tl=" tl "&q=" preprocess(text)
-    #    my $url="https://translate.google.com//translate_tts?ie=UTF-8&client=t&tl=en&q=cat";
+    #    my $url="https://translate.google.com//translate_tts?ie=UTF-8&client=t&tl=en&zq=cat";
     if($sound && length($request) < 18){
-		$url="https://translate.google.com//translate_tts?ie=UTF-8&client=t&tk&tl=".$source."&q=".uri_escape($request); #strange &tk very important
+		$url="https://translate.google.com//translate_tts?ie=UTF-8&client=t&tk&tl=".$detected_languages[0]."&q=".uri_escape($request); #$detected_languages[0] = $source
 		
 		my $req = HTTP::Request->new(GET => $url);
 
@@ -506,7 +506,7 @@ sub google($$$){#$_[0] - ua (object)    $_[1] - url
 
     }
     else {
-	print "Can't connect google: ".$response->status_line, "\n"; exit 1;
+		print "Can't connect google: ".$response->status_line, "\n"; exit 1;
     }
 
  #   my $rsum; # translation
@@ -572,17 +572,18 @@ sub google($$$){#$_[0] - ua (object)    $_[1] - url
 
 #	if( ! defined $error1){
 	#translation
-	$_=$request; my $nc = tr/\n//;   #check for \x{a} unicode or \n
+	$_=$request; my $nc = tr/\n//;   #check for \x{a} unicode or \n - we will skip multiline too.
 	if(! defined $error1 && (length $request < 1000) && ($nc == 0) ){ # if <1000 we will fix english article problem if >1000 leave it be
 	    if(ref($g_array->[5]) eq 'ARRAY'){
-		for (my $col = 0; $col < @{$g_array->[5]}; $col++) {
-		    if($g_array->[5][$col][2][0][0]){
-			my $t = $g_array->[5][$col][2][0][0];
-			$rsum .= $t." ";
-		    }
-		}
+			for (my $col = 0; $col < @{$g_array->[5]}; $col++) {
+				if($g_array->[5][$col][2][0][0]){
+				my $t = $g_array->[5][$col][2][0][0];
+				$rsum .= $t." ";
+				}
+			}
 	    }
-	}else{ # >1000
+	}
+	if(! defined $error1 && ! defined $rsum){ # >1000 or not defined $rsum
 	    if(ref($g_array->[0]) eq 'ARRAY'){
 		for (my $col = 0; $col < @{$g_array->[0]}; $col++) {
 		    if($g_array->[0][$col][0]){
@@ -593,12 +594,12 @@ sub google($$$){#$_[0] - ua (object)    $_[1] - url
 	    }
 	}
 	if ($rsum){
-	$rsum =~ s/^\s+|\s+$//g; #trim both sides
-	$rsum =~ s/\s+,/,/g; #asd , asd
-	$rsum =~ s/\s+\./\./g; #asdas .
-	$rsum =~ s/\s+\?/?/g; #asdas ?
-	$rsum =~ s/\s+\!/!/g; #asdas !
-	$rsum =~ s/\s+\"\s+/' /g; #students’ are either   =  студенты " либо
+		$rsum =~ s/^\s+|\s+$//g; #trim both sides
+		$rsum =~ s/\s+,/,/g; #asd , asd
+		$rsum =~ s/\s+\./\./g; #asdas .
+		$rsum =~ s/\s+\?/?/g; #asdas ?
+		$rsum =~ s/\s+\!/!/g; #asdas !
+		$rsum =~ s/\s+\"\s+/' /g; #students’ are either   =  студенты " либо
 	}
 	#translit
 	if( length($request) <= $TRANSLIT_LENGTH_MAX){

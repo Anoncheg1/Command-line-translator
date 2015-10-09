@@ -58,15 +58,21 @@ for english:
 - urban dictionary
 
 Configure "FIRST_LANG" and "LATIN_LANG" in script for auto detection.
+This is complicated thing with Latin languages. We can detect language by first character.
+But all latin characters used same symbols. If you unsure about FIRST_LANG, LATIN_LANG, then
+use [-s auto] with [-t your_language]
 
 for convenience. Add to ~/.bash_aliases:
 - alias t="/home/user/translate"
 - alias ts="/home/user/translate -S"
 
 Commands:
-- -s lang Set source language
-- -t lang Set target language
+- -s source language
+- -t target language
 - -l List of languages
+
+Examples:
+- t -s zh -t en
 
 Debian Cyrillic support in tty shell:
 - 1)	#dpkg-reconfigure locales
