@@ -573,7 +573,7 @@ sub google($$$){#$_[0] - ua (object)    $_[1] - url
 #	if( ! defined $error1){
 	#translation
 	$_=$request; my $nc = tr/\n|\x{a}//;   #check for \x{a} unicode or \n - we will skip multiline too.
-	if(! defined $error1 && (length $request < 1000) && ($nc == 0) ){ # if <1000 we will fix english article problem if >1000 leave it be
+	if((length $request < 1000) && ($nc == 0)){ # if <1000 we will fix english article problem if >1000 leave it be
 	    if(ref($g_array->[5]) eq 'ARRAY'){
 			for (my $col = 0; $col < @{$g_array->[5]}; $col++) {
 				if($g_array->[5][$col][2][0][0]){
@@ -583,7 +583,7 @@ sub google($$$){#$_[0] - ua (object)    $_[1] - url
 			}
 	    }
 	}
-	if(! defined $error1 && ! defined $rsum){ # >1000 or not defined $rsum
+	if(! defined $rsum){ # >1000 or not defined $rsum
 	    if(ref($g_array->[0]) eq 'ARRAY'){
 		for (my $col = 0; $col < @{$g_array->[0]}; $col++) {
 		    if($g_array->[0][$col][0]){

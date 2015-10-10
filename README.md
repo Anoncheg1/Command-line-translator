@@ -8,8 +8,8 @@ Google translate shell, command-line translator Google Translate, Linux, Windows
 Command-line google translate, quick translate, very simple scripts, scripts for assess Google Translate.
 
 FILES:
-- perlfork.pl - Perl5 version. Google translate only. Better language detection.
-- translate - Bash version. Complete and stable. Good for English dictionary.
+- perlfork.pl - Perl5 version. Google translate only.
+- translate - Bash version. Good for English dictionary.
 - urban.pl - optional plugin for bash version.
 
 *************** Perl version ****************
