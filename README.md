@@ -29,6 +29,11 @@ FEATURES:
   - translit,
   - google text-to-speach
 
+There is two systems for direction of detection($FIRST_LANG, $SECOND_LANG):
+- Simple direction of detection. First it search Latin or Russian symbols and decide. If not found it use $source = 'auto'; $target = 'en';
+- Advanced detection of direction.
+
+If you don't use Latin or Russian language uncomment Advanced detection of direction. Or comment both with '#'.
 *************** Bash version ****************
 
 REQUIREMENTS:
@@ -56,12 +61,6 @@ for english:
 - cache for words
 - saving english words to file for learning
 - urban dictionary
-
-Configure "FIRST_LANG" and "LATIN_LANG" in script for auto detection.
-This is complicated thing with Latin languages. We can detect language by first character.
-But all latin characters used same symbols.
-
-First it search Latin symbols and deside. If not found it use $source = 'auto'; $target = 'en';
 
 for convenience. Add to ~/.bash_aliases:
 - alias t="/home/user/translate"

@@ -50,8 +50,8 @@ use v5.16;
 #binmode(STDOUT, ":utf8");
 
 # adjust to taste
-my $FIRST_LANG='ru';		#target language for request in LATIN_LANG		NOT in A-z latin alphabet
-my $LATIN_LANG='en';		#target for all not A-z latin requests			A-z latin alphabet will be detected!
+my $FIRST_LANG='ru';		#
+my $SECOND_LANG='en';		# In simple detection of direction it used for A-z latin alphabet
 my $TERMINAL_C="WOB";		#Your terminal - white on black:WOB, black on white:BOW, other unix:O, Windows:"".
 my $SOUND_ALWAYS = 1;
 
@@ -327,15 +327,19 @@ exit 1 if ! length $request;
 
 $source = 'auto'; #default
 $target = 'en';   #default
-###### LANGUAGE DETECTION by the first found character
+###### SIMPLE DETECTION OF DIRECTION by the first found character
+#This is complicated thing with Latin languages. We can detect language by first character.
+#But all latin characters used same symbols.
+#Same thing with other languages.
 my $rutf8 = $request; utf8::decode($rutf8); #- to utf8 solid characters
 foreach my $ch (map {split //} split('\s',(substr $rutf8,0,10))){ #first 10 characters
     #print $ch,ord $ch, "\n"; #65 - 122 = Latin
     if (ord $ch >= 65 && ord $ch <= 122 )        #Latin
-    {	    $source = $LATIN_LANG;   $target = $FIRST_LANG;    last;
+    {	    $source = $SECOND_LANG;   $target = $FIRST_LANG;    last;
     }elsif(ord $ch >= 1040 && ord $ch <= 1103 ){ #Russian
-            $source = 'ru';   $target = $LATIN_LANG;    last; }
+            $source = 'ru';   $target = $SECOND_LANG;    last; }
 }
+######
 $source = $TLSOURCE if $TLSOURCE;
 $target = $TLTARGET if $TLTARGET;
 
@@ -366,9 +370,21 @@ my $url = "https://translate.google.com/translate_a/single?client=t&sl=".$source
 &google(clone($ua), $url); #$_[0] - ua    $_[1] - url
 #$rsum =~ s/(.)/sprintf("%x",ord($1))/eg; #replace every character with HEX
 
+my $advdd = 0;
+##### Advanced detection of direction UNCOMMENT IF YOU NEED and comment simple detection of direction
+#if (! $TLSOURCE){
+#	if($detected_languages[0]){
+#		if($detected_languages[0] eq $FIRST_LANG && $source ne $FIRST_LANG){
+#			$source = $FIRST_LANG; $advdd = 1;
+#		}elsif($detected_languages[0] eq $SECOND_LANG && $source ne $SECOND_LANG){
+#			$source = $SECOND_LANG; $advdd = 1;
+#		}
+#	}	
+#}
+
 my $source_save = $source;
 my @d_l;
-if( ! $error1 && ! @dictionary && $detected_languages[0] && $detected_languages[0] ne $source && ((lc $rsum) eq (lc $request))){
+if( $advdd || (! $error1 && ! @dictionary && $detected_languages[0] && $detected_languages[0] ne $source && ((lc $rsum) eq (lc $request)))){
     @d_l = @detected_languages;
     print "Detected languages: "; print $_."," foreach @d_l; print "\n";
 
