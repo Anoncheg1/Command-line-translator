@@ -41,7 +41,7 @@ use LWP::UserAgent;
 use JSON;
 use HTML::Entities;
 #Debian: liblwp-protocol-socks-perl
-#use LWP::Protocol::socks;     #UNCOMMENT for proxy!
+#use LWP::Protocol::socks;
 use URI::Escape;
 use Clone 'clone';
 use utf8;
@@ -56,7 +56,7 @@ my $TERMINAL_C="WOB";		#Your terminal - white on black:WOB, black on white:BOW, 
 my $SOUND_ALWAYS = 1;
 
 my $TRANSLIT_LENGTH_MAX = 10;
-my @PROXY ; #for proxy uncomment LWP::Protocol::socks
+my @PROXY ; #for proxy you need LWP::Protocol::socks
 #@PROXY =([qw(http https)] => "socks://172.16.0.1:9150"); #tor
 #@PROXY = ('http','http://127.0.0.1:4444'); #i2p
 
@@ -364,9 +364,8 @@ my $url = "https://translate.google.com/translate_a/single?client=t&sl=".$source
 ##
 #side effect function
 &google(clone($ua), $url); #$_[0] - ua    $_[1] - url
+#$rsum =~ s/(.)/sprintf("%x",ord($1))/eg; #replace every character with HEX
 
-
-#$rsum =~ s/(.)/sprintf("%x",ord($1))/eg;
 my $source_save = $source;
 my @d_l;
 if( ! $error1 && ! @dictionary && $detected_languages[0] && $detected_languages[0] ne $source && ((lc $rsum) eq (lc $request))){
@@ -374,7 +373,7 @@ if( ! $error1 && ! @dictionary && $detected_languages[0] && $detected_languages[
     print "Detected languages: "; print $_."," foreach @d_l; print "\n";
 
     foreach $source (@d_l){
-	$target = "en";
+	#$target = "en";
 	print "trying with:".$LANGS{$source},"\n";
 	###side effect function
 	undef $rsum; # translation
@@ -399,8 +398,11 @@ if( ! @d_l && $detected_languages[0] && $detected_languages[0] ne $source_save )
 print $C_GREEN.$rsum.$C_NORMAL_RAW,"\n" if $rsum; #echo result
 if($error1){
     print $error1,"\n"; #echo error   
-}else{
+}elsif(@dictionary){
     print $_,"\n" foreach @dictionary;  #echo dictionary
+}elsif(scalar @suggest > 1){	#echo suggestions
+    print $C_BLUE_RAW."Options:".$C_NORMAL_RAW,"\n";
+    print $_,"\n" foreach @suggest;
 }
 
 if( $rsum && (lc $rsum) ne (lc $request) ) {
@@ -435,11 +437,6 @@ if( $rsum && (lc $rsum) ne (lc $request) ) {
     }
 
 }
-#if(scalar @suggest > 1){ #echo options or suggestions (working but sucks)
-#    print $C_BLUE_RAW."Options:".$C_NORMAL_RAW,"\n";
-#    print $_,"\n" foreach @suggest;
-#};
-
 
 #THE END
 
@@ -610,14 +607,14 @@ sub google($$$){#$_[0] - ua (object)    $_[1] - url
 		$translit_t = $g_array->[0][1][2];
 	    }
 	}
-	#suggestions(working but sucks)
-	#	if(ref($g_array->[5][0][2]) eq 'ARRAY'){	
-	#	    for (my $col = 0; $col < @{$g_array->[5][0][2]}; $col++) {
-	#		if($g_array->[5][0][2][$col][0]){
-	#		    @suggest=(@suggest,$g_array->[5][0][2][$col][0]);#add element
-	#		}
-	#	    }
-	#	}
+	#suggestions
+	if(ref($g_array->[5][0][2]) eq 'ARRAY'){	
+	    for (my $col = 0; $col < @{$g_array->[5][0][2]}; $col++) {
+			if($g_array->[5][0][2][$col][0]){
+			    @suggest=(@suggest,$g_array->[5][0][2][$col][0]);#add element
+			}
+	    }
+	}
 	#Dictionary
 	if(ref($g_array->[1]) eq 'ARRAY'){
 	    for (my $row = 0; $row < @{$g_array->[1]}; $row++) {
