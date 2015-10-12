@@ -375,13 +375,13 @@ my $advdd = 0;
 #if (! $TLSOURCE){
 #	if($detected_languages[0]){
 #		if($detected_languages[0] eq $FIRST_LANG && $source ne $FIRST_LANG){
-#			$source = $FIRST_LANG; $advdd = 1;
+#			$advdd = 1;
 #		}elsif($detected_languages[0] eq $SECOND_LANG && $source ne $SECOND_LANG){
-#			$source = $SECOND_LANG; $advdd = 1;
+#			$advdd = 1;
 #		}
 #	}	
 #}
-
+#####
 my $source_save = $source;
 my @d_l;
 if( $advdd || (! $error1 && ! @dictionary && $detected_languages[0] && $detected_languages[0] ne $source && ((lc $rsum) eq (lc $request)))){
