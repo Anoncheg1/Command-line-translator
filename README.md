@@ -34,6 +34,7 @@ There is two systems for direction of detection($FIRST_LANG, $SECOND_LANG):
 - Advanced detection of direction.
 
 If you don't use Latin or Russian language uncomment Advanced detection of direction. Or comment both with '#'.
+
 *************** Bash version ****************
 
 REQUIREMENTS:

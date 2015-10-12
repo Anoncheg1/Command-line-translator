@@ -375,9 +375,9 @@ my $advdd = 0;
 #if (! $TLSOURCE){
 #	if($detected_languages[0]){
 #		if($detected_languages[0] eq $FIRST_LANG && $source ne $FIRST_LANG){
-#			$advdd = 1;
+#			$target = $SECOND_LANG; $advdd = 1;
 #		}elsif($detected_languages[0] eq $SECOND_LANG && $source ne $SECOND_LANG){
-#			$advdd = 1;
+#			$target = $FIRST_LANG; $advdd = 1;
 #		}
 #	}	
 #}
