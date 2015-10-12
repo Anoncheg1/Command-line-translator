@@ -37,11 +37,11 @@ use diagnostics; # выводить подробную диагностику о
 use Getopt::Std;
 use File::Basename;
 use LWP::UserAgent;
-#libjson-perl
+#Debian: libjson-perl
 use JSON;
 use HTML::Entities;
 #Debian: liblwp-protocol-socks-perl
-use LWP::Protocol::socks;
+#use LWP::Protocol::socks;     #UNCOMMENT for proxy!
 use URI::Escape;
 use Clone 'clone';
 use utf8;
@@ -56,11 +56,11 @@ my $TERMINAL_C="WOB";		#Your terminal - white on black:WOB, black on white:BOW, 
 my $SOUND_ALWAYS = 1;
 
 my $TRANSLIT_LENGTH_MAX = 10;
-my @PROXY ;
+my @PROXY ; #for proxy uncomment LWP::Protocol::socks
 #@PROXY =([qw(http https)] => "socks://172.16.0.1:9150"); #tor
 #@PROXY = ('http','http://127.0.0.1:4444'); #i2p
 
-my $USERAGENT = 'Mozilla/5.0 (Windows NT 5.1; rv:5.0.1) Gecko/20100101 Firefox/5.0.1';
+my $USERAGENT = ' 	Mozilla/5.0 (Windows NT 6.1; rv:38.0) Gecko/20100101 Firefox/38.0';
 
 #Solved problems:
 #  gppgle JSON converting problem ,,. Solved by hands.

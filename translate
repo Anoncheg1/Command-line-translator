@@ -74,7 +74,7 @@ declare -r words_buffer=4000		#4000 files max. there is removeing all files olde
 declare -r timeout=6
 declare -r TRANSLIT_WORDS_MAX=10
 declare -r SOUND_DOWNLOAD_AWS=0		# 1 - always. 0 - on demand.
-declare -r useragent="Mozilla/5.0 (X11; Linux i686) AppleWebKit/534.34 (KHTML, like Gecko) QupZilla/1.3.1 Safari/534.34"
+declare -r useragent=" 	Mozilla/5.0 (Windows NT 6.1; rv:38.0) Gecko/20100101 Firefox/38.0"
 declare -r URBAN_DICTIONARY=false			#always use urban dictionary - urban.pl
 #
 CDIR="$HOME/.config"
@@ -161,7 +161,7 @@ bashtrap()
 {
 	echo "Exit signal detected. Deleting cache files."
 	rm "$cachefile" 2> /dev/null
-	exit
+	exit 1
 }
 
 if [[ $TERMINAL_C == "WOB" ]];then
@@ -330,6 +330,7 @@ sound_download(){ 			# $cachefile, $request, $source
 
 
 #----------------------------------------------- MAIN PART ----------------------------------------------------------------
+declare error=0	#if we have error we will delete cache file.
 main_func(){
 
 	if [[ ${#request} -eq 0 ]];then #using saved fixed string without parameters
@@ -391,7 +392,7 @@ main_func(){
 				grespond=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" -m $timeout --compressed --data-urlencode "text=$request" "https://translate.google.com/translate_a/single?client=t&sl=$source&tl=$target&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8&tk") #getting google respond for short sentence
 				
 			fi
-			[[ ! $(echo "$grespond" | grep -o '\[.*\]') ]] && { echo "can't connect google" ; exit; } #small connection check
+			[[ ! $(echo "$grespond" | grep -o '\[.*\]') ]] && { echo "can't connect google" ; exit 1; } #small connection check
 
 			#echo -n "var myJSONObject = " > "$PR_DIR"/tmpjsobj2
 			#echo [$(echo "$grespond" | grep -o '"[^"]*/i[^"]*"')"];" >> "$PR_DIR"/tmpjsobj2
@@ -468,6 +469,7 @@ main_func(){
 			declare urban # dictionary for 1-4 words NO LANGUAGE DETECTIONS
 			if [[ $r_words_count -le 5 && ${#request} -gt 1 && $source == en && $urban_flag == true && -x ${0%/*}"/urban.pl" ]];then
 				urban=$(perl ${0%/*}"/urban.pl" $(echo $request | tr ' ' + ))
+				[[ $? != 0 ]] && {	error=1; }
 			fi
 			#[[ $source != $det_language ]] && 
 
@@ -495,7 +497,7 @@ main_func(){
 			if [[ $r_words_count -le 2 && ${#request} -gt 1 && $source == en && ! $(echo "$difftest" | wc -l) -gt 1 ]];then #special check( expample: advise advice)
 			#transcription
 				trans=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://lingvo-online.ru/en/Translate/en-"$target"/"$request" | grep -o '"[^"]*/transcription\.gif.Text=[^"]*"' | sed 's/.*=\(.*\)"/\1/'| echo -n -e $(sed 's/+/ /g; s/%/\\x/g')) #getting transcription
-				[[ $? != 0 ]] &&  { echo "can't get transcription"; } #bashtrap;
+				[[ $? != 0 ]] &&  { echo "can't get transcription"; error=1; } #bashtrap;
 			fi
 			
 			# Main "Dictionary part" for english only. but it can be extended for every required language
@@ -507,12 +509,12 @@ main_func(){
 
 				#phrases, forms and a vform
 				macmill=$(curl -si --user-agent "$useragent" $httpsproxy -x "$httpproxy" -m $timeout http://www.macmillandictionary.com/search/british/direct/?q="$(echo $request | tr '[:upper:]' '[:lower:]' | tr ' ' + )" )
-				[[ $? != 0 ]] && { echo "ERROR cant get phrases macmillandictionary" >> "$cachefile"; }
+				[[ $? != 0 ]] && { echo "ERROR cant get phrases macmillandictionary" >> "$cachefile"; error=1;}
 				location=$(echo "$macmill" | grep "Location: http://www.macmillandictionary.com/dictionary/british/" | grep -o "http.*" | tr -d '\r')
 				if [[ $location ]]; then
 					#echo $location
 					macmill=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" -m $timeout "$location" )
-					[[ $? != 0 ]] && { echo "ERROR cant get phrases macmillandictionary" >> "$cachefile"; }
+					[[ $? != 0 ]] && { echo "ERROR cant get phrases macmillandictionary" >> "$cachefile"; error=1;}
 				fi
 				#forms
 				forms=$(echo $macmill | grep -o "id=\"wordsformslayer-head\".*End of DIV wordforms" | sed 's/INFLECTION-CONTENT/\n/g' | sed -e 's/.*INFLECTION-ENTRY\">\([^<]*\)<.*I-VARIANT-before\">\([^<]*\).*INFLECTION-ENTRY\">\([^<]*\).*/666\1\2\3,/' -e 's/.*INFLECTION-ENTRY\">\([^<]*\)<.*/666\1,/' | grep 666 | cut -c 4-)
@@ -675,7 +677,7 @@ phras=$(echo "$macmill" | grep -o 'div id="phrases_container".*End of DIV --' | 
 				sleep 1 #to be able Ctrl+C to delete cache file
 			fi
 		fi
-	#fi
+	[[ $error != 0 ]] && { rm "$cachefile" 2> /dev/null ; echo HAY ; }
 }
 
 if [[ $PROMPT_MODE_ACTIVATED == true ]]; then
