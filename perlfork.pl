@@ -608,12 +608,14 @@ sub google($$$){#$_[0] - ua (object)    $_[1] - url
 	    }
 	}
 	#suggestions
-	if(ref($g_array->[5][0][2]) eq 'ARRAY'){	
-	    for (my $col = 0; $col < @{$g_array->[5][0][2]}; $col++) {
-			if($g_array->[5][0][2][$col][0]){
-			    @suggest=(@suggest,$g_array->[5][0][2][$col][0]);#add element
+	if (scalar(split(/\s+/,$request)) <= 2){ #number of words
+		if(ref($g_array->[5][0][2]) eq 'ARRAY'){	
+			for (my $col = 0; $col < @{$g_array->[5][0][2]}; $col++) {
+				if($g_array->[5][0][2][$col][0]){
+				    @suggest=(@suggest,$g_array->[5][0][2][$col][0]);#add element
+				}
 			}
-	    }
+		}
 	}
 	#Dictionary
 	if(ref($g_array->[1]) eq 'ARRAY'){
