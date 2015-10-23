@@ -558,7 +558,7 @@ phras=$(echo "$macmill" | grep -o 'div id="phrases_container".*End of DIV --' | 
 				[[ $trans ]] && echo "[$trans]" >> "$cachefile"
 
 				cat "$cachefile" 2>/dev/null #output for 1 word
-				echo -e "$C_DARK_BLUE_RAW"http://oxforddictionaries.com/definition/english/$(echo "$request" | sed "s/'/%27/" )$C_NORMAL_RAW # just another good english dictionary
+#				echo -e "$C_DARK_BLUE_RAW"http://oxforddictionaries.com/definition/english/$(echo "$request" | sed "s/'/%27/" )$C_NORMAL_RAW # just another good english dictionary
 				
 				if [[ ${#request} -gt 2 || $r_words_count -le 2 ]] ; then
 
@@ -677,7 +677,7 @@ phras=$(echo "$macmill" | grep -o 'div id="phrases_container".*End of DIV --' | 
 				sleep 1 #to be able Ctrl+C to delete cache file
 			fi
 		fi
-	[[ $error != 0 ]] && { rm "$cachefile" 2> /dev/null ; echo HAY ; }
+	[[ $error != 0 ]] && { rm "$cachefile" 2> /dev/null ; }
 }
 
 if [[ $PROMPT_MODE_ACTIVATED == true ]]; then

@@ -49,11 +49,18 @@ use v5.16;
 #use Text::Unidecode;
 #binmode(STDOUT, ":utf8");
 
+use Encode::Locale;
+use Encode;
+#binmode(STDIN, ":encoding(console_in)");
+	#binmode(STDOUT, ":encoding(console_out)");
+#	binmode(STDERR, ":encoding(console_out)");
+
 # adjust to taste
 my $FIRST_LANG='ru';		#
 my $SECOND_LANG='en';		# In simple detection of direction it used for A-z latin alphabet
 my $TERMINAL_C="WOB";		#Your terminal - white on black:WOB, black on white:BOW, other unix:O, Windows:"".
-my $SOUND_ALWAYS = 1;
+my $SOUND_ALWAYS = 1;		#text-to-speach
+my $LC_ALWAYS = 1;			#Lowercase request.
 
 my $TRANSLIT_LENGTH_MAX = 10;
 my @PROXY ; #for proxy you need LWP::Protocol::socks
@@ -67,6 +74,7 @@ my $USERAGENT = 'Mozilla/5.0 (Windows NT 6.1; rv:38.0) Gecko/20100101 Firefox/38
 #  google JSON article=white space - problem. Solved by hands.
 #  google special characters in request. Solved by url encode.
 #TODO
+#Japane, Chinese count of words.
 #  asynchronous HTTP::Request http://search.cpan.org/dist/HTTP-Async/lib/HTTP/Async.pm
 
 my $name = basename($0);
@@ -320,7 +328,8 @@ if (defined $opt{o}){ #read from file
 }
 #$request = quotemeta($request);
 
-$request =~ s/^\s+|\s+$//g;     #trim both sides
+$request =~ s/^\s+//g;     #trim front sides
+#$request =~ s/\s+$//g;     #trim back sides СССР error
 exit 1 if ! length $request;
 
 #my $w_count = scalar(split(/\s+/,$request)); #LENGHT OF REQUEST IN WORDS
@@ -332,11 +341,11 @@ $target = 'en';   #default
 #But all latin characters used same symbols.
 #Same thing with other languages.
 my $rutf8 = $request; utf8::decode($rutf8); #- to utf8 solid characters
-foreach my $ch (map {split //} split('\s',(substr $rutf8,0,10))){ #first 10 characters
-    #print $ch,ord $ch, "\n"; #65 - 122 = Latin
+foreach my $ch (map {split //} split('\s',(substr $rutf8,0,12))){ #first 12 characters
+    #print ord $ch, "\n"; #65 - 122 = Latin
     if (ord $ch >= 65 && ord $ch <= 122 )        #Latin
     {	    $source = $SECOND_LANG;   $target = $FIRST_LANG;    last;
-    }elsif(ord $ch >= 1040 && ord $ch <= 1103 ){ #Russian
+    }elsif(ord $ch >= 1040 && ord $ch <= 1103 ){ #Russian #may fail rarely
             $source = 'ru';   $target = $SECOND_LANG;    last; }
 }
 ######
@@ -407,7 +416,12 @@ if( $advdd || (! $error1 && ! @dictionary && $detected_languages[0] && $detected
 }
 
 ############ Echo
-
+#utf8::decode($rsum);
+#utf8::decode($error1);
+#utf8::decode($_) foreach @dictionary;
+#utf8::decode($_) foreach @suggest;
+#utf8::decode($translit_s);
+#utf8::decode($translit_t);
 if( ! @d_l && $detected_languages[0] && $detected_languages[0] ne $source_save ){ #for 1 try without loop.
     print "Language: ".$LANGS{$detected_languages[0]},"\n";
 }
@@ -431,7 +445,8 @@ if( $rsum && (lc $rsum) ne (lc $request) ) {
     #       "&tl=" tl "&q=" preprocess(text)
     #    my $url="https://translate.google.com//translate_tts?ie=UTF-8&client=t&tl=en&zq=cat";
     if($sound && length($request) < 18){
-		$url="https://translate.google.com//translate_tts?ie=UTF-8&client=t&tk&tl=".$detected_languages[0]."&q=".uri_escape($request); #$detected_languages[0] = $source
+		my $lang = @detected_languages ? $detected_languages[0] : $target;
+		$url="https://translate.google.com//translate_tts?ie=UTF-8&client=t&tk&tl=".$lang."&q=".uri_escape($request); #$detected_languages[0] = $source
 		
 		my $req = HTTP::Request->new(GET => $url);
 
@@ -607,7 +622,8 @@ sub google($$$){#$_[0] - ua (object)    $_[1] - url
 	    }
 	}
 	if ($rsum){
-		$rsum =~ s/^\s+|\s+$//g; #trim both sides
+		#$rsum =~ s/^\s+|\s+$//g; #trim both sides СССР error
+		$rsum =~ s/^\s+//g; #trim both sides
 		$rsum =~ s/\s+,/,/g; #asd , asd
 		$rsum =~ s/\s+\./\./g; #asdas .
 		$rsum =~ s/\s+\?/?/g; #asdas ?
@@ -624,7 +640,7 @@ sub google($$$){#$_[0] - ua (object)    $_[1] - url
 	    }
 	}
 	#suggestions
-	if (scalar(split(/\s+/,$request)) <= 2){ #number of words
+	if (length($request) <= 12){ #number of words #not woring for Chinese.
 		if(ref($g_array->[5][0][2]) eq 'ARRAY'){	
 			for (my $col = 0; $col < @{$g_array->[5][0][2]}; $col++) {
 				if($g_array->[5][0][2][$col][0]){
