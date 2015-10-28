@@ -444,10 +444,10 @@ if( $rsum && (lc $rsum) ne (lc $request) ) {
     #url = HttpProtocol HttpHost "/translate_tts?ie=UTF-8&client=t"	\
     #       "&tl=" tl "&q=" preprocess(text)
     #    my $url="https://translate.google.com//translate_tts?ie=UTF-8&client=t&tl=en&zq=cat";
-    if($sound && length($request) < 18){
-		my $lang = @detected_languages ? $detected_languages[0] : $target;
-		$url="https://translate.google.com//translate_tts?ie=UTF-8&client=t&tk&tl=".$lang."&q=".uri_escape($request); #$detected_languages[0] = $source
-		
+    if($sound && length($request) < 25){
+		my $lang = (@detected_languages && ! $TLSOURCE) ? $detected_languages[0] : $source;
+		$url="https://translate.google.com//translate_tts?ie=UTF-8&client=t&tk&tl=".$lang."&q=".uri_escape($request); # for source		
+		#$url="https://translate.google.com//translate_tts?ie=UTF-8&client=t&tk&tl=".$target."&q=".uri_escape($rsum); # for target - alternative version
 		my $req = HTTP::Request->new(GET => $url);
 
 		my $uac = clone($ua);
