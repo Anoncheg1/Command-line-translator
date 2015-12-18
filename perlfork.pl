@@ -64,7 +64,7 @@ my $LC_ALWAYS = 1;			#Lowercase request.
 
 my $TRANSLIT_LENGTH_MAX = 10;
 my @PROXY ; #for proxy you need LWP::Protocol::socks
-#@PROXY =([qw(http https)] => "socks://172.16.0.1:9150"); #tor
+@PROXY =([qw(http https)] => "socks://172.16.0.1:9150"); #tor
 #@PROXY = ('http','http://127.0.0.1:4444'); #i2p
 
 my $USERAGENT = 'Mozilla/5.0 (Windows NT 6.1; rv:38.0) Gecko/20100101 Firefox/38.0';
@@ -373,7 +373,7 @@ my @detected_languages;
 my $error1; #error with highlight
 my $error2; #correct version
 my @dictionary;
-my $url = "https://translate.google.com/translate_a/single?client=t&sl=".$source."&tl=".$target."&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8&tk";
+my $url = "https://translate.google.com/translate_a/single?client=t&sl=".$source."&tl=".$target."&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8&tk=".&google_tk_hack($request);
 ##
 #side effect function
 &google(clone($ua), $url); #$_[0] - ua    $_[1] - url
@@ -409,7 +409,7 @@ if( $advdd || (! $error1 && ! @dictionary && $detected_languages[0] && $detected
 	undef $error1; #error with highlight
 	undef $error2; #correct version
 	undef @dictionary;
-	$url = "https://translate.google.com/translate_a/single?client=t&sl=".$source."&tl=".$target."&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8&tk";
+	$url = "https://translate.google.com/translate_a/single?client=t&sl=".$source."&tl=".$target."&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8&tk=".&google_tk_hack($request);
 	&google(clone($ua), $url); #$_[0] - ua    $_[1] - url
 	last if ((lc $rsum) ne (lc $request) || @dictionary);
     }
@@ -446,8 +446,8 @@ if( $rsum && (lc $rsum) ne (lc $request) ) {
     #    my $url="https://translate.google.com//translate_tts?ie=UTF-8&client=t&tl=en&zq=cat";
     if($sound && length($request) < 25){
 		my $lang = (@detected_languages && ! $TLSOURCE) ? $detected_languages[0] : $source;
-		$url="https://translate.google.com//translate_tts?ie=UTF-8&client=t&tk&tl=".$lang."&q=".uri_escape($request); # for source		
-		#$url="https://translate.google.com//translate_tts?ie=UTF-8&client=t&tk&tl=".$target."&q=".uri_escape($rsum); # for target - alternative version
+		$url="https://translate.google.com//translate_tts?ie=UTF-8&client=t&tk=".&google_tk_hack($request)."&tl=".$lang."&q=".uri_escape($request); # for source		
+		#$url="https://translate.google.com//translate_tts?ie=UTF-8&client=t&tk&tl=".$target."&q=".uri_escape($rsum); # for target - alternative version old
 		my $req = HTTP::Request->new(GET => $url);
 
 		my $uac = clone($ua);
@@ -675,3 +675,195 @@ sub google($$$){#$_[0] - ua (object)    $_[1] - url
     }else{ #print $response,"\n";
 		print "Wrong answer from google","\n"; exit 1;}
 }
+
+
+
+
+sub google_tk_hack($){
+    my $a = $_[0]; utf8::decode($a);
+    my @d;
+    #print length $a,"\n";
+    for ( my $e = 0, my $f = 0; $f < (length $a); $f++) {
+	my $char = ord substr($a, $f, $f+1);
+	if( 128 > $char){
+	    $d[$e++] = $char;
+	}else{
+	    if( 2048 > $char ){
+		$d[$e++] = $char >> 6 | 192;
+	    }else{	
+		if( (55296 == ($char & 64512)) && (($f + 1) < (length $a)) && (56320 == (ord substr($a,$f+1,$f+2) & 64512))  ){
+		    $f++;
+		    $char = 65536 + (($char & 1023) << 10) + (ord substr($a,$f,$f+1) & 1023);
+		    $d[$e++] = $char >> (18 | 240);
+		    $d[$e++] = $char >> ((12 & 63) | 128);
+		}else{
+		    $d[$e++] = $char >> (12 | 224);
+		    $d[$e++] = $char >> ((6 & 63) | 128);
+		}
+	    }
+	    $d[$e++] = (($char & 63) | 128);
+	    #print $char,"\n";
+	}
+    }
+
+    my $b=402878;  #????????
+    $a = $b || 0;
+
+    sub RLVb($) { #+-a^+6
+	my $a = $_[0];
+	my $d = scalar ($a<<(10+(64-32)))>>(64-32);
+	#my $d = $a << 10;
+	$a = $a + $d & 4294967295;
+	$d = $a < 0 ? (2**32+($a)) >> 6 : $a >> 6; #>>>
+	$a = $a ^ $d;
+	return $a;
+    }
+    
+    sub RLUb($) { #+-3^+b+-f
+	my $a = $_[0];
+	my $d = scalar ($a<<(3+(64-32)))>>(64-32);
+	$a = $a + $d & 4294967295; #1710107718
+	$d = $a < 0 ? (2**32+($a)) >> 11 : $a >> 11; #>>> #835013
+	$a = $a ^ $d; #1709347203
+	$d = scalar ($a<<(15+(64-32)))>>(64-32);#1220640768
+	$a = $a + $d & 4294967295; #-1364979325
+	$a = $a > 2**31-1 ? $a - 2**32 : $a;
+	return $a;
+    }
+
+    for (my $e = 0; $e < scalar @d ; $e++){
+	$a += $d[$e];
+	$a = &RLVb($a);
+    } #1621667734
+
+    $a = &RLUb($a);#-1364979325);
+#    print $a,"\n";
+    if (0 > $a){
+	$a = ($a & 2147483647) + 2147483648;
+    }#2929987971
+    $a %= 1000000; #987971
+
+    #print $a ^ $b,"\n";
+    return sprintf("%i.%i",$a,($a ^ $b));
+}
+
+=comment multiline_comment
+    a = '1bыت'
+
+    for (var d = [], e = 0, f = 0; f < a.length; f++) {
+    var g = a.charCodeAt(f);
+if( 128 > g )
+    d[e++] = g
+    else  {
+    if( 2048 > g )
+    d[e++] = g >> 6 | 192
+    else{
+    if ( (55296 == (g & 64512)) && ((f + 1) < a.length) && (56320 == (a.charCodeAt(f + 1) & 64512)) ){
+    g = 65536 + ((g & 1023) << 10) + (a.charCodeAt(++f) & 1023)
+    d[e++] = g >> (18 | 240)
+    d[e++] = g >> ((12 & 63) | 128)
+}else{
+    d[e++] = g >> (12 | 224)
+    d[e++] = g >> ((6 & 63) | 128)
+}
+}
+d[e++] = ((g & 63) | 128)
+}
+//alert("a="+65536 + ((g & 1023) << 10) + (a.charCodeAt(++f) & 1023))
+    //alert("a="+a.charCodeAt(f)+"   d="+d+ "    " + (g >> 6 | 192))  
+}
+
+e=0
+    alert((d[e] == 49) && (d[e+1] == 98) && (d[e+2] == 209) && (d[e+3] == 139) && (d[e+4] == 216) && (d[e+5] == 170) )
+
+    b=402878   //????????
+    a = b || 0;
+t="a"
+    Tb = "+"
+    RL1 = function(a, b) { //b=+-a^+6
+    for (var c = 0; c < b.length - 2; c += 3) {
+    var d = b.charAt(c + 2) //a,6
+    
+    if (d >= t) //97
+    d = d.charCodeAt(0) - 87  //97-87=10, 54-87=-33
+    else
+    d = Number(d)
+    //10,6
+    //
+    if( b.charAt(c + 1) == Tb ) //-,+
+    d = a >>> d //2
+    else
+    d = a << d;    //1
+    
+    //alert(d)  //412597248  6453127
+    if (b.charAt(c) == Tb) //+,^
+    a = a + d & 4294967295  //1
+    else
+    a = a ^ d  //2
+    //alert(a )  //413000175   419403368
+}		
+
+return a
+    }
+
+RLVb = function(a) { //+-a^+6
+    var d = a << 10;    //1
+    a = a + d & 4294967295  //1
+    var d = a >>> 6 //2
+    a = a ^ d  //2
+    return a
+}
+
+
+Ub = "+-3^+b+-f"
+    RL = function(a, b) { //b=+-a^+6
+    for (var c = 0; c < b.length - 2; c += 3) {
+    var d = b.charAt(c + 2) //3,b,f
+    //alert(d)
+    if (d >= t) //97
+    d = d.charCodeAt(0) - 87  //97-87=10, 54-87=-33
+    else
+    d = Number(d)
+    //3,11,15
+    //alert(b.charAt(c + 1))
+    if( b.charAt(c + 1) == Tb ) //-,+,-
+    d = a >>> d //2
+    else
+    d = a << d;    //1,3
+    
+    //alert(b.charAt(c))  //412597248  6453127
+    if (b.charAt(c) == Tb) //+,^,+
+    a = a + d & 4294967295  //1,3
+    else
+    a = a ^ d  //2
+    //alert(a )  //413000175   419403368
+}		
+
+return a
+    }
+RLUb = function(a) { //+-3^+b+-f
+    var d = a << 3;    //1,3
+    a = a + d & 4294967295  //1,3
+    var d = a >>> 11 //2
+    a = a ^ d  //2
+    var d = a << 15;    //1,3
+    a = a + d & 4294967295  //1,3
+    return a
+}
+
+var Vb = "+-a^+6"
+    //for (e = 0; e < d.length; e++) a += d[e], a = RL(a, Vb);
+for (e = 0; e < d.length; e++) a += d[e], a = RLVb(a);
+//alert(a == 1621667734) //many
+    //a = RL(a, Ub);
+a = RLUb(a);
+alert(a == -1364979325);
+if (0 > a)
+    a = (a & 2147483647) + 2147483648;
+alert(a == 2929987971)
+    a %= 1000000;
+alert(a == 987971)
+
+    a=""+ a + "." + (a ^ b)
+    alert(a == 987971.603901)
+=cut
