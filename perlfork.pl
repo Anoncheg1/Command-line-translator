@@ -64,7 +64,7 @@ my $LC_ALWAYS = 1;			#Lowercase request.
 
 my $TRANSLIT_LENGTH_MAX = 10;
 my @PROXY ; #for proxy you need LWP::Protocol::socks
-@PROXY =([qw(http https)] => "socks://172.16.0.1:9150"); #tor
+#@PROXY =([qw(http https)] => "socks://172.16.0.1:9150"); #tor
 #@PROXY = ('http','http://127.0.0.1:4444'); #i2p
 
 my $USERAGENT = 'Mozilla/5.0 (Windows NT 6.1; rv:38.0) Gecko/20100101 Firefox/38.0';
@@ -373,7 +373,8 @@ my @detected_languages;
 my $error1; #error with highlight
 my $error2; #correct version
 my @dictionary;
-my $url = "https://translate.google.com/translate_a/single?client=t&sl=".$source."&tl=".$target."&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8&tk=".&google_tk_hack($request);
+my $tk_hacked=&google_tk_hack($request);
+my $url = "https://translate.google.com/translate_a/single?client=t&sl=".$source."&tl=".$target."&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8&tk=".$tk_hacked;
 ##
 #side effect function
 &google(clone($ua), $url); #$_[0] - ua    $_[1] - url
@@ -409,7 +410,7 @@ if( $advdd || (! $error1 && ! @dictionary && $detected_languages[0] && $detected
 	undef $error1; #error with highlight
 	undef $error2; #correct version
 	undef @dictionary;
-	$url = "https://translate.google.com/translate_a/single?client=t&sl=".$source."&tl=".$target."&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8&tk=".&google_tk_hack($request);
+	$url = "https://translate.google.com/translate_a/single?client=t&sl=".$source."&tl=".$target."&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8&tk=".$tk_hacked;
 	&google(clone($ua), $url); #$_[0] - ua    $_[1] - url
 	last if ((lc $rsum) ne (lc $request) || @dictionary);
     }
@@ -683,39 +684,44 @@ sub google_tk_hack($){
     my $a = $_[0]; utf8::decode($a);
     my @d;
     #print length $a,"\n";
-    for ( my $e = 0, my $f = 0; $f < (length $a); $f++) {
-	my $char = ord substr($a, $f, $f+1);
-	if( 128 > $char){
-	    $d[$e++] = $char;
-	}else{
-	    if( 2048 > $char ){
-		$d[$e++] = $char >> 6 | 192;
-	    }else{	
-		if( (55296 == ($char & 64512)) && (($f + 1) < (length $a)) && (56320 == (ord substr($a,$f+1,$f+2) & 64512))  ){
-		    $f++;
-		    $char = 65536 + (($char & 1023) << 10) + (ord substr($a,$f,$f+1) & 1023);
-		    $d[$e++] = $char >> (18 | 240);
-		    $d[$e++] = $char >> ((12 & 63) | 128);
+for ( my $e = 0, my $f = 0; $f < (length $a); $f++) {
+	    my $char = ord substr($a, $f, $f+1);
+	    if( 128 > $char){
+		$d[$e++] = $char;
+	    }else{
+		if( 2048 > $char ){
+		    $d[$e++] = ($char >> 6) | 192;
 		}else{
-		    $d[$e++] = $char >> (12 | 224);
-		    $d[$e++] = $char >> ((6 & 63) | 128);
+		    if( (55296 == ($char & 64512)) && (($f + 1) < (length $a)) && (56320 == (ord substr($a,$f+1,$f+2) & 64512))  ){
+			$f++;
+			$char = 65536 + (($char & 1023) << 10) + (ord substr($a,$f,$f+1) & 1023);
+			$d[$e++] = ($char >> 18) | 240;
+			$d[$e++] = ($char >> 12) & 63 | 128;
+		    }else{
+			$d[$e++] = ($char >> 12) | 224;
+		    }
+		    $d[$e++] = ($char >> 6) & 63 | 128;
 		}
+		$d[$e++] = ($char & 63) | 128;
 	    }
-	    $d[$e++] = (($char & 63) | 128);
-	    #print $char,"\n";
-	}
     }
 
     my $b=402878;  #????????
     $a = $b || 0;
 
-    sub RLVb($) { #+-a^+6
+    sub RLVb($) { #+-a^+6  1447840518
 	my $a = $_[0];
 	my $d = scalar ($a<<(10+(64-32)))>>(64-32);
-	#my $d = $a << 10;
-	$a = $a + $d & 4294967295;
-	$d = $a < 0 ? (2**32+($a)) >> 6 : $a >> 6; #>>>
-	$a = $a ^ $d;
+	$a = ($a + $d) & 4294967295;
+	$a = ($a - 4294967296) if ($a > 2147483647); #2**31-1 and 2*32 corrections
+	$d = $a < 0 ? (2**32+($a)) >> 6 : $a >> 6; #>>>	
+	if ($a<0){
+	    $a=(((4294967296 + $a) ^ $d) - 4294967296 );
+	}elsif($d<0){
+	    $a=(((4294967296+$d) ^ $a)-4294967296 );
+        }else{
+	    $a = $a ^ $d; #-609717580   57582026
+        }
 	return $a;
     }
     
@@ -748,122 +754,155 @@ sub google_tk_hack($){
 }
 
 =comment multiline_comment
-    a = '1bыت'
+//a=+4294967297
+//alert(4294967295^11)
 
-    for (var d = [], e = 0, f = 0; f < a.length; f++) {
-    var g = a.charCodeAt(f);
-if( 128 > g )
-    d[e++] = g
-    else  {
-    if( 2048 > g )
-    d[e++] = g >> 6 | 192
-    else{
-    if ( (55296 == (g & 64512)) && ((f + 1) < a.length) && (56320 == (a.charCodeAt(f + 1) & 64512)) ){
-    g = 65536 + ((g & 1023) << 10) + (a.charCodeAt(++f) & 1023)
-    d[e++] = g >> (18 | 240)
-    d[e++] = g >> ((12 & 63) | 128)
-}else{
-    d[e++] = g >> (12 | 224)
-    d[e++] = g >> ((6 & 63) | 128)
-}
-}
-d[e++] = ((g & 63) | 128)
-}
-//alert("a="+65536 + ((g & 1023) << 10) + (a.charCodeAt(++f) & 1023))
-    //alert("a="+a.charCodeAt(f)+"   d="+d+ "    " + (g >> 6 | 192))  
+a = '1bыت'
+var a = `新浪公司是一家服务于中国及全球华人社群的网络媒体公司。新浪通过门户网站新浪网(SINA.com)、移动门户手机新浪网(SINA.cn)和社交网络服务及微博客服务新浪微博(Weibo.com)组成的数字媒体网络，帮助广大用户通过互联网和移动设备获得专业媒体和用户自生成的多媒体内容(UGC)并与友人进行兴趣分享。
+
+新浪网通过旗下多家地区性网站提供针对当地用户的特色专业内容，并提供一系列增值服务。手机新浪网为WAP用户提供来自新浪门户的定制信息和娱乐内容。新浪微博是基于开放平台架构的寄存自生和第三方应用的社交网络服务及微博客服务，提供微博和社交网络服务，帮助用户随时随地与任何人联系和分享信息。
+
+新浪通过上述主营业务及其他业务线向广大用户提供包括移动增值服务(MVAS)、网络视频、音乐流媒体、网络游戏、相册、博客、电子邮件、分类信息、收费服务、电子商务和企业服务在内的一系列服务。公司收入的大部分来自网络品牌广告、移动增值服务和收费服务。
+`;
+/*for (var d = [], e = 0, f = 0; f < a.length; f++) {
+                var g = a.charCodeAt(f);
+                128 > g ? d[e++] = g : (2048 > g ? d[e++] = g >> 6 | 192 : (55296 == (g & 64512) && f + 1 < a.length && 56320 == (a.charCodeAt(f + 1) & 64512) ? (g = 65536 + ((g & 1023) << 10) + (a.charCodeAt(++f) & 1023), d[e++] = g >> 18 | 240, d[e++] = g >> 12 & 63 | 128) : d[e++] = g >> 12 | 224, d[e++] = g >> 6 & 63 | 128), d[e++] = g & 63 | 128)
+            }*/
+for (var d = [], e = 0, f = 0; f < a.length; f++) {
+  var g = a.charCodeAt(f);
+    if( 128 > g)
+      d[e++] = g ;
+      else{
+          if( 2048 > g )
+             d[e++] = (g >> 6) | 192;
+           else{
+             if( (55296 == (g & 64512)) && ((f + 1) < a.length) && (56320 == (a.charCodeAt(f + 1) & 64512)) ){
+               g = 65536 + ((g & 1023) << 10) + (a.charCodeAt(++f) & 1023);
+               d[e++] = (g >> 18) | 240;
+               d[e++] = (g >> 12) & 63 | 128;
+             }else{
+                d[e++] = (g >> 12) | 224;
+             }
+          d[e++] = (g >> 6) & 63 | 128;
+          }
+      d[e++] = (g & 63) | 128;
+      }
 }
 
 e=0
-    alert((d[e] == 49) && (d[e+1] == 98) && (d[e+2] == 209) && (d[e+3] == 139) && (d[e+4] == 216) && (d[e+5] == 170) )
+//alert((d[e] == 49) && (d[e+1] == 98) && (d[e+2] == 209) && (d[e+3] == 139) && (d[e+4] == 216) && (d[e+5] == 170) )
+//alert(d[0]==230 && d[5]==170 && d[11]==184 && d[45]==229 && d[545]==136) //2
 
-    b=402878   //????????
-    a = b || 0;
+
+b=402878   //????????
+a = b || 0;
 t="a"
-    Tb = "+"
-    RL1 = function(a, b) { //b=+-a^+6
-    for (var c = 0; c < b.length - 2; c += 3) {
+Tb = "+"
+RL1 = function(a, b) { //b=+-a^+6
+  for (var c = 0; c < b.length - 2; c += 3) {
     var d = b.charAt(c + 2) //a,6
     
     if (d >= t) //97
-    d = d.charCodeAt(0) - 87  //97-87=10, 54-87=-33
+      d = d.charCodeAt(0) - 87  //97-87=10, 54-87=-33
     else
-    d = Number(d)
+      d = Number(d)
     //10,6
     //
     if( b.charAt(c + 1) == Tb ) //-,+
-    d = a >>> d //2
+      d = a >>> d //2
     else
-    d = a << d;    //1
+      d = a << d;    //1
     
     //alert(d)  //412597248  6453127
     if (b.charAt(c) == Tb) //+,^
-    a = a + d & 4294967295  //1
+      a = a + d & 4294967295  //1
     else
-    a = a ^ d  //2
+      a = a ^ d  //2
     //alert(a )  //413000175   419403368
-}		
-
-return a
-    }
+  }		
+  
+  return a
+}
 
 RLVb = function(a) { //+-a^+6
-    var d = a << 10;    //1
-    a = a + d & 4294967295  //1
-    var d = a >>> 6 //2
-    a = a ^ d  //2
-    return a
+  var d = a << 10;    //1
+  //alert(a+"   "+d)
+  a = a + d & 4294967295  //1
+  var d = a >>> 6 //2
+  a = a ^ d  //2
+  //alert(a)
+  return a
 }
 
 
 Ub = "+-3^+b+-f"
-    RL = function(a, b) { //b=+-a^+6
-    for (var c = 0; c < b.length - 2; c += 3) {
+RL = function(a, b) { //b=+-a^+6
+  for (var c = 0; c < b.length - 2; c += 3) {
     var d = b.charAt(c + 2) //3,b,f
     //alert(d)
     if (d >= t) //97
-    d = d.charCodeAt(0) - 87  //97-87=10, 54-87=-33
+      d = d.charCodeAt(0) - 87  //97-87=10, 54-87=-33
     else
-    d = Number(d)
+      d = Number(d)
     //3,11,15
     //alert(b.charAt(c + 1))
     if( b.charAt(c + 1) == Tb ) //-,+,-
-    d = a >>> d //2
+      d = a >>> d //2
     else
-    d = a << d;    //1,3
+      d = a << d;    //1,3
     
     //alert(b.charAt(c))  //412597248  6453127
     if (b.charAt(c) == Tb) //+,^,+
-    a = a + d & 4294967295  //1,3
+      a = a + d & 4294967295  //1,3
     else
-    a = a ^ d  //2
+      a = a ^ d  //2
     //alert(a )  //413000175   419403368
-}		
-
-return a
-    }
+  }		
+  
+  return a
+}
 RLUb = function(a) { //+-3^+b+-f
-    var d = a << 3;    //1,3
-    a = a + d & 4294967295  //1,3
-    var d = a >>> 11 //2
-    a = a ^ d  //2
-    var d = a << 15;    //1,3
-    a = a + d & 4294967295  //1,3
-    return a
+  //alert(a)
+  var d = a << 3;    //1,3
+  a = a + d & 4294967295  //1,3
+  var d = a >>> 11 //2
+  a = a ^ d  //2
+  var d = a << 15;    //1,3
+  //alert(d & 4294967295)
+  a = a + d & 4294967295  //1,3
+  //alert(a)
+  return a
 }
 
 var Vb = "+-a^+6"
-    //for (e = 0; e < d.length; e++) a += d[e], a = RL(a, Vb);
+//for (e = 0; e < d.length; e++) a += d[e], a = RL(a, Vb);
 for (e = 0; e < d.length; e++) a += d[e], a = RLVb(a);
-//alert(a == 1621667734) //many
-    //a = RL(a, Ub);
-a = RLUb(a);
-alert(a == -1364979325);
-if (0 > a)
-    a = (a & 2147483647) + 2147483648;
-alert(a == 2929987971)
-    a %= 1000000;
-alert(a == 987971)
 
-    a=""+ a + "." + (a ^ b)
-    alert(a == 987971.603901)
+//a = RL(a, Ub);
+a = RLUb(a);
+alert(a)
+
+
+//alert(a == -1364979325);
+
+
+if (0 > a)
+  a = (a & 2147483647) + 2147483648;
+
+
+
+//alert(a == 2929987971)
+
+
+
+a %= 1000000;
+
+
+//alert(a == 987971)
+
+
+a=""+ a + "." + (a ^ b)
+
+
+alert(a)
 =cut
