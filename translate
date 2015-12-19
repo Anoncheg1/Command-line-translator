@@ -231,7 +231,8 @@ function dictionary(arr){ //dictionary output
 					num2=Math.round(num*100000)/10;//round
 					if (num2 >= 10)
 						num2=Math.round(num2/10)*10;
-					print(arr[1][a][2][b][0]+' '+arr[1][a][2][b][1]+' '+num2);//word + variant of speach + frequency
+					print(arr[1][a][2][b][0]+' '+arr
+					[1][a][2][b][1]+' '+num2);//word + variant of speach + frequency
 					//variant1 print(arr[1][a][2][b][0]+' '+arr[1][a][2][b][1]+' '+Math.round(num*1000000)/1000000);//word + variant of speach + frequency
 					//old print(arr[1][a][2][b][0]+' '+arr[1][a][2][b][1]);//word + variant of speach
 				}
@@ -253,6 +254,40 @@ function language_identification(arr){ //get detected languages
 	if(typeof arr[8] !== 'undefined' && arr[8] !== null && typeof arr[8][0] !== 'undefined' && arr[8][0] !== null && typeof arr[8][0][0] !== 'undefined' && arr[8][0][0] !== null){
 		print('Detected language: '+arr[8][0][0]); //detected language
 	}
+}
+"
+
+jsscript_tkh="function tk_hack(a){
+	for (var d = [], e = 0, f = 0; f < a.length; f++) {
+                var g = a.charCodeAt(f);
+                128 > g ? d[e++] = g : (2048 > g ? d[e++] = g >> 6 | 192 : (55296 == (g & 64512) && f + 1 < a.length && 56320 == (a.charCodeAt(f + 1) & 64512) ? (g = 65536 + ((g & 1023) << 10) + (a.charCodeAt(++f) & 1023), d[e++] = g >> 18 | 240, d[e++] = g >> 12 & 63 | 128) : d[e++] = g >> 12 | 224, d[e++] = g >> 6 & 63 | 128), d[e++] = g & 63 | 128)
+	}
+	b=402878   //????????
+	a = b || 0;
+	
+	RLVb = function(a) { //+-a^+6
+		var d = a << 10;    //1
+		a = a + d & 4294967295  //1
+		var d = a >>> 6 //2
+		a = a ^ d  //2
+		return a
+	}
+	RLUb = function(a) { //+-3^+b+-f
+		var d = a << 3;    //1,3
+		a = a + d & 4294967295  //1,3
+		var d = a >>> 11 //2
+		a = a ^ d  //2
+		var d = a << 15;    //1,3
+		a = a + d & 4294967295  //1,3
+		return a
+	}
+	
+	for (e = 0; e < d.length; e++) a += d[e], a = RLVb(a);
+	a = RLUb(a);
+	if (0 > a)
+		a = (a & 2147483647) + 2147483648;
+	a %= 1000000;
+	print(''+ a + '.' + (a ^ b));
 }
 "
 
@@ -384,9 +419,24 @@ main_func(){
 			fi
 	
 		if [[ ! -e "$cachefile" ]]; then
+			#javascript
+			if hash smjs 2>/dev/null; then
+				js_sm="smjs -f"
+			elif hash js24 2>/dev/null; then
+				js_sm="js24 -f" #for FreeBSD
+			else
+				js_sm="nodejs"
+			fi
+			echo -n "$jsscript_tkh" > "$PR_DIR"/tmpjsobj2
+			if [[ $js_sm == "nodejs" ]]; then 
+				 sed -i 's/print/console.log/g' "$PR_DIR"/tmpjsobj2
+			fi
+			echo -n "tk_hack(\""$request"\");" >> "$PR_DIR"/tmpjsobj2
+			tk_hack=$($js_sm "$PR_DIR"/tmpjsobj2)				# tk_hack
+		
 			rr1="https://translate.google.com/translate_a/single?client=t&sl=$source&tl=$target&hl=en"
 			rr2="&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8"
-			rr3="&otf=1&rom=0&ssel=0&tsel=3&kc=7&tk"
+			rr3="&otf=1&rom=0&ssel=0&tsel=3&kc=7&tk="$tk_hack
 			rr=$rr1$rr2$rr3
 			if ! grespond=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" -m $timeout --compressed --data-urlencode "text=$request" $rr) && [[ "$httpproxy" != "" ]] #getting google respond for short sentence
 			then	# second attempt without https proxy
@@ -431,15 +481,7 @@ main_func(){
 #echo $difftest
 #echo $grespond | grep -o '\[.*\]' | enca -L russian
 #echo $grespond | grep -o '\[.*\]'
-
-			if hash smjs 2>/dev/null; then
-				js_sm="smjs -f"
-			elif hash js24 2>/dev/null; then
-				js_sm="js24 -f" #for FreeBSD
-			else
-				js_sm="nodejs"
-			fi
-			
+			#javascript
 			echo -n "var myJSONObject = " > "$PR_DIR"/tmpjsobj
 			echo -n "$grespond" | grep -o '\[.*\]' >> "$PR_DIR"/tmpjsobj
 			echo ";">> "$PR_DIR"/tmpjsobj
@@ -447,7 +489,6 @@ main_func(){
 			if [[ $js_sm == "nodejs" ]]; then 
 				 sed -i 's/print/console.log/g' "$PR_DIR"/tmpjsobj
 			fi
-
 			cp -f "$PR_DIR"/tmpjsobj "$PR_DIR"/tmpjsobj2
 			echo -n "language_identification(googlearr);" >> "$PR_DIR"/tmpjsobj2
 			det_language=$($js_sm "$PR_DIR"/tmpjsobj2 | tail -c3)		# detected language

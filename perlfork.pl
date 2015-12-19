@@ -22,12 +22,12 @@
 #
 # requirements: 
 #	libjson-perl
-#	liblwp-protocol-socks-perl
+#	liblwp-protocol-socks-perl - if you need socks proxy
 #
-#features:
-#- translated text, fixed text with highlight, language detection, dictionary, translit, read from file, text-to-speach
+# features:
+# -translated text, fixed text with highlight, language detection, dictionary, translit, read from file, text-to-speach
 #
-#:) translate.google.com
+# used translate.google.com
 
 package GoogleTranslator;
 
@@ -206,35 +206,6 @@ Configure "FIRST_LANG" and "LATIN_LANG" in script for auto detection of directio
 You neeed UTF-8 support for required languages.
 EOF
     exit;
-}
-
-sub testing($){  #not used
-    my $g_array = $_[0];
-    if(ref($g_array) eq 'ARRAY'){
-	for (my $row = 0; $row < @{$g_array}; $row++){
-	    if(ref($g_array->[$row]) eq 'ARRAY'){
-		for (my $col = 0; $col < @{$g_array->[$row]}; $col++) {
-		    if(ref($g_array->[$row][$col]) eq 'ARRAY'){
-			for (my $i = 0; $i < @{$g_array->[$row][$col]}; $i++) {
-			    if(ref($g_array->[$row][$col][$i]) eq 'ARRAY'){
-				for (my $j = 0; $j < @{$g_array->[$row][$col][$i]}; $j++) {
-				    if(ref($g_array->[$row][$col][$i][$j]) eq 'ARRAY'){
-					for (my $s = 0; $s < @{$g_array->[$row][$col][$i][$j]}; $s++) {
-					    if(ref($g_array->[$row][$col][$i][$j][$s]) eq 'ARRAY'){
-						for (my $k = 0; $k < @{$g_array->[$row][$col][$i][$j][$s]}; $k++) {
-						    print "a5:$row,$col,$i,$j,$s,$k:".$g_array->[$row][$col][$i][$j][$s][$k]."\n";
-						}
-					    }else{print "e5:$row,$col,$i,$j,$s:".$g_array->[$row][$col][$i][$j][$s]."\n";}
-					}
-				    }else{print "e4:$row,$col,$i,$j:".$g_array->[$row][$col][$i][$j]."\n";}
-				}
-			    }else{ print "e3:$row,$col,$i:".$g_array->[$row][$col][$i]."\n";}
-			}
-		    }else{ print "e2:$row,$col:".$g_array->[$row][$col]."\n";}
-		}
-	    }else{ print "e1:$row:".$g_array->[$row]."\n";}
-	}
-    }
 }
 
 my $C_RED = "";            #highlight
@@ -604,12 +575,12 @@ sub google($$$){#$_[0] - ua (object)    $_[1] - url
 	$_=$request; my $nc = tr/\n|\x{a}//;   #check for \x{a} unicode or \n - we will skip multiline too.
 	if((length $request < 1000) && ($nc == 0)){ # if <1000 we will fix english article problem if >1000 leave it be
 	    if(ref($g_array->[5]) eq 'ARRAY'){
-			for (my $col = 0; $col < @{$g_array->[5]}; $col++) {
-				if($g_array->[5][$col][2][0][0]){
-				my $t = $g_array->[5][$col][2][0][0];
-				$rsum .= $t." ";
-				}
-			}
+		for (my $col = 0; $col < @{$g_array->[5]}; $col++) {
+		    if($g_array->[5][$col][2] eq 'ARRAY'){ if($g_array->[5][$col][2][0][0]){
+			my $t = $g_array->[5][$col][2][0][0];
+			$rsum .= $t." ";
+		    }}
+		}
 	    }
 	}
 	if(! defined $rsum){ # >1000 or not defined $rsum
@@ -679,12 +650,12 @@ sub google($$$){#$_[0] - ua (object)    $_[1] - url
 
 
 
-
+#no side effect
 sub google_tk_hack($){
     my $a = $_[0]; utf8::decode($a);
     my @d;
     #print length $a,"\n";
-for ( my $e = 0, my $f = 0; $f < (length $a); $f++) {
+    for ( my $e = 0, my $f = 0; $f < (length $a); $f++) {
 	    my $char = ord substr($a, $f, $f+1);
 	    if( 128 > $char){
 		$d[$e++] = $char;
@@ -709,200 +680,96 @@ for ( my $e = 0, my $f = 0; $f < (length $a); $f++) {
     my $b=402878;  #????????
     $a = $b || 0;
 
-    sub RLVb($) { #+-a^+6  1447840518
-	my $a = $_[0];
-	my $d = scalar ($a<<(10+(64-32)))>>(64-32);
-	$a = ($a + $d) & 4294967295;
-	$a = ($a - 4294967296) if ($a > 2147483647); #2**31-1 and 2*32 corrections
-	$d = $a < 0 ? (2**32+($a)) >> 6 : $a >> 6; #>>>	
-	if ($a<0){
-	    $a=(((4294967296 + $a) ^ $d) - 4294967296 );
-	}elsif($d<0){
-	    $a=(((4294967296+$d) ^ $a)-4294967296 );
-        }else{
-	    $a = $a ^ $d; #-609717580   57582026
-        }
-	return $a;
-    }
-    
-    sub RLUb($) { #+-3^+b+-f
-	my $a = $_[0];
-	my $d = scalar ($a<<(3+(64-32)))>>(64-32);
-	$a = $a + $d & 4294967295; #1710107718
-	$d = $a < 0 ? (2**32+($a)) >> 11 : $a >> 11; #>>> #835013
-	$a = $a ^ $d; #1709347203
-	$d = scalar ($a<<(15+(64-32)))>>(64-32);#1220640768
-	$a = $a + $d & 4294967295; #-1364979325
-	$a = $a > 2**31-1 ? $a - 2**32 : $a;
-	return $a;
-    }
-
     for (my $e = 0; $e < scalar @d ; $e++){
 	$a += $d[$e];
-	$a = &RLVb($a);
-    } #1621667734
+	#$a = &RLVb($a);
+	my $dr = scalar ($a<<(10+(64-32)))>>(64-32);
+	$a = ($a + $dr) & 4294967295;
+	$a = ($a - 4294967296) if ($a > 2147483647); #2**31-1 and 2*32 corrections
+	$dr = $a < 0 ? (4294967296+($a)) >> 6 : $a >> 6; #>>>	
+	if ($a<0){
+	    $a=(((4294967296 + $a) ^ $dr) - 4294967296 );
+	}elsif($dr<0){
+	    $a=(((4294967296+$dr) ^ $a)-4294967296 );
+        }else{
+	    $a = $a ^ $dr;
+        }
+    }
 
-    $a = &RLUb($a);#-1364979325);
+    #$a = &RLUb($a);#-1364979325);
+    my $db = scalar ($a<<(3+(64-32)))>>(64-32);
+    $a = $a + $db & 4294967295; #1710107718
+    $db = $a < 0 ? (2**32+($a)) >> 11 : $a >> 11; #>>> #835013
+    $a = $a ^ $db; #1709347203
+    $db = scalar ($a<<(15+(64-32)))>>(64-32);#1220640768
+    $a = $a + $db & 4294967295; #-1364979325
+    $a = $a > 2147483647 ? $a - 4294967296 : $a;
+    
 #    print $a,"\n";
     if (0 > $a){
 	$a = ($a & 2147483647) + 2147483648;
-    }#2929987971
-    $a %= 1000000; #987971
+    }
+    $a %= 1000000;
 
     #print $a ^ $b,"\n";
     return sprintf("%i.%i",$a,($a ^ $b));
 }
 
+sub testing($){  #not used
+    my $g_array = $_[0];
+    if(ref($g_array) eq 'ARRAY'){
+	for (my $row = 0; $row < @{$g_array}; $row++){
+	    if(ref($g_array->[$row]) eq 'ARRAY'){
+		for (my $col = 0; $col < @{$g_array->[$row]}; $col++) {
+		    if(ref($g_array->[$row][$col]) eq 'ARRAY'){
+			for (my $i = 0; $i < @{$g_array->[$row][$col]}; $i++) {
+			    if(ref($g_array->[$row][$col][$i]) eq 'ARRAY'){
+				for (my $j = 0; $j < @{$g_array->[$row][$col][$i]}; $j++) {
+				    if(ref($g_array->[$row][$col][$i][$j]) eq 'ARRAY'){
+					for (my $s = 0; $s < @{$g_array->[$row][$col][$i][$j]}; $s++) {
+					    if(ref($g_array->[$row][$col][$i][$j][$s]) eq 'ARRAY'){
+						for (my $k = 0; $k < @{$g_array->[$row][$col][$i][$j][$s]}; $k++) {
+						    print "a5:$row,$col,$i,$j,$s,$k:".$g_array->[$row][$col][$i][$j][$s][$k]."\n";
+						}
+					    }else{print "e5:$row,$col,$i,$j,$s:".$g_array->[$row][$col][$i][$j][$s]."\n";}
+					}
+				    }else{print "e4:$row,$col,$i,$j:".$g_array->[$row][$col][$i][$j]."\n";}
+				}
+			    }else{ print "e3:$row,$col,$i:".$g_array->[$row][$col][$i]."\n";}
+			}
+		    }else{ print "e2:$row,$col:".$g_array->[$row][$col]."\n";}
+		}
+	    }else{ print "e1:$row:".$g_array->[$row]."\n";}
+	}
+    }
+}
+
 =comment multiline_comment
-//a=+4294967297
-//alert(4294967295^11)
+    sub RLVb($) { #+-a^+6  1447840518
+	my $a = $_[0];
+	my $dr = scalar ($a<<(10+(64-32)))>>(64-32);
+	$a = ($a + $dr) & 4294967295;
+	$a = ($a - 4294967296) if ($a > 2147483647); #2**31-1 and 2*32 corrections
+	$dr = $a < 0 ? (2**32+($a)) >> 6 : $a >> 6; #>>>	
+	if ($a<0){
+	    $a=(((4294967296 + $a) ^ $dr) - 4294967296 );
+	}elsif($dr<0){
+	    $a=(((4294967296+$dr) ^ $a)-4294967296 );
+        }else{
+	    $a = $a ^ $dr; #-609717580   57582026
+        }
+	return $a;
+    }
 
-a = '1bыت'
-var a = `新浪公司是一家服务于中国及全球华人社群的网络媒体公司。新浪通过门户网站新浪网(SINA.com)、移动门户手机新浪网(SINA.cn)和社交网络服务及微博客服务新浪微博(Weibo.com)组成的数字媒体网络，帮助广大用户通过互联网和移动设备获得专业媒体和用户自生成的多媒体内容(UGC)并与友人进行兴趣分享。
-
-新浪网通过旗下多家地区性网站提供针对当地用户的特色专业内容，并提供一系列增值服务。手机新浪网为WAP用户提供来自新浪门户的定制信息和娱乐内容。新浪微博是基于开放平台架构的寄存自生和第三方应用的社交网络服务及微博客服务，提供微博和社交网络服务，帮助用户随时随地与任何人联系和分享信息。
-
-新浪通过上述主营业务及其他业务线向广大用户提供包括移动增值服务(MVAS)、网络视频、音乐流媒体、网络游戏、相册、博客、电子邮件、分类信息、收费服务、电子商务和企业服务在内的一系列服务。公司收入的大部分来自网络品牌广告、移动增值服务和收费服务。
-`;
-/*for (var d = [], e = 0, f = 0; f < a.length; f++) {
-                var g = a.charCodeAt(f);
-                128 > g ? d[e++] = g : (2048 > g ? d[e++] = g >> 6 | 192 : (55296 == (g & 64512) && f + 1 < a.length && 56320 == (a.charCodeAt(f + 1) & 64512) ? (g = 65536 + ((g & 1023) << 10) + (a.charCodeAt(++f) & 1023), d[e++] = g >> 18 | 240, d[e++] = g >> 12 & 63 | 128) : d[e++] = g >> 12 | 224, d[e++] = g >> 6 & 63 | 128), d[e++] = g & 63 | 128)
-            }*/
-for (var d = [], e = 0, f = 0; f < a.length; f++) {
-  var g = a.charCodeAt(f);
-    if( 128 > g)
-      d[e++] = g ;
-      else{
-          if( 2048 > g )
-             d[e++] = (g >> 6) | 192;
-           else{
-             if( (55296 == (g & 64512)) && ((f + 1) < a.length) && (56320 == (a.charCodeAt(f + 1) & 64512)) ){
-               g = 65536 + ((g & 1023) << 10) + (a.charCodeAt(++f) & 1023);
-               d[e++] = (g >> 18) | 240;
-               d[e++] = (g >> 12) & 63 | 128;
-             }else{
-                d[e++] = (g >> 12) | 224;
-             }
-          d[e++] = (g >> 6) & 63 | 128;
-          }
-      d[e++] = (g & 63) | 128;
-      }
-}
-
-e=0
-//alert((d[e] == 49) && (d[e+1] == 98) && (d[e+2] == 209) && (d[e+3] == 139) && (d[e+4] == 216) && (d[e+5] == 170) )
-//alert(d[0]==230 && d[5]==170 && d[11]==184 && d[45]==229 && d[545]==136) //2
-
-
-b=402878   //????????
-a = b || 0;
-t="a"
-Tb = "+"
-RL1 = function(a, b) { //b=+-a^+6
-  for (var c = 0; c < b.length - 2; c += 3) {
-    var d = b.charAt(c + 2) //a,6
-    
-    if (d >= t) //97
-      d = d.charCodeAt(0) - 87  //97-87=10, 54-87=-33
-    else
-      d = Number(d)
-    //10,6
-    //
-    if( b.charAt(c + 1) == Tb ) //-,+
-      d = a >>> d //2
-    else
-      d = a << d;    //1
-    
-    //alert(d)  //412597248  6453127
-    if (b.charAt(c) == Tb) //+,^
-      a = a + d & 4294967295  //1
-    else
-      a = a ^ d  //2
-    //alert(a )  //413000175   419403368
-  }		
-  
-  return a
-}
-
-RLVb = function(a) { //+-a^+6
-  var d = a << 10;    //1
-  //alert(a+"   "+d)
-  a = a + d & 4294967295  //1
-  var d = a >>> 6 //2
-  a = a ^ d  //2
-  //alert(a)
-  return a
-}
-
-
-Ub = "+-3^+b+-f"
-RL = function(a, b) { //b=+-a^+6
-  for (var c = 0; c < b.length - 2; c += 3) {
-    var d = b.charAt(c + 2) //3,b,f
-    //alert(d)
-    if (d >= t) //97
-      d = d.charCodeAt(0) - 87  //97-87=10, 54-87=-33
-    else
-      d = Number(d)
-    //3,11,15
-    //alert(b.charAt(c + 1))
-    if( b.charAt(c + 1) == Tb ) //-,+,-
-      d = a >>> d //2
-    else
-      d = a << d;    //1,3
-    
-    //alert(b.charAt(c))  //412597248  6453127
-    if (b.charAt(c) == Tb) //+,^,+
-      a = a + d & 4294967295  //1,3
-    else
-      a = a ^ d  //2
-    //alert(a )  //413000175   419403368
-  }		
-  
-  return a
-}
-RLUb = function(a) { //+-3^+b+-f
-  //alert(a)
-  var d = a << 3;    //1,3
-  a = a + d & 4294967295  //1,3
-  var d = a >>> 11 //2
-  a = a ^ d  //2
-  var d = a << 15;    //1,3
-  //alert(d & 4294967295)
-  a = a + d & 4294967295  //1,3
-  //alert(a)
-  return a
-}
-
-var Vb = "+-a^+6"
-//for (e = 0; e < d.length; e++) a += d[e], a = RL(a, Vb);
-for (e = 0; e < d.length; e++) a += d[e], a = RLVb(a);
-
-//a = RL(a, Ub);
-a = RLUb(a);
-alert(a)
-
-
-//alert(a == -1364979325);
-
-
-if (0 > a)
-  a = (a & 2147483647) + 2147483648;
-
-
-
-//alert(a == 2929987971)
-
-
-
-a %= 1000000;
-
-
-//alert(a == 987971)
-
-
-a=""+ a + "." + (a ^ b)
-
-
-alert(a)
+    sub RLUb($) { #+-3^+b+-f
+	my $a = $_[0];
+	my $db = scalar ($a<<(3+(64-32)))>>(64-32);
+	$a = $a + $db & 4294967295; #1710107718
+	$db = $a < 0 ? (2**32+($a)) >> 11 : $a >> 11; #>>> #835013
+	$a = $a ^ $db; #1709347203
+	$db = scalar ($a<<(15+(64-32)))>>(64-32);#1220640768
+	$a = $a + $db & 4294967295; #-1364979325
+	$a = $a > 2**31-1 ? $a - 2**32 : $a;
+	return $a;
+    }
 =cut
