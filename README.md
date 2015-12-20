@@ -1,18 +1,27 @@
 [![Gitter chat](https://badges.gitter.im/cli/sonews.png)](https://gitter.im/Anoncheg1/Command-line-translator)
 
-Google translate script. This tool for access translate.google.com from terminal and to have English dictionary.
+Google translate script. t gives you easy access to Google Translate in your terminal:
+
+```
+$ t (options) "anything"
+
+```
 
 https://github.com/Anoncheg1/Command-line-translator
 
 Google translate shell, Google translate command-line, command-line translator Google Translate, Linux, Windows, easy to use, fast and comfortable.
-Command-line google translate, quick translate, very simple scripts, scripts for assess Google Translate.
+Command-line google translate, quick translate, very simple scripts, scripts for assess Google Translate, Google Translate CLI.
 
 FILES:
 - perlfork.pl - Perl5 version. Google translate only.
 - translate - Bash version. Good for English dictionary.
 - urban.pl - optional plugin for bash version.
 
-*************** Perl version ****************
+### Perl version
+get perl version:
+
+    $ wget http://git.io/vEUKU
+    $ chmod +x perlfork.pl
 
 REQUIREMENTS:
 - perl5 >= v5.16
@@ -35,7 +44,7 @@ There is two systems for direction of detection($FIRST_LANG, $SECOND_LANG):
 
 If you don't use Latin or Russian language uncomment Advanced detection of direction. Or comment both with '#'.
 
-*************** Bash version ****************
+###  Bash version
 
 REQUIREMENTS:
 - UTF-8 support for required languages
