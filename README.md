@@ -1,6 +1,6 @@
 [![Gitter chat](https://badges.gitter.im/cli/sonews.png)](https://gitter.im/Anoncheg1/Command-line-translator)
 
-Google translate script. t gives you easy access to Google Translate in your terminal:
+Google translate script. It gives you easy access to Google Translate in your terminal:
 
 ```
 $ t (options) "anything"
