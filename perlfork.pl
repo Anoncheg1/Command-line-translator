@@ -58,6 +58,7 @@ use Encode;
 # adjust to taste
 my $FIRST_LANG='ru';		#
 my $SECOND_LANG='en';		# In simple detection of direction it used for A-z latin alphabet
+my $ALD=0;                      #Advanced language detection. May be slow.
 my $TERMINAL_C="WOB";		#Your terminal - white on black:WOB, black on white:BOW, other unix:O, Windows:"".
 my $SOUND_ALWAYS = 1;		#text-to-speach
 my $LC_ALWAYS = 1;			#Lowercase request.
@@ -311,13 +312,15 @@ $target = 'en';   #default
 #This is complicated thing with Latin languages. We can detect language by first character.
 #But all latin characters used same symbols.
 #Same thing with other languages.
-my $rutf8 = $request; utf8::decode($rutf8); #- to utf8 solid characters
-foreach my $ch (map {split //} split('\s',(substr $rutf8,0,12))){ #first 12 characters
-    #print ord $ch, "\n"; #65 - 122 = Latin
-    if (ord $ch >= 65 && ord $ch <= 122 )        #Latin
-    {	    $source = $SECOND_LANG;   $target = $FIRST_LANG;    last;
-    }elsif(ord $ch >= 1040 && ord $ch <= 1103 ){ #Russian #may fail rarely
+if( $ALD == 0 ){
+    my $rutf8 = $request; utf8::decode($rutf8); #- to utf8 solid characters
+    foreach my $ch (map {split //} split('\s',(substr $rutf8,0,12))){ #first 12 characters
+	#print ord $ch, "\n"; #65 - 122 = Latin
+	if (ord $ch >= 65 && ord $ch <= 122 )        #Latin
+	{	    $source = $SECOND_LANG;   $target = $FIRST_LANG;    last;
+	}elsif(ord $ch >= 1040 && ord $ch <= 1103 ){ #Russian #may fail rarely
             $source = 'ru';   $target = $SECOND_LANG;    last; }
+    }
 }
 ######
 $source = $TLSOURCE if $TLSOURCE;
@@ -352,16 +355,16 @@ my $url = "https://translate.google.com/translate_a/single?client=t&sl=".$source
 #$rsum =~ s/(.)/sprintf("%x",ord($1))/eg; #replace every character with HEX
 
 my $advdd = 0;
-##### Advanced detection of direction UNCOMMENT IF YOU NEED and comment simple detection of direction
-#if (! $TLSOURCE){
-#	if($detected_languages[0]){
-#		if($detected_languages[0] eq $FIRST_LANG && $source ne $FIRST_LANG){
-#			$target = $SECOND_LANG; $advdd = 1;
-#		}elsif($detected_languages[0] eq $SECOND_LANG && $source ne $SECOND_LANG){
-#			$target = $FIRST_LANG; $advdd = 1;
-#		}
-#	}	
-#}
+##### Advanced detection of direction
+if ($ALD == 1 && ! $TLSOURCE){
+    if($detected_languages[0]){
+	if($detected_languages[0] eq $FIRST_LANG && $source ne $FIRST_LANG){
+	    $target = $SECOND_LANG; $advdd = 1;
+	}elsif($detected_languages[0] eq $SECOND_LANG && $source ne $SECOND_LANG){
+	    $target = $FIRST_LANG; $advdd = 1;
+	}
+    }	
+}
 #####
 my $source_save = $source;
 my @d_l;

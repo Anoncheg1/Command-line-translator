@@ -38,11 +38,9 @@ FEATURES:
   - translit,
   - google text-to-speach
 
-There is two systems for direction of detection($FIRST_LANG, $SECOND_LANG):
+There is two systems for direction of detection(is it $FIRST_LANG or your's $SECOND_LANG):
 - Simple direction of detection. First it search Latin or Russian symbols and decide. If not found it use $source = 'auto'; $target = 'en';
-- Advanced detection of direction.
-
-If you don't use Latin or Russian language uncomment Advanced detection of direction. Or comment both with '#'.
+- Advanced detection of direction. ALD=1;
 
 ###  Bash version
 
