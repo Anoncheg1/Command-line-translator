@@ -65,7 +65,7 @@ my $LC_ALWAYS = 1;			#Lowercase request.
 
 my $TRANSLIT_LENGTH_MAX = 10;
 my @PROXY ; #for proxy you need LWP::Protocol::socks
-#@PROXY =([qw(http https)] => "socks://172.16.0.1:9150"); #tor
+@PROXY =([qw(http https)] => "socks://172.16.0.1:9150"); #tor
 #@PROXY = ('http','http://127.0.0.1:4444'); #i2p
 
 my $USERAGENT = 'Mozilla/5.0 (Windows NT 6.1; rv:38.0) Gecko/20100101 Firefox/38.0';
@@ -658,7 +658,7 @@ sub google_tk_hack($){
     my $a = $_[0]; utf8::decode($a);
     my @d;
     #print length $a,"\n";
-    for ( my $e = 0, my $f = 0; $f < (length $a); $f++) {
+    for ( my $e = 0, my $f = 0; $f < (length $a); $f++) { #dump function "hexdump" " -v -e'1/1 \"%03u\" \" \"'"
 	    my $char = ord substr($a, $f, $f+1);
 	    if( 128 > $char){
 		$d[$e++] = $char;
@@ -680,8 +680,8 @@ sub google_tk_hack($){
 	    }
     }
 
-    my $b=402878;  #????????
-    $a = $b || 0;
+	my $tkk = int(time/3600); #window[TKK]   #15 dec 2015
+	$a = $tkk;
 
     for (my $e = 0; $e < scalar @d ; $e++){
 	$a += $d[$e];
@@ -699,23 +699,22 @@ sub google_tk_hack($){
         }
     }
 
-    #$a = &RLUb($a);#-1364979325);
+    #$a = &RLUb($a);
     my $db = scalar ($a<<(3+(64-32)))>>(64-32);
-    $a = $a + $db & 4294967295; #1710107718
-    $db = $a < 0 ? (2**32+($a)) >> 11 : $a >> 11; #>>> #835013
-    $a = $a ^ $db; #1709347203
-    $db = scalar ($a<<(15+(64-32)))>>(64-32);#1220640768
-    $a = $a + $db & 4294967295; #-1364979325
+    $a = $a + $db & 4294967295; 
+    $db = $a < 0 ? (2**32+($a)) >> 11 : $a >> 11; #>>> 
+    $a = $a ^ $db;
+    $db = scalar ($a<<(15+(64-32)))>>(64-32);
+    $a = $a + $db & 4294967295;
     $a = $a > 2147483647 ? $a - 4294967296 : $a;
-    
-#    print $a,"\n";
-    if (0 > $a){
-	$a = ($a & 2147483647) + 2147483648;
-    }
-    $a %= 1000000;
 
-    #print $a ^ $b,"\n";
-    return sprintf("%i.%i",$a,($a ^ $b));
+    if (0 > $a){
+		$a = ($a & 2147483647) + 2147483648;
+    }
+    $a %= 1000000; #1E6
+
+    #print $a ^ $tkk,"\n";
+    return sprintf("%i.%i",$a,($a ^ $tkk));
 }
 
 sub testing($){  #not used
