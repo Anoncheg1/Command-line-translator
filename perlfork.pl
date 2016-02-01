@@ -32,8 +32,8 @@
 package GoogleTranslator;
 
 use strict; # ограничить применение небезопасных конструкций
-use warnings; # выводить подробные предупреждения компилятора
-use diagnostics; # выводить подробную диагностику ошибок
+#use warnings; # выводить подробные предупреждения компилятора
+#use diagnostics; # выводить подробную диагностику ошибок
 use Getopt::Std;
 use File::Basename;
 use LWP::UserAgent;
@@ -405,7 +405,8 @@ if($error1){
     print $error1,"\n"; #echo error   
 }elsif(@dictionary){
     print $_,"\n" foreach @dictionary;  #echo dictionary
-}elsif(scalar @suggest > 1){	#echo suggestions
+}
+if( (scalar @dictionary < 13) && (scalar @suggest > 1) ){	#echo suggestions
     print $C_BLUE_RAW."Options:".$C_NORMAL_RAW,"\n";
     print $_,"\n" foreach @suggest;
 }
@@ -607,19 +608,23 @@ sub google($$$){#$_[0] - ua (object)    $_[1] - url
 	}
 	#translit
 	if( length($request) <= $TRANSLIT_LENGTH_MAX){
-	    if($g_array->[0][1][3]){
-		$translit_s = $g_array->[0][1][3];
-	    }
-	    if($g_array->[0][1][2]){
-		$translit_t = $g_array->[0][1][2];
-	    }
+		if($g_array->[0]){
+			if($g_array->[0][1][3]){
+			$translit_s = $g_array->[0][1][3];
+			}
+			if($g_array->[0][1][2]){
+			$translit_t = $g_array->[0][1][2];
+			}
+		}
 	}
 	#suggestions
 	if (length($request) <= 12){ #number of words #not woring for Chinese.
-		if(ref($g_array->[5][0][2]) eq 'ARRAY'){	
-			for (my $col = 0; $col < @{$g_array->[5][0][2]}; $col++) {
-				if($g_array->[5][0][2][$col][0]){
-				    @suggest=(@suggest,$g_array->[5][0][2][$col][0]);#add element
+		if($g_array->[14]){
+			if(ref($g_array->[14][0]) eq 'ARRAY'){	
+				for (my $col = 0; $col < @{$g_array->[14][0]}; $col++) {
+					if($g_array->[14][0][$col]){
+					    @suggest=(@suggest,$g_array->[14][0][$col]);#add element
+					}
 				}
 			}
 		}
