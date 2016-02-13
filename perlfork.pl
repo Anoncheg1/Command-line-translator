@@ -71,9 +71,10 @@ my @PROXY ; #for proxy you need LWP::Protocol::socks
 my $USERAGENT = 'Mozilla/5.0 (Windows NT 6.1; rv:38.0) Gecko/20100101 Firefox/38.0';
 
 #Solved problems:
-#  gppgle JSON converting problem ,,. Solved by hands.
+#  google JSON converting problem ,,. Solved by hands.
 #  google JSON article=white space - problem. Solved by hands.
 #  google special characters in request. Solved by url encode.
+#  tk protection. Solved by javascript beautify with hands and soimort, good man(time/3600).
 #TODO
 #Japane, Chinese count of words.
 #  asynchronous HTTP::Request http://search.cpan.org/dist/HTTP-Async/lib/HTTP/Async.pm
@@ -481,7 +482,7 @@ if( $rsum && (lc $rsum) ne (lc $request) ) {
 #@dictionary;
 #READ:
 #$request
-sub google($$$){#$_[0] - ua (object)    $_[1] - url
+sub google($$){#$_[0] - ua (object)    $_[1] - url
     my $req = HTTP::Request->new(POST => $_[1]);
     $req->content("text=".uri_escape($request)); #encode to url REQUIRED
 
@@ -617,13 +618,21 @@ sub google($$$){#$_[0] - ua (object)    $_[1] - url
 			}
 		}
 	}
-	#suggestions
+	#suggestions or options
 	if (length($request) <= 12){ #number of words #not woring for Chinese.
-		if($g_array->[14]){
+		if($g_array->[14]){#for source
 			if(ref($g_array->[14][0]) eq 'ARRAY'){	
 				for (my $col = 0; $col < @{$g_array->[14][0]}; $col++) {
 					if($g_array->[14][0][$col]){
 					    @suggest=(@suggest,$g_array->[14][0][$col]);#add element
+					}
+				}
+			}
+		}elsif($g_array->[5]){#for target
+			if(ref($g_array->[5][0][2]) eq 'ARRAY'){
+				for (my $col = 0; $col < @{$g_array->[5][0][2]}; $col++) {
+					if($g_array->[5][0][2][$col][0]){
+					    @suggest=(@suggest,$g_array->[5][0][2][$col][0]);#add element
 					}
 				}
 			}

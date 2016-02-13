@@ -3,13 +3,19 @@
 Google translate script. It gives you easy access to Google Translate in your terminal:
 
 ```
-$ t (options) "anything"
-
+$ t die unbekannten Sprache
+	Language: German
+	...
+$ t -l
+	de	German
+$ alias tde="t -s de -t en"
+$ tde "die unbekannten Sprache"
+	the unknown language
 ```
 
 https://github.com/Anoncheg1/Command-line-translator
 
-Google translate shell, Google translate command-line, command-line translator Google Translate, Linux, Windows, easy to use, fast and comfortable.
+Google translate shell, Google translate command-line, command-line translator Google Translate, Linux, easy to use, fast and comfortable.
 Command-line google translate, quick translate, very simple scripts, scripts for assess Google Translate, Google Translate CLI.
 
 FILES:
@@ -38,8 +44,8 @@ FEATURES:
   - translit,
   - google text-to-speach
 
-There is two systems for direction of detection($FIRST_LANG or $SECOND_LANG):
-- Simple direction of detection. First it search Latin or Russian symbols and decide. If not found it use $source = 'auto'; $target = 'en';
+There is two systems for detection of direction($FIRST_LANG to $SECOND_LANG or vice versa):
+- Simple detection of direction. First it search Latin or Russian symbols and decide. If not found it use $source = 'auto'; $target = 'en';
 - Advanced detection of direction. ALD=1;
 
 ###  Bash version
@@ -71,16 +77,18 @@ for english:
 - urban dictionary
 
 for convenience. Add to ~/.bash_aliases:
-- alias t="/home/user/translate"
+- alias t="/home/user/perlfork.pl"
 - alias ts="/home/user/translate -S"
 
 Commands:
-- -s source language (can be "auto")
-- -t target language (can't be)
+- -s Source language (can be "auto")
+- -t Target language (can't be)
 - -l List of languages
+- -h Help
 
 Examples:
 - t -s auto -t en 母亲
+- cat file | t -
 
 Debian Cyrillic support in tty shell:
 - 1)	#dpkg-reconfigure locales
