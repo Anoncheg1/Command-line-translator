@@ -61,8 +61,9 @@ my $SECOND_LANG='en';		# In simple detection of direction it used for A-z latin 
 my $ALD=0;                      #Advanced language detection. May be slow.
 my $TERMINAL_C="WOB";		#Your terminal - white on black:WOB, black on white:BOW, other unix:O, Windows:"".
 my $SOUND_ALWAYS = 1;		#text-to-speach
-my $LC_ALWAYS = 1;			#Lowercase request.
+my $MPG123 = 0;				# 1- mpg123 0- mplayer    for speach
 
+my $LC_ALWAYS = 1;			#Lowercase request.
 my $TRANSLIT_LENGTH_MAX = 10;
 my @PROXY ; #for proxy you need LWP::Protocol::socks
 #@PROXY =([qw(http https)] => "socks://172.16.0.1:9150"); #tor
@@ -433,12 +434,15 @@ if( $rsum && (lc $rsum) ne (lc $request) ) {
 		$response = $uac->request($req) if (! $response->is_success); #resent
 
 		if ($response->is_success) {
-		    #open FILE, ">", "a.mpga";
-		    #print FILE $response->content;
-		    #close FILE;
-
-		    open(FOO, "|mpg123 - 2>/dev/null") || ( print STDERR "Failed: $!\n" and exit 1 );
-		    print FOO $response->content;
+			if($MPG123){
+				open(FOO, "|mpg123 - 2>/dev/null") || ( print STDERR "Failed: $!\n" and exit 1 );
+			    print FOO $response->content;
+			}else{			
+				open FILE, ">", "a.mpga";
+				print FILE $response->content;
+				close FILE;			
+				system "mplayer a.mpga >/dev/null 2>&1"
+			}
 		}else{
 		    print STDERR "Can't get sound from google: ".$response->status_line, "\n"; exit 1;
 		}

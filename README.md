@@ -33,7 +33,7 @@ REQUIREMENTS:
 - perl5 >= v5.16
 - perl LWP::Protocol::socks -if you need socks proxy
 - perl JSON
-- mpg123 for sound
+- mplayer or mpg123 -for sound
 
 FEATURES:
   - Windows support(planned),
