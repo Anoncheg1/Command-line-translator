@@ -437,12 +437,13 @@ if( $rsum && (lc $rsum) ne (lc $request) ) {
 			if($MPG123){
 				open(FOO, "|mpg123 - 2>/dev/null") || ( print STDERR "Failed: $!\n" and exit 1 );
 			    print FOO $response->content;
-			}else{			
-				open FILE, ">", "a.mpga";
+			}else{
+				my $t = "tmpspeachfileo1o.mpga";
+				open FILE, ">", "$t";
 				print FILE $response->content;
 				close FILE;			
-				system "mplayer a.mpga >/dev/null 2>&1";
-				system "rm -f a.mpga >/dev/null 2>&1";
+				system "mplayer $t >/dev/null 2>&1";
+				system "rm -f $t >/dev/null 2>&1";
 			}
 		}else{
 		    print STDERR "Can't get sound from google: ".$response->status_line, "\n"; exit 1;
