@@ -441,7 +441,8 @@ if( $rsum && (lc $rsum) ne (lc $request) ) {
 				open FILE, ">", "a.mpga";
 				print FILE $response->content;
 				close FILE;			
-				system "mplayer a.mpga >/dev/null 2>&1"
+				system "mplayer a.mpga >/dev/null 2>&1";
+				system "rm -f a.mpga >/dev/null 2>&1";
 			}
 		}else{
 		    print STDERR "Can't get sound from google: ".$response->status_line, "\n"; exit 1;
