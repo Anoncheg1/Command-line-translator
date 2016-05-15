@@ -64,7 +64,7 @@ my $MPG123 = 0;				# 1- mpg123 0- mplayer    for speach
 my $LC_ALWAYS = 1;			#Lowercase request.
 my $TRANSLIT_LENGTH_MAX = 10;
 my @PROXY ; #for proxy you need LWP::Protocol::socks
-@PROXY =([qw(http https)] => "socks://172.16.0.1:9150"); #tor
+#@PROXY =([qw(http https)] => "socks://172.16.0.1:9150"); #tor
 #@PROXY = ('http','http://127.0.0.1:4444'); #i2p
 
 my $USERAGENT = 'Mozilla/5.0 (Windows NT 6.1; rv:38.0) Gecko/20100101 Firefox/38.0';
@@ -726,10 +726,10 @@ sub google_tk_hack($$$){
 	$a = ($a + $dr) & 4294967295;
 	$a = ($a - 4294967296) if ($a > 2147483647); #2**31-1 and 2*32 corrections
 	$dr = $a < 0 ? (4294967296+($a)) >> 6 : $a >> 6; #>>>	
-	if ($a<0){
-	    $a=(((4294967296 + $a) ^ $dr) - 4294967296 );
+	if ($a<0){ #there is error but it is working anyway
+	    $a=((4294967295 & $a) ^ $dr);
 	}elsif($dr<0){
-	    $a=(((4294967296+$dr) ^ $a)-4294967296 );
+	    $a=((4294967295 & $dr) ^ $a);
         }else{
 	    $a = $a ^ $dr;
         }
@@ -744,21 +744,20 @@ sub google_tk_hack($$$){
     $a = $a + $db & 4294967295;
     $a = $a > 2147483647 ? $a - 4294967296 : $a;
 
-
-	#$a ^= $TKK1;
+	#$a ^= $TKK1;  #@2**32-1 = 4294967295
 	if ($a<0){
-	    $a=(((4294967296 + $a) ^ $TKK1) - 4294967296 );
+		$a=((4294967295 & $a) ^ $TKK1);
 	}elsif($TKK1<0){
-	    $a=(((4294967296+$TKK1) ^ $a)-4294967296 );
+	    $a=((4294967295 & $TKK1) ^ $a);
         }else{
 	    $a = $a ^ $TKK1;
         }
-	
+
 	if (0 > $a){
 		$a = ($a & 2147483647) + 2147483648;
     }
     $a %= 1000000; #1E6
-	print sprintf("%i.%i",$a,($a ^ $TKKe));
+	#print sprintf("%i.%i",$a,($a ^ $TKKe));
     return sprintf("%i.%i",$a,($a ^ $TKKe));
 }
 
