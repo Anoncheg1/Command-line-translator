@@ -332,10 +332,14 @@ my $req = HTTP::Request->new(GET => $url);
 my $response;
 $response = $ua->request($req);
 $response = $ua->request($req) if (! $response->is_success); #resent
-my $cont = $response->decoded_content;
+my $cont;
 if (!$response->is_success){print "Can't connect google: ".$response->status_line, "\n"; exit 1;}
 my $tkka;
 my $tkkb;
+
+if ($response->decoded_content =~ /TKK=eval(.*)\(a\+b\)}\)/){
+	$cont=$1;
+}else{ print "tkk error","\n"; exit 1;}
 if ($cont =~ /a\\x3d([-+]?[0-9]*)/){
 	$tkka = $1;
 }else{ print "tkka error","\n"; exit 1;}
