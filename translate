@@ -452,6 +452,8 @@ main_func(){
 			fi
 			echo -n "tk_hack(\""$request"\");" >> "$PR_DIR"/tmpjsobj2
 			tk_hack=$($js_sm "$PR_DIR"/tmpjsobj2)				# tk_hack
+			echo $tk_hack
+			exit
 			
 			rr1="https://translate.google.com/translate_a/single?client=t&sl=$source&tl=$target&hl=en"
 			rr2="&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8"

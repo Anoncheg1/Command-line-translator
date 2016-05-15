@@ -23,7 +23,7 @@ FILES:
 - translate - Bash version. Good for English dictionary.
 - urban.pl - optional plugin for bash version.
 
-### Perl version
+### Perl version (Under reconstruction)
 get perl version:
 
     $ wget http://git.io/vEUKU

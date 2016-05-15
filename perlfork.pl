@@ -64,7 +64,7 @@ my $MPG123 = 0;				# 1- mpg123 0- mplayer    for speach
 my $LC_ALWAYS = 1;			#Lowercase request.
 my $TRANSLIT_LENGTH_MAX = 10;
 my @PROXY ; #for proxy you need LWP::Protocol::socks
-#@PROXY =([qw(http https)] => "socks://172.16.0.1:9150"); #tor
+@PROXY =([qw(http https)] => "socks://172.16.0.1:9150"); #tor
 #@PROXY = ('http','http://127.0.0.1:4444'); #i2p
 
 my $USERAGENT = 'Mozilla/5.0 (Windows NT 6.1; rv:38.0) Gecko/20100101 Firefox/38.0';
@@ -758,6 +758,7 @@ sub google_tk_hack($$$){
 		$a = ($a & 2147483647) + 2147483648;
     }
     $a %= 1000000; #1E6
+	print sprintf("%i.%i",$a,($a ^ $TKKe));
     return sprintf("%i.%i",$a,($a ^ $TKKe));
 }
 
