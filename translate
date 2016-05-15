@@ -392,23 +392,19 @@ main_func(){
 			
 		
 			jsscript_tkh="function tk_hack(a) {
-    var b = ['T', 'T'];
-    b[1] = 'K';	
 	var "$tkk";
-	b = TKK
-
-    var c = 'k',
-        d = ['t', 't'];
-
-    d[1] = c;
+	    b = TKK
     d = b.split('.');
-    bb = Number(d[0]) || 0;
+    TKKe = Number(d[0]) || 0;
+	TKK1 = Number(d[1]) || 0;
 
+	//a- in e[] - out
     for (var e = [], f = 0, g = 0; g < a.length; g++) {
         var m = a.charCodeAt(g);
         128 > m ? e[f++] = m : (2048 > m ? e[f++] = m >> 6 | 192 : (55296 == (m & 64512) && g + 1 < a.length && 56320 == (a.charCodeAt(g + 1) & 64512) ? (m = 65536 + ((m & 1023) << 10) + (a.charCodeAt(++g) & 1023), e[f++] = m >> 18 | 240, e[f++] = m >> 12 & 63 | 128) : e[f++] = m >> 12 | 224, e[f++] = m >> 6 & 63 | 128), e[f++] = m & 63 | 128)
     }
-    a = bb;
+	
+    a = TKKe;
 
     RLVb = function(a) { //+-a^+6
         var d = a << 10; //1
@@ -428,13 +424,15 @@ main_func(){
     }
 
     for (f = 0; f < e.length; f++) a += e[f], a = RLVb(a);
+	
     a = RLUb(a);
 
-    a ^= Number(d[1]) || 0;
+    a ^= TKK1 || 0;
+	
     if (0 > a)
         a = (a & 2147483647) + 2147483648;
     a %= 1000000;
-	print('' + a + '.' + (a ^ b))
+	print('' + a + '.' + (a ^ TKKe))
     return;
 }"	
 	#b="`date +%s`/3600"`   //sec Epoch/3600	

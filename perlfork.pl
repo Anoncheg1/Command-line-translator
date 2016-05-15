@@ -28,6 +28,7 @@
 # -translated text, fixed text with highlight, language detection, dictionary, translit, read from file, text-to-speach
 #
 # used translate.google.com
+#TODO:detect language and get translation from tkk first google request
 
 package GoogleTranslator;
 
@@ -51,9 +52,6 @@ use v5.16;
 
 use Encode::Locale;
 use Encode;
-#binmode(STDIN, ":encoding(console_in)");
-	#binmode(STDOUT, ":encoding(console_out)");
-#	binmode(STDERR, ":encoding(console_out)");
 
 # adjust to taste
 my $FIRST_LANG='ru';		#
@@ -66,7 +64,7 @@ my $MPG123 = 0;				# 1- mpg123 0- mplayer    for speach
 my $LC_ALWAYS = 1;			#Lowercase request.
 my $TRANSLIT_LENGTH_MAX = 10;
 my @PROXY ; #for proxy you need LWP::Protocol::socks
-#@PROXY =([qw(http https)] => "socks://172.16.0.1:9150"); #tor
+@PROXY =([qw(http https)] => "socks://172.16.0.1:9150"); #tor
 #@PROXY = ('http','http://127.0.0.1:4444'); #i2p
 
 my $USERAGENT = 'Mozilla/5.0 (Windows NT 6.1; rv:38.0) Gecko/20100101 Firefox/38.0';
@@ -274,10 +272,6 @@ my $filesource;
 #Switch options
 usage() if defined $opt{h};
 $sound = 1 if defined $opt{S};
-#if ($opt{p}){
-#	print STDERR "Prompt mode activated";
-#	$PROMPT_MODE_ACTIVATED=1;
-#}
 if (defined $opt{l}){
     foreach my $value (sort { $LANGS{$a} cmp $LANGS{$b} } keys %LANGS){
 	print $value."\t".$LANGS{$value}."\n";}
@@ -332,13 +326,24 @@ my $ua = LWP::UserAgent->new; #Internet connection main object, we will clone it
 $ua->agent($USERAGENT);
 $ua->proxy(@PROXY) if @PROXY;
 
-#my $url="https://check.torproject.org/";
-#my $req = HTTP::Request->new(GET => $url);
-#my $response = $ua->request($req);
-#if ($response->is_success) {
-#    print $response->decoded_content;
-#}
-
+# TKK GOOGLE "PROTECTION"
+my $url="https://translate.google.com";
+my $req = HTTP::Request->new(GET => $url);
+my $response;
+$response = $ua->request($req);
+$response = $ua->request($req) if (! $response->is_success); #resent
+my $cont = $response->decoded_content;
+if (!$response->is_success){print "Can't connect google: ".$response->status_line, "\n"; exit 1;}
+my $tkka;
+my $tkkb;
+if ($cont =~ /a\\x3d([-+]?[0-9]*)/){
+	$tkka = $1;
+}else{ print "tkka error","\n"; exit 1;}
+if ($cont =~ /b\\x3d([-+]?[0-9]*)/){
+	$tkkb = $1;
+}else{ print "tkkb error","\n"; exit 1;}
+my $tk_hacked=&google_tk_hack($request,$tkka,$tkkb);
+#
 ########### google request
 my $response;
 my $rsum; # translation
@@ -349,7 +354,6 @@ my @detected_languages;
 my $error1; #error with highlight
 my $error2; #correct version
 my @dictionary;
-my $tk_hacked=&google_tk_hack($request);
 my $url = "https://translate.google.com/translate_a/single?client=t&sl=".$source."&tl=".$target."&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8&tk=".$tk_hacked;
 ##
 #side effect function
@@ -424,7 +428,7 @@ if( $rsum && (lc $rsum) ne (lc $request) ) {
     #    my $url="https://translate.google.com//translate_tts?ie=UTF-8&client=t&tl=en&zq=cat";
     if($sound && length($request) < 25){
 		my $lang = (@detected_languages && ! $TLSOURCE) ? $detected_languages[0] : $source;
-		$url="https://translate.google.com//translate_tts?ie=UTF-8&client=t&tk=".&google_tk_hack($request)."&tl=".$lang."&q=".uri_escape($request); # for source		
+		$url="https://translate.google.com//translate_tts?ie=UTF-8&client=t&tk=".$tk_hacked."&tl=".$lang."&q=".uri_escape($request); # for source		
 		#$url="https://translate.google.com//translate_tts?ie=UTF-8&client=t&tk&tl=".$target."&q=".uri_escape($rsum); # for target - alternative version old
 		my $req = HTTP::Request->new(GET => $url);
 
@@ -674,10 +678,18 @@ sub google($$){#$_[0] - ua (object)    $_[1] - url
 
 
 #no side effect
-sub google_tk_hack($){
+sub google_tk_hack($$$){
     my $a = $_[0]; utf8::decode($a);
+	my $TKK_a = $_[1];
+	my $TKK_b = $_[2];
     my @d;
-    #print length $a,"\n";
+	my $TKK1= $TKK_a+$TKK_b;
+	my $TKKe= int(time/3600); #window[TKK]   #15 dec 2015
+	#print $a,"\n";
+    #print $TKK_a,"\n";
+	#print $TKK_b,"\n";
+	#print length $a,"\n";
+    #$a - in @d - out
     for ( my $e = 0, my $f = 0; $f < (length $a); $f++) { #dump function "hexdump" " -v -e'1/1 \"%03u\" \" \"'"
 	    my $char = ord substr($a, $f, $f+1);
 	    if( 128 > $char){
@@ -698,14 +710,14 @@ sub google_tk_hack($){
 		}
 		$d[$e++] = ($char & 63) | 128;
 	    }
+		
     }
-
-	my $tkk = int(time/3600); #window[TKK]   #15 dec 2015
-	$a = $tkk;
-
+	
+	$a = $TKKe;
+	
     for (my $e = 0; $e < scalar @d ; $e++){
 	$a += $d[$e];
-	#$a = &RLVb($a);
+	#$a = &RLVb($a); 
 	my $dr = scalar ($a<<(10+(64-32)))>>(64-32);
 	$a = ($a + $dr) & 4294967295;
 	$a = ($a - 4294967296) if ($a > 2147483647); #2**31-1 and 2*32 corrections
@@ -728,13 +740,21 @@ sub google_tk_hack($){
     $a = $a + $db & 4294967295;
     $a = $a > 2147483647 ? $a - 4294967296 : $a;
 
-    if (0 > $a){
+
+	#$a ^= $TKK1;
+	if ($a<0){
+	    $a=(((4294967296 + $a) ^ $TKK1) - 4294967296 );
+	}elsif($TKK1<0){
+	    $a=(((4294967296+$TKK1) ^ $a)-4294967296 );
+        }else{
+	    $a = $a ^ $TKK1;
+        }
+	
+	if (0 > $a){
 		$a = ($a & 2147483647) + 2147483648;
     }
     $a %= 1000000; #1E6
-
-    #print $a ^ $tkk,"\n";
-    return sprintf("%i.%i",$a,($a ^ $tkk));
+    return sprintf("%i.%i",$a,($a ^ $TKKe));
 }
 
 sub testing($){  #not used
