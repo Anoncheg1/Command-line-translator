@@ -327,6 +327,7 @@ $ua->proxy(@PROXY) if @PROXY;
 
 # TKK GOOGLE "PROTECTION"
 #TODO:detect language and get translation from tkk first google request
+=temporarely replaced with url client=gtx to "/translate_a/single?client=gtx"
 my $url="https://translate.google.com";
 my $req = HTTP::Request->new(GET => $url);
 my $response;
@@ -347,6 +348,7 @@ if ($cont =~ /b\\x3d([-+]?[0-9]*)/){
 	$tkkb = $1;
 }else{ print "tkkb error","\n"; exit 1;}
 my $tk_hacked=&google_tk_hack($request,$tkka,$tkkb);
+=cut
 #
 ########### google request
 my $response;
@@ -358,7 +360,8 @@ my @detected_languages;
 my $error1; #error with highlight
 my $error2; #correct version
 my @dictionary;
-my $url = "https://translate.google.com/translate_a/single?client=t&sl=".$source."&tl=".$target."&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8&tk=".$tk_hacked;
+#my $url = "https://translate.google.com/translate_a/single?client=t&sl=".$source."&tl=".$target."&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8&tk=".$tk_hacked;
+my $url = "https://translate.google.com/translate_a/single?client=gtx&sl=".$source."&tl=".$target."&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8";
 ##
 #side effect function
 &google(clone($ua), $url); #$_[0] - ua    $_[1] - url
@@ -394,7 +397,8 @@ if( $advdd || (! $error1 && ! @dictionary && $detected_languages[0] && $detected
 	undef $error1; #error with highlight
 	undef $error2; #correct version
 	undef @dictionary;
-	$url = "https://translate.google.com/translate_a/single?client=t&sl=".$source."&tl=".$target."&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8&tk=".$tk_hacked;
+	#$url = "https://translate.google.com/translate_a/single?client=t&sl=".$source."&tl=".$target."&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8&tk=".$tk_hacked;
+	$url = "https://translate.google.com/translate_a/single?client=gtx&sl=".$source."&tl=".$target."&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8";
 	&google(clone($ua), $url); #$_[0] - ua    $_[1] - url
 	last if ((lc $rsum) ne (lc $request) || @dictionary);
     }
@@ -432,7 +436,8 @@ if( $rsum && (lc $rsum) ne (lc $request) ) {
     #    my $url="https://translate.google.com//translate_tts?ie=UTF-8&client=t&tl=en&zq=cat";
     if($sound && length($request) < 25){
 		my $lang = (@detected_languages && ! $TLSOURCE) ? $detected_languages[0] : $source;
-		$url="https://translate.google.com//translate_tts?ie=UTF-8&client=t&tk=".$tk_hacked."&tl=".$lang."&q=".uri_escape($request); # for source		
+		#tkk$url="https://translate.google.com//translate_tts?ie=UTF-8&client=t&tk=".$tk_hacked."&tl=".$lang."&q=".uri_escape($request); # for source
+		$url="https://translate.google.com//translate_tts?ie=UTF-8&client=gtx&tl=".$lang."&q=".uri_escape($request); # for source
 		#$url="https://translate.google.com//translate_tts?ie=UTF-8&client=t&tk&tl=".$target."&q=".uri_escape($rsum); # for target - alternative version old
 		my $req = HTTP::Request->new(GET => $url);
 
