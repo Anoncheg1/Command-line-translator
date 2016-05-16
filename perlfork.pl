@@ -28,7 +28,6 @@
 # -translated text, fixed text with highlight, language detection, dictionary, translit, read from file, text-to-speach
 #
 # used translate.google.com
-#TODO:detect language and get translation from tkk first google request
 
 package GoogleTranslator;
 
@@ -327,6 +326,7 @@ $ua->agent($USERAGENT);
 $ua->proxy(@PROXY) if @PROXY;
 
 # TKK GOOGLE "PROTECTION"
+#TODO:detect language and get translation from tkk first google request
 my $url="https://translate.google.com";
 my $req = HTTP::Request->new(GET => $url);
 my $response;
