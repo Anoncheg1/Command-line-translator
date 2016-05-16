@@ -7,7 +7,7 @@ Google translate script. It gives you easy access to Google Translate in your te
 >- 2) install requirements
 >- 3) execute command: $ chmod +x perlfork.pl translate urban.pl
 >- 4) add to ~/.bash_aliases: alias t="/home/user/perlfork.pl"
->- 5) (optional) edit option section in script perlfork.pl or translate for your taste (choose language detection scema)
+>- 5) (optional) edit options section in script perlfork.pl or translate for your taste (choose language detection scema)
 
 ```
 $ t die unbekannten Sprache
