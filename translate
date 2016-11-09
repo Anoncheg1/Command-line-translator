@@ -34,7 +34,7 @@
 #- cache for words
 #- saving words to file for learning
 #
-#:) translate.google.com, www.macmillandictionary.com/dictionary/british, thefreedictionary.com, lingvo-online.ru, www.forvo.com 
+#:) translate.google.com, www.macmillandictionary.com/dictionary/british, thefreedictionary.com, www.forvo.com 
 
 help=`basename "$0"`' [-S] [-l] [-h] [-p] [-u] [-s language_2_chars] [-t language_2_chars] <text> | <->
 if text is LATIN_LANG, then target language is FIRST_LANG
@@ -74,7 +74,7 @@ declare -r words_buffer=4000		#4000 files max. there is removeing all files olde
 declare -r timeout=6
 declare -r TRANSLIT_WORDS_MAX=10
 declare -r SOUND_DOWNLOAD_AWS=0		# 1 - always. 0 - on demand.
-declare -r useragent=" 	Mozilla/5.0 (Windows NT 6.1; rv:38.0) Gecko/20100101 Firefox/38.0"
+declare -r useragent="Mozilla/5.0 (Windows NT 6.1; rv:38.0) Gecko/20100101 Firefox/38.0"
 declare -r URBAN_DICTIONARY=false			#always use urban dictionary - urban.pl
 #
 CDIR="$HOME/.config"
@@ -559,7 +559,7 @@ main_func(){
 			declare trans
 			if [[ $r_words_count -le 2 && ${#request} -gt 1 && $source == en && ! $(echo "$difftest" | wc -l) -gt 1 ]];then #special check( expample: advise advice)
 			#transcription
-				trans=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://lingvo-online.ru/en/Translate/en-"$target"/"$request" | grep -o '"[^"]*/transcription\.gif.Text=[^"]*"' | sed 's/.*=\(.*\)"/\1/'| echo -n -e $(sed 's/+/ /g; s/%/\\x/g')) #getting transcription
+				trans=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://www.wordreference.com/definition/"$request" | grep pronWR | sed 's/span/\n/g' | grep pronWR | sed 's#.*pronWR.*>/\([^/]*\).*#\1#') #getting transcription
 				[[ $? != 0 ]] &&  { echo "can't get transcription"; error=1; } #bashtrap;
 			fi
 			
