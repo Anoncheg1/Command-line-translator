@@ -64,6 +64,7 @@ my $LC_ALWAYS = 1;			#Lowercase request.
 my $TRANSLIT_LENGTH_MAX = 10;
 my @PROXY ; #for proxy you need LWP::Protocol::socks
 #@PROXY =([qw(http https)] => "socks://172.16.0.1:9150"); #tor
+#@PROXY = ([qw(http https)] => "http://127.0.0.1:4445"); #i2p
 #@PROXY = ('http','http://127.0.0.1:4444'); #i2p
 
 my $USERAGENT = 'Mozilla/5.0 (Windows NT 6.1; rv:38.0) Gecko/20100101 Firefox/38.0';
@@ -80,37 +81,53 @@ my $USERAGENT = 'Mozilla/5.0 (Windows NT 6.1; rv:38.0) Gecko/20100101 Firefox/38
 my $name = basename($0);
 my %LANGS = (
     'af' => 'Afrikaans',
+	'ak' => 'Akan',
     'sq' => 'Albanian',
+	'am' => 'Amharic',
     'ar' => 'Arabic',
     'hy' => 'Armenian',
     'az' => 'Azerbaijani',
     'eu' => 'Basque',
     'be' => 'Belarusian',
+	'bem' => 'Bemba',
     'bn' => 'Bengali',
+	'bh' => 'Bihari',
+	'xx-bork' => 'Bork, bork, bork!',
     'bs' => 'Bosnian',
+	'br' => 'Breton',
     'bg' => 'Bulgarian',
     'ca' => 'Catalan',
     'ceb' => 'Cebuano',
+	'chr' => 'Cherokee',
     'ny' => 'Chichewa',
+	'zh' => 'Chinese',
     'zh-CN' => 'Chinese (Simplified)',
     'zh-TW' => 'Chinese (Traditional)',
+	'co' => 'Corsican',
     'hr' => 'Croatian',
     'cs' => 'Czech',
     'da' => 'Danish',
     'nl' => 'Dutch',
+	'xx-elmer' => 'Elmer Fudd',
     'en' => 'English',
     'eo' => 'Esperanto',
     'et' => 'Estonian',
+	'ee' => 'Ewe',
+	'fo' => 'Faroese',
     'tl' => 'Filipino',
     'fi' => 'Finnish',
+	'fy' => 'Frisian',
     'fr' => 'French',
+	'gaa' => 'Ga',
     'gl' => 'Galician',
     'ka' => 'Georgian',
     'de' => 'German',
     'el' => 'Greek',
     'gu' => 'Gujarati',
+	'xx-hacker' => 'Hacker',
     'ht' => 'Haitian Creole',
     'ha' => 'Hausa',
+	'haw' => 'Hawaiian',
     'iw' => 'Hebrew',
     'hi' => 'Hindi',
     'hmn' => 'Hmong',
@@ -118,6 +135,7 @@ my %LANGS = (
     'is' => 'Icelandic',
     'ig' => 'Igbo',
     'id' => 'Indonesian',
+	'ia' => 'Interlingua',
     'ga' => 'Irish',
     'it' => 'Italian',
     'ja' => 'Japanese',
@@ -125,11 +143,23 @@ my %LANGS = (
     'kn' => 'Kannada',
     'kk' => 'Kazakh',
     'km' => 'Khmer',
+	'rw' => 'Kinyarwanda',
+	'rn' => 'Kirundi',
+	'xx-klingon' => 'Klingon',
+	'kg' => 'Kongo',
     'ko' => 'Korean',
-    'lo' => 'Lao',
+	'kri' => 'Krio (Sierra Leone)',
+	'ku' => 'Kurdish',
+	'ckb' => 'Kurdish (Soranî)',
+	'ky' => 'Kyrgyz',
+    'lo' => 'Laothian',
     'la' => 'Latin',
     'lv' => 'Latvian',
+	'ln' => 'Lingala',
     'lt' => 'Lithuanian',
+	'loz' => 'Lozi',
+	'lg' => 'Luganda',
+	'ach' => 'Luo',
     'mk' => 'Macedonian',
     'mg' => 'Malagasy',
     'ms' => 'Malay',
@@ -137,42 +167,72 @@ my %LANGS = (
     'mt' => 'Maltese',
     'mi' => 'Maori',
     'mr' => 'Marathi',
+	'mfe' => 'Mauritian Creole',
+	'mo' => 'Moldavian',
     'mn' => 'Mongolian',
+	'sr-ME' => 'Montenegrin',
     'my' => 'Myanmar (Burmese)',
     'ne' => 'Nepali',
+	'pcm' => 'Nigerian Pidgin',
+	'nso' => 'Northern Sotho',
     'no' => 'Norwegian',
+	'nn' => 'Norwegian (Nynorsk)',
+	'oc' => 'Occitan',
+	'or' => 'Oriya',
+	'om' => 'Oromo',
+	'ps' => 'Pashto',
     'fa' => 'Persian',
+	'xx-pirate' => 'Pirate',
     'pl' => 'Polish',
     'pt' => 'Portuguese',
+	'pt-BR' => 'Portuguese (Brazil)',
+	'pt-PT' => 'Portuguese (Portugal)',
     'pa' => 'Punjabi',
+	'qu' => 'Quechua',
     'ro' => 'Romanian',
+	'rm' => 'Romansh',
+	'nyn' => 'Runyakitara',
     'ru' => 'Russian',
+	'gd' => 'Scots Gaelic',
     'sr' => 'Serbian',
+	'sh' => 'Serbo-Croatian',
     'st' => 'Sesotho',
-    'si' => 'Sinhala',
+	'tn' => 'Setswana',
+	'crs' => 'Seychellois Creole',
+	'sn' => 'Shona',
+	'sd' => 'Sindhi',
+    'si' => 'Sinhalese',
     'sk' => 'Slovak',
     'sl' => 'Slovenian',
     'so' => 'Somali',
     'es' => 'Spanish',
+	'es-419' => 'Spanish (Latin American)',
     'su' => 'Sundanese',
     'sw' => 'Swahili',
     'sv' => 'Swedish',
     'tg' => 'Tajik',
     'ta' => 'Tamil',
+	'tt' => 'Tatar',
     'te' => 'Telugu',
     'th' => 'Thai',
+	'ti' => 'Tigrinya',
+	'to' => 'Tonga',
+	'lua' => 'Tshiluba',
+	'tum' => 'Tumbuka',
     'tr' => 'Turkish',
+	'tk' => 'Turkmen',
+	'tw' => 'Twi',
+	'ug' => 'Uighur',
     'uk' => 'Ukrainian',
     'ur' => 'Urdu',
     'uz' => 'Uzbek',
     'vi' => 'Vietnamese',
     'cy' => 'Welsh',
+	'wo' => 'Wolof',
+	'xh' => 'Xhosa',
     'yi' => 'Yiddish',
     'yo' => 'Yoruba',
-    'zu' => 'Zulu',
-    'zh' => 'Chinese',
-    'am' => 'Amharic',
-    'fo' => 'Faroese'
+    'zu' => 'Zulu'
 );
 
 ############ Functions
@@ -367,7 +427,7 @@ my $url = "https://translate.google.com/translate_a/single?client=gtx&sl=".$sour
 &google(clone($ua), $url); #$_[0] - ua    $_[1] - url
 #$rsum =~ s/(.)/sprintf("%x",ord($1))/eg; #replace every character with HEX
 
-my $advdd = 0;
+my $advdd = 0; #loop disabler.
 ##### Advanced detection of direction
 if ($ALD == 1 && ! $TLSOURCE){
     if($detected_languages[0]){
@@ -378,29 +438,45 @@ if ($ALD == 1 && ! $TLSOURCE){
 	}
     }	
 }
-#####
+##### language detection loop
+#test
+#t ma vie
+#franch translate
+#t gereer
+#Afrikaans translate
+#t mithematic
+#fixed mathematic
+
+
 my $source_save = $source;
-my @d_l;
-if( $advdd || (! $error1 && ! @dictionary && $detected_languages[0] && $detected_languages[0] ne $source && ((lc $rsum) eq (lc $request)))){
+my @d_l; # det lang before loop
+#if
+# no error
+# was detected languages
+# det lang != source
+#stop if
+# result != request
+# or we have dictionary
+if( !$advdd && ! $error1 && $detected_languages[0] && $detected_languages[0] ne $source){
     @d_l = @detected_languages;
     print "Detected languages: "; print $_."," foreach @d_l; print "\n";
 
     foreach $source (@d_l){
-	#$target = "en";
-	print "trying with:".$LANGS{$source},"\n";
-	###side effect function
-	undef $rsum; # translation
-	undef $translit_s; # translit source
-	undef $translit_t; # translit target
-	undef @suggest; #google suggestions. appears sometimes.(options_for_one_word)
-	undef @detected_languages;
-	undef $error1; #error with highlight
-	undef $error2; #correct version
-	undef @dictionary;
-	#$url = "https://translate.google.com/translate_a/single?client=t&sl=".$source."&tl=".$target."&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8&tk=".$tk_hacked;
-	$url = "https://translate.google.com/translate_a/single?client=gtx&sl=".$source."&tl=".$target."&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8";
-	&google(clone($ua), $url); #$_[0] - ua    $_[1] - url
-	last if ((lc $rsum) ne (lc $request) || @dictionary);
+		#$target = "en";
+		print "trying with:".$LANGS{$source},"\n";
+		###side effect function
+		undef $rsum; # translation
+		undef $translit_s; # translit source
+		undef $translit_t; # translit target
+		undef @suggest; #google suggestions. appears sometimes.(options_for_one_word)
+		undef @detected_languages;
+		undef $error1; #error with highlight
+		undef $error2; #correct version
+		undef @dictionary;
+		#$url = "https://translate.google.com/translate_a/single?client=t&sl=".$source."&tl=".$target."&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8&tk=".$tk_hacked;
+		$url = "https://translate.google.com/translate_a/single?client=gtx&sl=".$source."&tl=".$target."&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8";
+		&google(clone($ua), $url); #$_[0] - ua    $_[1] - url
+		last if ((lc $rsum) ne (lc $request) || @dictionary);
     }
 }
 
@@ -411,9 +487,7 @@ if( $advdd || (! $error1 && ! @dictionary && $detected_languages[0] && $detected
 #utf8::decode($_) foreach @suggest;
 #utf8::decode($translit_s);
 #utf8::decode($translit_t);
-if( ! @d_l && $detected_languages[0] && $detected_languages[0] ne $source_save ){ #for 1 try without loop.
-    print "Language: ".$LANGS{$detected_languages[0]},"\n";
-}
+
 print $C_GREEN.$rsum.$C_NORMAL_RAW,"\n" if $rsum; #echo result
 if($error1){
     print $error1,"\n"; #echo error   
@@ -510,25 +584,24 @@ sub google($$){#$_[0] - ua (object)    $_[1] - url
  
     my $g_array;
     if ($response->is_success) { #to array
-	#print $response->decoded_content;
-	#    if ($response->isa('HTTP::Response::JSON')) {
-	#my $json = $response->json_content; #decoded
-	my $js = $response->decoded_content;
-	$js =~ s/,,/,"",/g;
-	$js =~ s/,,/,"",/g;
-	$js =~ s/\[,/\["",/g;
-	$js =~ s/,\]/,""\]/g;
-	#    print $js."\n";
-	#my $g_array = decode_json($js);
-	#my @objs = JSON->new->incr_parse ($js);
-	$g_array =  JSON->new->decode($js);
-	#    my $pp = JSON->new->pretty->encode( $g_array ); # pretty-printing
-	#    print $pp;
+		#print $response->decoded_content;
+		#    if ($response->isa('HTTP::Response::JSON')) {
+		#my $json = $response->json_content; #decoded
+		my $js = $response->decoded_content;
+		$js =~ s/,,/,"",/g;
+		$js =~ s/,,/,"",/g;
+		$js =~ s/\[,/\["",/g;
+		$js =~ s/,\]/,""\]/g;
+		#    print $js."\n";
+		#my $g_array = decode_json($js);
+		#my @objs = JSON->new->incr_parse ($js);
+		$g_array =  JSON->new->decode($js);
+		#    my $pp = JSON->new->pretty->encode( $g_array ); # pretty-printing
+		#    print $pp;
 	
-	#&testing($g_array); #TESTING
+		#&testing($g_array); #TESTING
 
-    }
-    else {
+    }else {
 		print "Can't connect google: ".$response->status_line, "\n"; exit 1;
     }
 
@@ -544,7 +617,7 @@ sub google($$){#$_[0] - ua (object)    $_[1] - url
 	#language detections
 	if(ref($g_array->[8]) eq 'ARRAY'){
 	    if($g_array->[8][0][0]){
-		@detected_languages=(@detected_languages,$_) foreach @{$g_array->[8][0]};
+			@detected_languages=(@detected_languages,$_) foreach @{$g_array->[8][0]};
 	    }else{ print "strange error in google json1";}
 	}
 	#error detection
