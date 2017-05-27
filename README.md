@@ -38,8 +38,9 @@ get perl version:
 
 REQUIREMENTS:
 - perl5 >= v5.16
-- perl LWP::Protocol::socks -if you need socks proxy
 - perl JSON
+- perl Clone
+- perl LWP::Protocol::socks -if you need socks proxy
 - mplayer or mpg123 -for sound
 
 FEATURES:
