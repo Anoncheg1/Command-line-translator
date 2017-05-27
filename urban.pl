@@ -7,7 +7,7 @@ require HTTP::Response;
 use HTML::TreeBuilder;
 #use Getopt::Std;
 #Debian: liblwp-protocol-socks-perl
-use LWP::Protocol::socks;
+#use LWP::Protocol::socks;
 package main;
 #BAD CHARACTERS VERY RARELY
 

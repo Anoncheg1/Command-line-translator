@@ -67,7 +67,7 @@ For Debian sid: #apt-get install curl spidermonkey-bin html2text mpg123
 For Debian jessie: #apt-get install curl nodejs html2text mpg123
 For FreeBSD: #pkg install curl spidermonkey24 html2text mpg123
 - forvo.com account for pronunciation
-- urban.pl(optional, see URBAN_DICTIONARY)
+- optional: urban.pl, perl HTML-Tree (see URBAN_DICTIONARY)
 
 FEATURES:
   - translated text,
