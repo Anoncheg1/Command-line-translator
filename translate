@@ -16,25 +16,25 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# You can contact me there: 
+# You can contact me there:
 # http://www.unix.com/shell-programming-scripting/196823-completed-command-line-google-translation-tool.html                       654321 - profile name
 
 # main mirror https://github.com/Anoncheg1/Command-line-translator
 # mirror http://pastebin.com/kPTYjY6W
-# requirements: 
+# requirements:
 #	UTF-8 support for required languages
 #	curl >= 7.21.0,
-# 	SpiderMonkey >= Version: 17.0.8esr-2 
+# 	SpiderMonkey >= Version: 17.0.8esr-2
 #	mpg123
 #	forvo.com account
 #features:
 #- translated text, fixed text with highlight, language detection, dictionary, translit
-# for english: 
+# for english:
 #- phrases, ideom, word forms, transcription, audio pronunciation
 #- cache for words
 #- saving words to file for learning
 #
-#:) translate.google.com, www.macmillandictionary.com/dictionary/british, thefreedictionary.com, www.forvo.com 
+#:) translate.google.com, www.macmillandictionary.com/dictionary/british, thefreedictionary.com, www.forvo.com
 
 help=`basename "$0"`' [-S] [-l] [-h] [-p] [-u] [-s language_2_chars] [-t language_2_chars] <text> | <->
 if text is LATIN_LANG, then target language is FIRST_LANG
@@ -248,7 +248,7 @@ function options_for_one_word(arr){
 			}
 		}
 	}
-	
+
 }
 function language_identification(arr){ //get detected languages
 	if(typeof arr[8] !== 'undefined' && arr[8] !== null && typeof arr[8][0] !== 'undefined' && arr[8][0] !== null && typeof arr[8][0][0] !== 'undefined' && arr[8][0][0] !== null){
@@ -286,7 +286,7 @@ while getopts :hlpSs:t:u opt; do
 #		\?)
 #			echo "Invalid option: -$OPTARG" >&2
 #			exit 1;;
-		?)	
+		?)
 			echo "Invalid option: -$OPTARG" >&2
 			printf "Usage: %s: [-S] [-h] [-l] [-p] [-s language_2_chars] [-t language_2_chars] <text>\n" `basename "$0"`
 			exit 2;;
@@ -311,7 +311,7 @@ sound_download(){ 			# $cachefile, $request, $source
 	elif [[ $source == "id" ]];then  s="ind"
 	fi
 	slink=$(echo "$slink" | grep $s | head -n 1)
-	
+
 	[[ ${#slink} -lt 6 ]] && slink=$(echo "$slink" | head -n 1);
 	if [[ ${#slink} -gt 5 ]];then
 		#echo c1=
@@ -354,10 +354,10 @@ main_func(){
 		target="$LATIN_LANG"
 	fi
 
-	[[ $TLSOURCE ]] && source=$TLSOURCE; 
+	[[ $TLSOURCE ]] && source=$TLSOURCE;
 	[[ $TLTARGET ]] && target=$TLTARGET; # export TLSOURCE=en TLTARGET=ru; will force the language
 #echo source=$source
-	
+
 	#if [[ ${#request} -gt 300 ]]; then
 	#	if ! result=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" -d "sl=$source" -d "tl=$target" --data-urlencode "text=$request" http://translate.google.com) && [[ $httpproxy != "" ]] #getting google respond for short sentence
 	#	then	# second attempt without https proxy
@@ -371,25 +371,25 @@ main_func(){
 	#	echo -e "\033[32;1m"$(echo "$result" |  awk 'BEGIN {RS="</div>"};/<span[^>]* id=["'\'']?result_box["'\'']?/' | html2text -utf8)"$C_NORMAL_RAW"
 
 	#else
-		if [[ $r_words_count -le 5 ]];then 
+		if [[ $r_words_count -le 5 ]];then
 			httpproxy="" ; httpsproxy=""  #don't wanna proxy for 4 words.
 			request=$(echo "$request" | tr '[:upper:]' '[:lower:]') #lower request for short sentences
 		fi
 		cachefile="$PR_DIR/cache/$source-$target"_$(echo ${request//[-._\/]/})
 		r_words_count=$(echo "$request"  |wc -w)
-	
+
 		[[ ! -e "$cachefile".mp3 && $r_words_count -le 2 ]] &&
 			if [[ $sound == 1 || $SOUND_DOWNLOAD_AWS == 1 ]];then #getting sound from forvo.com
 				sound_download &      # in background
 			fi
-	
+
 		if [[ ! -e "$cachefile" ]]; then
-		
+
 			g_ttk="https://translate.google.com"
 			grespond=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" -m $timeout $g_ttk)
 			tkk=$(echo "$grespond" | sed "s@.*\(TKK.*\)\;WEB.*@\1@" | tail -1);
-			
-		
+
+
 			jsscript_tkh="function tk_hack(a) {
 	var "$tkk";
 	    b = TKK
@@ -402,7 +402,7 @@ main_func(){
         var m = a.charCodeAt(g);
         128 > m ? e[f++] = m : (2048 > m ? e[f++] = m >> 6 | 192 : (55296 == (m & 64512) && g + 1 < a.length && 56320 == (a.charCodeAt(g + 1) & 64512) ? (m = 65536 + ((m & 1023) << 10) + (a.charCodeAt(++g) & 1023), e[f++] = m >> 18 | 240, e[f++] = m >> 12 & 63 | 128) : e[f++] = m >> 12 | 224, e[f++] = m >> 6 & 63 | 128), e[f++] = m & 63 | 128)
     }
-	
+
     a = TKKe;
 
     RLVb = function(a) { //+-a^+6
@@ -423,35 +423,41 @@ main_func(){
     }
 
     for (f = 0; f < e.length; f++) a += e[f], a = RLVb(a);
-	
+
     a = RLUb(a);
 
     a ^= TKK1 || 0;
-	
+
     if (0 > a)
         a = (a & 2147483647) + 2147483648;
     a %= 1000000;
 	print('' + a + '.' + (a ^ TKKe))
     return;
-}"	
-	#b="`date +%s`/3600"`   //sec Epoch/3600	
-		
+}"
+	#b="`date +%s`/3600"`   //sec Epoch/3600
+
 			#javascript
 			if hash smjs 2>/dev/null; then
-				js_sm="smjs -f"
-			elif hash js24 2>/dev/null; then
-				js_sm="js24 -f" #for FreeBSD
+			    js_sm="smjs -f"
+			elif hash js24 2>/dev/null; then #spidermonkey old
+			    js_sm="js24 -f"
+			elif hash js38 2>/dev/null; then #spidermonkey new
+			    js_sm="js38 -f"
+			elif hash node 2>/dev/null; then #nodejs new
+			    js_sm="node"
+			elif hash nodejs 2>/dev/null; then #nodejs olds
+			    js_sm="nodejs"
 			else
-				js_sm="nodejs"
+			    echo "can not find javascript interpreter. See line 451." && exit
 			fi
-			
+
 			echo -n "$jsscript_tkh" > "$PR_DIR"/tmpjsobj2
-			if [[ $js_sm == "nodejs" ]]; then 
+			if [[ ${js_sm:0:4} == "node"  ]]; then
 				 sed -i 's/print/console.log/g' "$PR_DIR"/tmpjsobj2
 			fi
 			echo -n "tk_hack(\""$request"\");" >> "$PR_DIR"/tmpjsobj2
 			tk_hack=$($js_sm "$PR_DIR"/tmpjsobj2)				# tk_hack
-			
+
 			rr1="https://translate.google.com/translate_a/single?client=t&sl=$source&tl=$target&hl=en"
 			rr2="&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8"
 			rr3="&otf=1&rom=0&ssel=0&tsel=3&kc=7&tk="$tk_hack
@@ -461,7 +467,7 @@ main_func(){
 				#echo https proxy not working. using http proxy.
 				httpsproxy=""
 				grespond=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" -m $timeout --compressed --data-urlencode "text=$request" $rr) #getting google respond for short sentence
-				
+
 			fi
 			[[ ! $(echo "$grespond" | grep -o '\[.*\]') ]] && { echo "can't connect google" ; exit 1; } #small connection check
 
@@ -480,7 +486,7 @@ main_func(){
 					[[ $(echo "$fl" | tr -d "'") == "$request" ]] && fl="" # skip highlight for ' char
 					difftest="$(cmp -l <(echo -n $request) <(echo -n $fl) 2>/dev/null)" #comparison
 					if [[ $(echo "$difftest" | grep '[0-9]') ]];then
-						echo "$fl" > $FIXED_STRING					
+						echo "$fl" > $FIXED_STRING
 						#[[ $source != en ]]&& diffnum=$(($diffnum/2+$diffnum%2))   #MUST BE CHECKED FOR REQUIRED LANGUAGES
 						#[[ ${fl:$diffnum-1:1} == ' ' ]] && let diffnum-- #white space correction
 						for (( i=$(echo "$difftest" | wc -l); i>=1; i--)); do
@@ -504,8 +510,8 @@ main_func(){
 			echo -n "$grespond" | grep -o '\[.*\]' >> "$PR_DIR"/tmpjsobj
 			echo ";">> "$PR_DIR"/tmpjsobj
 			echo -n "$jsscript" >> "$PR_DIR"/tmpjsobj
-			if [[ $js_sm == "nodejs" ]]; then 
-				 sed -i 's/print/console.log/g' "$PR_DIR"/tmpjsobj
+			if [[ ${js_sm:0:4} == "node" ]]; then
+			    sed -i 's/print/console.log/g' "$PR_DIR"/tmpjsobj
 			fi
 			cp -f "$PR_DIR"/tmpjsobj "$PR_DIR"/tmpjsobj2
 			echo -n "language_identification(googlearr);" >> "$PR_DIR"/tmpjsobj2
@@ -518,7 +524,7 @@ main_func(){
 			translit=$($js_sm "$PR_DIR"/tmpjsobj2)				# translit
 			cp -f "$PR_DIR"/tmpjsobj "$PR_DIR"/tmpjsobj2
 			echo -n "dictionary(googlearr);" >> "$PR_DIR"/tmpjsobj2
-			dictionary=$($js_sm "$PR_DIR"/tmpjsobj2)				# dictionary			
+			dictionary=$($js_sm "$PR_DIR"/tmpjsobj2)				# dictionary
 			if [[ $r_words_count -le 2 && $(echo "$dictionary" | wc -l) -le 3 ]];then
 				cp -f "$PR_DIR"/tmpjsobj "$PR_DIR"/tmpjsobj2
 				echo -n "options_for_one_word(googlearr);" >> "$PR_DIR"/tmpjsobj2
@@ -527,29 +533,29 @@ main_func(){
 
 			#Language detection
 			[[ $det_language && $det_language != $source && $TLSOURCE ]] && echo -e "$C_GRAY*	$det_language ${ln_arr[$det_language]}$C_NORMAL"
-			
+
 			declare urban # dictionary for 1-4 words NO LANGUAGE DETECTIONS
 			if [[ $r_words_count -le 5 && ${#request} -gt 1 && $source == en && $urban_flag == true && -x ${0%/*}"/urban.pl" ]];then
 				urban=$(perl ${0%/*}"/urban.pl" $(echo $request | tr ' ' + ))
 				[[ $? != 0 ]] && {	error=1; }
 			fi
-			#[[ $source != $det_language ]] && 
+			#[[ $source != $det_language ]] &&
 
 			if [[ $source != $det_language && ! $fl_raw && ((
-					$(echo "$request" | sed 's/ //g' | tr '[:upper:]' '[:lower:]') ==  $(echo "$t_result" | sed 's/ //g' | tr '[:upper:]' '[:lower:]') || 
+					$(echo "$request" | sed 's/ //g' | tr '[:upper:]' '[:lower:]') ==  $(echo "$t_result" | sed 's/ //g' | tr '[:upper:]' '[:lower:]') ||
 					$(echo "$t_result" | sed 's/ //g' | tr '[:upper:]' '[:lower:]') ==  $(echo "$translit" | sed 's/ //g' | tr '[:upper:]' '[:lower:]') ||
 					${request:0:1} == ${t_result:0:1}
 					)) && ! $dictionary ]]; then
-					
+
 				if [[ "$urban" ]]; then echo "$urban"; fi
-				
+
 				[[ $source != "auto" ]] && echo -e "trying with detected language: ${ln_arr[$det_language]}" # I guess google "auto" is not working then we will do it by yourself mutely
 				export TLSOURCE=$det_language #TLTARGET=en #source and target language for second attempt
 				#if [[ $PROMPT_MODE_ACTIVATED == false ]]; then
 					#if [[ $sound == 1 ]]; then $0 -s "$request" ; else $0 "$request" ;fi #second attempt to translate with detected language  #sound will be quiet...
 				main_func #second attempt to translate with detected language
 				#else det_language_request="$request" ;fi
-				#fi				
+				#fi
 				exit
 			fi
 
@@ -558,10 +564,10 @@ main_func(){
 			declare trans
 			if [[ $r_words_count -le 2 && ${#request} -gt 1 && $source == en && ! $(echo "$difftest" | wc -l) -gt 1 ]];then #special check( expample: advise advice)
 			#transcription
-				trans=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://www.wordreference.com/definition/"$request" | grep pronWR | sed 's/span/\n/g' | grep pronWR | sed 's#.*pronWR.*>/\([^/]*\).*#\1#') #getting transcription
+				trans=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://www.wordreference.com/definition/"$request" | grep pronWR | sed 's/span/\n/g' | grep id=.pronWR | sed 's#.*pronWR.*>/\([^/]*\).*#\1#') #getting transcription
 				[[ $? != 0 ]] &&  { echo "can't get transcription"; error=1; } #bashtrap;
 			fi
-			
+
 			# Main "Dictionary part" for english only. but it can be extended for every required language
 			if [[ $r_words_count -eq 1 && ${#request} -gt 1 && $source == en && (( ! $fl_raw || $trans )) ]]; then #dictionary
 
@@ -613,15 +619,15 @@ phras=$(echo "$macmill" | grep -o 'div id="phrases_container".*End of DIV --' | 
 						echo -e "$phrases_2" >> "$cachefile"
 					fi
 				fi
-			
+
 				#
 				[[ $urban ]] && echo "$urban" >> "$cachefile"
 				#transcription
-				[[ $trans ]] && echo "[$trans]" >> "$cachefile"
+				[[ $trans ]] && echo "["$trans"]" >> "$cachefile"
 
 				cat "$cachefile" 2>/dev/null #output for 1 word
 #				echo -e "$C_DARK_BLUE_RAW"http://oxforddictionaries.com/definition/english/$(echo "$request" | sed "s/'/%27/" )$C_NORMAL_RAW # just another good english dictionary
-				
+
 				if [[ ${#request} -gt 2 || $r_words_count -le 2 ]] ; then
 
 					#saving words
@@ -638,11 +644,11 @@ phras=$(echo "$macmill" | grep -o 'div id="phrases_container".*End of DIV --' | 
 				[[ $source != en && $r_words_count -le $TRANSLIT_WORDS_MAX && $(echo $t_result | sed 's/ //g' | tr '[:upper:]' '[:lower:]') !=  $(echo $translit | sed 's/ //g' | tr '[:upper:]' '[:lower:]') ]] && echo -e "$translit" >> "$cachefile"				#google translit	output
 				[[ $dictionary ]] && echo -e "$dictionary" >> "$cachefile"			#google dictionary 	output
 				[[ $(echo "$options_for_one_word" | wc -l) -gt 1 && $r_words_count -le 2 && $(echo "$dictionary" | wc -l) -le 3 ]] && echo -e "$C_BLUE_RAW"Options:"$C_NORMAL"'\n'"$options_for_one_word" >> "$cachefile" #google sugestions to cache
-				
+
 				if [[ $source == en && $r_words_count -le 5 ]]; then #english
 					#phrases for 2 words
 					if [[ $r_words_count -le 2 ]];then
-				
+
 						macmill=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://www.macmillandictionary.com/dictionary/british/"$(echo $request | tr ' ' - )" )
 						[[ $? != 0 ]] && { echo "cant getmacmillandictionary.com phrases for string" ; bashtrap; }
 						macmill=$(echo "$macmill" | grep -o 'div class="SENSE".*End of DIV SENSE--' | sed -e 's/<a[^>]*>//g' -e 's/<\/a>//g' | sed 's/End of DIV SENSE--/\n/g' | grep -n . | sed 's/^[0-9]*:/&\n/' | sed 's/End of DIV EXAMPLES/\n/g' | sed '/^[0-9]*:/{h;d;};G; s/^\(.*\)\n\([0-9]*:\)/\2 \1/' | sed \
@@ -652,7 +658,7 @@ phras=$(echo "$macmill" | grep -o 'div id="phrases_container".*End of DIV --' | 
 							echo -e "$C_GRAY_RED_RAW"EXAMPLES:$C_NORMAL >> "$cachefile"
 							echo -e "$macmill" >> "$cachefile"
 						fi
-					fi				
+					fi
 
 					#search for ideom for 2-5 words
 					ideom_and_list=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://idioms.thefreedictionary.com/"$(echo $request | tr ' ' + )")
@@ -676,7 +682,7 @@ phras=$(echo "$macmill" | grep -o 'div id="phrases_container".*End of DIV --' | 
 							raw_ency=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" "$ency_link")
 							[[ $? != 0 ]] && { echo "cant get thefreedictionary.com phrases for ideom2" ; bashtrap; }
 							#not counting <div id=MainTxt><span class="hw">
-							redirectto=$(echo "$raw_ency" | grep -o "<h1>.*</h1>" | sed 's/<div>.*<\/div>//' | sed -e 's/<h1>//' -e 's/<.h1>//' | tr '[:upper:]' '[:lower:]')						
+							redirectto=$(echo "$raw_ency" | grep -o "<h1>.*</h1>" | sed 's/<div>.*<\/div>//' | sed -e 's/<h1>//' -e 's/<.h1>//' | tr '[:upper:]' '[:lower:]')
 							if [[ $r_words_count -eq $(echo $redirectto | wc -w ) ]]; then
 								firstpass=$(echo "$raw_ency" | grep '<div class=hw>' | sed 's/<script>/\n/'| head -n 1 | sed 's/<br \/><br \/>/\n/g' | sed 's/<br \/>//g' | sed -e 's/<div class=hw>/ /' -e 's/<\/div>/. /' | sed -e 's/^[ \t]*//')
 #								echo "$raw_ency" | grep '<div class=hw>'
@@ -689,7 +695,7 @@ phras=$(echo "$macmill" | grep -o 'div id="phrases_container".*End of DIV --' | 
 									corephrase1=$(echo "$raw_ency" | grep '<div class=hw>' | grep -o '<h1>.*</h1>' | sed 's/.*>\([^<]*\)<.*/\1/')
 									corephrase2=$(echo "$raw_ency" | grep -o '<div class=hw>[^<]*<' | sed 's/.*>\([^<]*\)</\1/')
 									echo -e "$C_GRAY_RED_RAW"Ideom:$C_NORMAL >> "$cachefile"
-									[[ $corephrase1 && $(echo $corephrase1 | tr '[:upper:]' '[:lower:]') != $request ]] && echo -e "$C_BRIGHT_RAW"$corephrase1"$C_NORMAL" >> "$cachefile"							
+									[[ $corephrase1 && $(echo $corephrase1 | tr '[:upper:]' '[:lower:]') != $request ]] && echo -e "$C_BRIGHT_RAW"$corephrase1"$C_NORMAL" >> "$cachefile"
 									[[ $corephrase2 && $corephrase2 != $corephrase1 ]] && echo -e "$C_BRIGHT_RAW"$corephrase2"$C_NORMAL" >> "$cachefile"
 									echo "$ency" >> "$cachefile"
 									contr_ency=$(echo "$raw_ency" | grep "Contrast with" | sed 's/.*\">\([^<]*\)<\/a.*/\1/')
@@ -700,15 +706,15 @@ phras=$(echo "$macmill" | grep -o 'div id="phrases_container".*End of DIV --' | 
 										[[ $see_ency ]] && echo -e See"$C_BRIGHT_RAW" $see_ency"$C_NORMAL" >> "$cachefile"
 									fi
 								fi
-							fi	
+							fi
 						fi
 					fi
-					
+
 					#
 					[[ $urban ]] && echo "$urban" >> "$cachefile"
-					
+
 				fi
-				cat "$cachefile" 2>/dev/null #output 
+				cat "$cachefile" 2>/dev/null #output
 				[[ $r_words_count -gt 2 ]] && rm "$cachefile" 2> /dev/null #rm for more then 2 words
 
 
@@ -722,7 +728,7 @@ phras=$(echo "$macmill" | grep -o 'div id="phrases_container".*End of DIV --' | 
 			[[ $source == en ]] && echo -e "$C_DARK_BLUE_RAW"http://oxforddictionaries.com/definition/english/"$request"$C_NORMAL
 		fi
 
-		#sound	
+		#sound
 		if [[ $sound == 1 ]]; then
 			wait
 			if [[ -e "$cachefile".mp3 ]]; then
@@ -745,10 +751,10 @@ phras=$(echo "$macmill" | grep -o 'div id="phrases_container".*End of DIV --' | 
 if [[ $PROMPT_MODE_ACTIVATED == true ]]; then
 	while IFS="" read -r -e -d $'\n' -p '> ' request; do #Prompt loop
 		history -s "$request"
-		
+
 		#if [[ $PROMPT_MODE_ACTIVATED == true && ${#det_language_request} -eq 0 && ${#request} -eq 0 ]]; then
 		#		continue
-		#fi	
+		#fi
 		#if [[ ${#request} -eq 0 && -z $det_language_request ]];then #using saved fixed string without parameters
 
 		f_w=$(echo "$request" | cut -f 1 -d " ")
@@ -759,18 +765,18 @@ if [[ $PROMPT_MODE_ACTIVATED == true ]]; then
 			else
 				sound=1
 				echo "Pronunciation enabled"
-			fi			
+			fi
 			continue
 		fi
 		if [[ $f_w == -l || $f_w == --list ]]; then #list
 			for i in "${!ln_arr[@]}" ;do
 				echo -e "$i\t${ln_arr[$i]}"
-			done | sort -k2		
+			done | sort -k2
 			continue
 		fi
 		if [[ $f_w == -h || $f_w == --help ]]; then #help
-			echo "$help" ; continue ; fi		
-		
+			echo "$help" ; continue ; fi
+
 		main_func
 	done
 else
