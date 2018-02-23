@@ -165,35 +165,35 @@ bashtrap()
 }
 
 if [[ $TERMINAL_C == "WOB" ]];then
-	declare -r C_RED="`tput bold``tput setaf 1`"		#highlight
-	declare -r C_YELLOW="`tput bold``tput setaf 3`"	#highlight
-	declare -r C_GRAY="`tput setaf 7`"	#language detected
-	declare -r C_CYAN_RAW="\033[1;36m" 	#forms
-	declare -r C_GRAY_RED_RAW="\033[1;35m"	#phrases
-	declare -r C_DARK_BLUE_RAW="\033[34m"	#link for dictionary
-	declare -r C_BLUE_RAW="\033[1;34m"	#dictionary and vform1
-	declare -r C_BRIGHT_RAW="\033[1;37m"	#phrases, examples main part, vform2
-	declare -r C_GREEN="\033[1;32m"		#t_result
+    declare -r C_RED="`tput bold``tput setaf 1`"		#highlight
+    declare -r C_YELLOW="`tput bold``tput setaf 3`"	#highlight
+    declare -r C_GRAY="`tput setaf 7`"	#language detected
+    declare -r C_CYAN_RAW="\033[1;36m" 	#forms
+    declare -r C_GRAY_RED_RAW="\033[1;35m"	#phrases
+    declare -r C_DARK_BLUE_RAW="\033[34m"	#link for dictionary
+    declare -r C_BLUE_RAW="\033[1;34m"	#dictionary and vform1
+    declare -r C_BRIGHT_RAW="\033[1;37m"	#phrases, examples main part, vform2
+    declare -r C_GREEN="\033[1;32m"		#t_result
 elif [[ $TERMINAL_C == "BOW" ]];then
-	declare -r C_RED="`tput bold``tput setaf 1`"		#highlight
-	declare -r C_YELLOW="`tput setaf 3`"			#highlight
-	declare -r C_GRAY="`tput bold``tput setaf 5`"	#language detected
-	declare -r C_CYAN_RAW="\033[1;36m" 		#forms
-	declare -r C_GRAY_RED_RAW="\033[1;35m"		#phrases
-	declare -r C_DARK_BLUE_RAW="`tput setaf 7`"	#link for dictionary
-	declare -r C_BLUE_RAW="\033[1;34m"		#dictionary and vform1
-	declare -r C_BRIGHT_RAW="`tput bold`"		#phrases, examples main part, vform2
-	declare -r C_GREEN="`tput bold`"		#t_result
+    declare -r C_RED="`tput bold``tput setaf 1`"		#highlight
+    declare -r C_YELLOW="`tput setaf 3`"			#highlight
+    declare -r C_GRAY="`tput bold``tput setaf 5`"	#language detected
+    declare -r C_CYAN_RAW="\033[1;36m" 		#forms
+    declare -r C_GRAY_RED_RAW="\033[1;35m"		#phrases
+    declare -r C_DARK_BLUE_RAW="`tput setaf 7`"	#link for dictionary
+    declare -r C_BLUE_RAW="\033[1;34m"		#dictionary and vform1
+    declare -r C_BRIGHT_RAW="`tput bold`"		#phrases, examples main part, vform2
+    declare -r C_GREEN="`tput bold`"		#t_result
 else #universal
-	declare -r C_RED="`tput setaf 1`"		#highlight
-	declare -r C_YELLOW="`tput bold`"		#highlight
-	declare -r C_GRAY=""			#language detected
-	declare -r C_CYAN_RAW="" 		#forms
-	declare -r C_GRAY_RED_RAW=""		#phrases
-	declare -r C_DARK_BLUE_RAW=""		#link for dictionary
-	declare -r C_BLUE_RAW=""		#dictionary and vform1
-	declare -r C_BRIGHT_RAW="`tput bold`"	#phrases, examples main part, vform2
-	declare -r C_GREEN="`tput bold`"	#t_result
+    declare -r C_RED="`tput setaf 1`"		#highlight
+    declare -r C_YELLOW="`tput bold`"		#highlight
+    declare -r C_GRAY=""			#language detected
+    declare -r C_CYAN_RAW="" 		#forms
+    declare -r C_GRAY_RED_RAW=""		#phrases
+    declare -r C_DARK_BLUE_RAW=""		#link for dictionary
+    declare -r C_BLUE_RAW=""		#dictionary and vform1
+    declare -r C_BRIGHT_RAW="`tput bold`"	#phrases, examples main part, vform2
+    declare -r C_GREEN="`tput bold`"	#t_result
 fi
 declare -r C_NORMAL="`tput sgr0`"
 declare -r C_NORMAL_RAW="\033[0m"
@@ -263,42 +263,41 @@ source=
 target=
 urban_flag=$URBAN_DICTIONARY
 while getopts :hlpSs:t:u opt; do
-	case $opt in
-		h)
-			echo "$help"
-			exit;;
-		S)
-			sound=1;;
-		p)
-			echo "Prompt mode activated"
-			declare PROMPT_MODE_ACTIVATED=true;;
-		l)
-			for i in "${!ln_arr[@]}" ;do
-			echo -e "$i\t${ln_arr[$i]}"
-			done | sort -k2
-			exit;;
-		s)
-			if [[ ln_arr[$OPTARG] ]]; then TLSOURCE="$OPTARG";fi;;
-		t)
-			if [[ ln_arr[$OPTARG] ]]; then TLTARGET="$OPTARG";fi;;
-		u)
-			urban_flag=true;;
-#		\?)
-#			echo "Invalid option: -$OPTARG" >&2
-#			exit 1;;
-		?)
-			echo "Invalid option: -$OPTARG" >&2
-			printf "Usage: %s: [-S] [-h] [-l] [-p] [-s language_2_chars] [-t language_2_chars] <text>\n" `basename "$0"`
-			exit 2;;
-	esac
+    case $opt in
+	h)
+	    echo "$help"
+	    exit;;
+	S)
+	    sound=1;;
+	p)
+	    echo "Prompt mode activated"
+	    declare PROMPT_MODE_ACTIVATED=true;;
+	l)
+	    for i in "${!ln_arr[@]}" ;do
+		echo -e "$i\t${ln_arr[$i]}"
+	    done | sort -k2
+	    exit;;
+	s)
+	    if [[ ln_arr[$OPTARG] ]]; then TLSOURCE="$OPTARG";fi;;
+	t)
+	    if [[ ln_arr[$OPTARG] ]]; then TLTARGET="$OPTARG";fi;;
+	u)
+	    urban_flag=true;;
+	#		\?)
+	#			echo "Invalid option: -$OPTARG" >&2
+	#			exit 1;;
+	?)
+	echo "Invalid option: -$OPTARG" >&2
+	printf "Usage: %s: [-S] [-h] [-l] [-p] [-s language_2_chars] [-t language_2_chars] <text>\n" `basename "$0"`
+	exit 2;;
+    esac
 done
 shift $(($OPTIND - 1))
 request="$*"
 
 #if [ -f "$request" ] || [ "-" == "$request" ]
-if [ "-" == "$request" ] #read from file or pipe
-then
-   request=$(cat "$request")
+if [ "-" == "$request" ];then #read from file or pipe
+    request=$(cat "$request")
 fi
 
 sound_download(){ 			# $cachefile, $request, $source
@@ -318,11 +317,11 @@ sound_download(){ 			# $cachefile, $request, $source
 		#cat "$PR_DIR"/tmpcookie
 		curl -s -c "$PR_DIR"/tmpcookie -c "$PR_DIR"/tmpcookie --connect-timeout $timeout -m $timeout --user-agent "$useragent" $httpsproxy -x "$httpproxy" -d "login=$flogin&password=$fpass" https://ru.forvo.com/login/ -o/dev/null
 		if [[ -e "$PR_DIR"/tmpcookie ]]; then
-			curl -s -b "$PR_DIR"/tmpcookie --connect-timeout $timeout -m $timeout --user-agent "$useragent" $httpsproxy -x "$httpproxy" 'http://ru.forvo.com/' -H 'Host: ru.forvo.com' -H 'Referer: https://ru.forvo.com/login/' -o/dev/null
-			#cat "$PR_DIR"/tmpcookie
-			#echo getting $slink
-			curl -s -b "$PR_DIR"/tmpcookie --connect-timeout $timeout -m $timeout --user-agent "$useragent" $httpsproxy -x "$httpproxy" "$slink" > "$cachefile".mp3
-			return
+		    curl -s -b "$PR_DIR"/tmpcookie --connect-timeout $timeout -m $timeout --user-agent "$useragent" $httpsproxy -x "$httpproxy" 'http://ru.forvo.com/' -H 'Host: ru.forvo.com' -H 'Referer: https://ru.forvo.com/login/' -o/dev/null
+		    #cat "$PR_DIR"/tmpcookie
+		    #echo getting $slink
+		    curl -s -b "$PR_DIR"/tmpcookie --connect-timeout $timeout -m $timeout --user-agent "$useragent" $httpsproxy -x "$httpproxy" "$slink" > "$cachefile".mp3
+		    return
 		fi
 	fi
 	[ $sound -eq 1 ] && echo fail to get sound from forvo.com
@@ -560,168 +559,172 @@ main_func(){
 			fi
 
 			[[ $source == "auto" ]] && { source=$det_language; cachefile="$PR_DIR/cache/$source-$target"_"$request"; } #auto in cachefile fix #not necessary
-
-			declare trans
-			if [[ $r_words_count -le 2 && ${#request} -gt 1 && $source == en && ! $(echo "$difftest" | wc -l) -gt 1 ]];then #special check( expample: advise advice)
 			#transcription
+			declare trans
+			if [[ $r_words_count -le 2 && ${#request} -gt 1 && ! $(echo "$difftest" | wc -l) -gt 1 ]];then #special check( expample: advise advice)
+			    if [[ $source == en ]];then
 				trans=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://www.wordreference.com/definition/"$request" | grep pronWR | sed 's/span/\n/g' | grep id=.pronWR | sed 's#.*pronWR.*>/\([^/]*\).*#\1#') #getting transcription
+			       #[[ $? != 0 ]] &&  { echo "can't get transcription"; error=1; } #bashtrap;
+			    elif [[ $source == de ]];then
+				trans=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://www.wordreference.com/dees/"$request" | grep -o "class='pron'>[^<]*" | sed -e "s/.*>.//") #getting transcription
 				[[ $? != 0 ]] &&  { echo "can't get transcription"; error=1; } #bashtrap;
+			    fi
 			fi
 
 			# Main "Dictionary part" for english only. but it can be extended for every required language
 			if [[ $r_words_count -eq 1 && ${#request} -gt 1 && $source == en && (( ! $fl_raw || $trans )) ]]; then #dictionary
 
-				echo -e "$C_GREEN$t_result$C_NORMAL_RAW" > "$cachefile" #google translated text to cache
-				[[ $dictionary ]] && echo -e "$dictionary" >> "$cachefile" #google dictionary to cache
-				[[ $(echo "$options_for_one_word" | wc -l) -gt 1 && $(echo "$dictionary" | wc -l) -le 3 ]] && echo -e "$C_BLUE_RAW"Options:"$C_NORMAL"'\n'"$options_for_one_word" >> "$cachefile" #google sugestions to cache
+			    echo -e "$C_GREEN$t_result$C_NORMAL_RAW" > "$cachefile" #google translated text to cache
+			    [[ $dictionary ]] && echo -e "$dictionary" >> "$cachefile" #google dictionary to cache
+			    [[ $(echo "$options_for_one_word" | wc -l) -gt 1 && $(echo "$dictionary" | wc -l) -le 3 ]] && echo -e "$C_BLUE_RAW"Options:"$C_NORMAL"'\n'"$options_for_one_word" >> "$cachefile" #google sugestions to cache
 
-				#phrases, forms and a vform
-				macmill=$(curl -si --user-agent "$useragent" $httpsproxy -x "$httpproxy" -m $timeout http://www.macmillandictionary.com/search/british/direct/?q="$(echo $request | tr '[:upper:]' '[:lower:]' | tr ' ' + )" )
+			    #phrases, forms and a vform
+			    macmill=$(curl -si --user-agent "$useragent" $httpsproxy -x "$httpproxy" -m $timeout http://www.macmillandictionary.com/search/british/direct/?q="$(echo $request | tr '[:upper:]' '[:lower:]' | tr ' ' + )" )
+			    [[ $? != 0 ]] && { echo "ERROR cant get phrases macmillandictionary" >> "$cachefile"; error=1;}
+			    location=$(echo "$macmill" | grep "Location: http://www.macmillandictionary.com/dictionary/british/" | grep -o "http.*" | tr -d '\r')
+			    if [[ $location ]]; then
+				#echo $location
+				macmill=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" -m $timeout "$location" )
 				[[ $? != 0 ]] && { echo "ERROR cant get phrases macmillandictionary" >> "$cachefile"; error=1;}
-				location=$(echo "$macmill" | grep "Location: http://www.macmillandictionary.com/dictionary/british/" | grep -o "http.*" | tr -d '\r')
-				if [[ $location ]]; then
-					#echo $location
-					macmill=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" -m $timeout "$location" )
-					[[ $? != 0 ]] && { echo "ERROR cant get phrases macmillandictionary" >> "$cachefile"; error=1;}
-				fi
-				#forms
-				forms=$(echo $macmill | grep -o "id=\"wordsformslayer-head\".*End of DIV wordforms" | sed 's/INFLECTION-CONTENT/\n/g' | sed -e 's/.*INFLECTION-ENTRY\">\([^<]*\)<.*I-VARIANT-before\">\([^<]*\).*INFLECTION-ENTRY\">\([^<]*\).*/666\1\2\3,/' -e 's/.*INFLECTION-ENTRY\">\([^<]*\)<.*/666\1,/' | grep 666 | cut -c 4-)
-				#echo $forms
-				fwc=$(echo "$forms" | wc -l)
-				firstf=`echo "$forms" | head -n 1` #1
-				last1f=`echo "$forms" | tail -n 2 | head -n 1` #end-1
-				lastf=`echo "$forms" | tail -n 1` #end
-				[[ (( fwc -eq 5 && (( ${firstf%?}"ed," != $lastf || ${firstf%?}"ed," != $last1f || $lastf != $last1f )) )) ||
+			    fi
+			    #forms
+			    forms=$(echo $macmill | grep -o "id=\"wordsformslayer-head\".*End of DIV wordforms" | sed 's/INFLECTION-CONTENT/\n/g' | sed -e 's/.*INFLECTION-ENTRY\">\([^<]*\)<.*I-VARIANT-before\">\([^<]*\).*INFLECTION-ENTRY\">\([^<]*\).*/666\1\2\3,/' -e 's/.*INFLECTION-ENTRY\">\([^<]*\)<.*/666\1,/' | grep 666 | cut -c 4-)
+			    #echo $forms
+			    fwc=$(echo "$forms" | wc -l)
+			    firstf=`echo "$forms" | head -n 1` #1
+			    last1f=`echo "$forms" | tail -n 2 | head -n 1` #end-1
+			    lastf=`echo "$forms" | tail -n 1` #end
+			    [[ (( fwc -eq 5 && (( ${firstf%?}"ed," != $lastf || ${firstf%?}"ed," != $last1f || $lastf != $last1f )) )) ||
 				   (( fwc -eq 3 && (( ${firstf%?}"er," != $last1f  || ${firstf%?}"est," != $lastf )) )) ||
 				   (( fwc -eq 2 && (( ${firstf%?}"s," != $lastf )) )) ||
 				   (( fwc -eq 4 )) ]] && echo -e "$C_CYAN_RAW"forms:$C_NORMAL ${forms%?} >> "$cachefile"
-				#vform
-				vform=$(echo "$macmill" | grep -o "GREF-ENTRY-before.*</a>" | sed 's/<\/a>/<\/a>\n/g' | head -n 1 | sed 's/.*<a[^>]*>\([^<]*\).*/\1/')
-				vform_desc=$(echo "$macmill" | grep "span class=\"GREF-TYPE\"" | sed 's/.*<span class=\"GREF-TYPE\">\([^<]*\)<.*/\1/')
-				[[ $vform ]] && echo -e "$C_BLUE_RAW$vform_desc$C_NORMAL_RAW" "$C_BRIGHT_RAW$vform$C_NORMAL_RAW" >> "$cachefile"
-				#phrases
-				#raw_phras=$(echo "$macmill" | grep -o '<li ID.*End of DIV SENSE--></li>' | sed 's/<.\?span[^>]*>//g')
-				#phras=$(echo $raw_phras | sed -e 's/<a[^>]*>//g' -e 's/<\/a>//g' | sed -e 's/div class=\"P-HEAD\"/\n?????/g' | grep "?????" | grep -n . | sed 's/^[0-9]*:/&\n/' | sed 's/End of DIV EXAMPLES/\n/g' | sed '/^[0-9]*:/{h;d;};G; s/^\(.*\)\n\([0-9]*:\)/\2 \1/' | sed \
-#-e 's/^\([0-9]*\):.*\"h2\">\([^<]*\).*\"h2\">\([^<]*\).*\"EXAMPLE\">\([^<]*\).*/**\1 \'$C_BRIGHT_RAW'\2\3'$C_NORMAL'\. \4/' \
-#-e 's/^\([0-9]*\):.*\"h2\">\([^<]*\).*\"EXAMPLE\">\([^<]*\).*/**\1 \'$C_BRIGHT_RAW'\2'$C_NORMAL'\. \3/' \
-#-e 's/^\([0-9]*\):.*\"h2\">\([^<]*\).*\"h2\">\([^<]*\).*class=\"SENSE-BODY\">\([^<]*\).*/**\1 \'$C_BRIGHT_RAW'\2\3'$C_NORMAL'\. \4/' \
-#-e 's/^\([0-9]*\):.*\"h2\">\([^<]*\).*class=\"SENSE-BODY\">\([^<]*\).*/**\1 \'$C_BRIGHT_RAW'\2'$C_NORMAL'\. \3/' \
-#-e 's/^\([0-9]*\):.*\"EXAMPLE\">\([^<]*\).*/**\1 \2/' | grep -o "^\*\*[0-9].*" | sed 's/^\*\*//' ) # doubleh2+exmaple, h2+exmaple, doubleh2+sentence, h2+sentence, only example
-phras=$(echo "$macmill" | grep -o 'div id="phrases_container".*End of DIV --' | sed 's/<\/a>/\n/g' | sed 's/.*>//' | grep -o "^ .*")
-				if [[ $phras ]]; then 	#phrases
-					echo -e "$C_GRAY_RED_RAW"PHRASES:$C_NORMAL >> "$cachefile"
-					echo -e "$phras" >> "$cachefile"
-					#echo -e "$C_DARK_BLUE_RAW"http://www.macmillandictionary.com/dictionary/american/"$request"$C_NORMAL >> "$cachefile"
-				else 			#second attempt examples
-					phrases_2=$(echo "$macmill" | sed -e 's/<a[^>]*>//g' -e 's/<\/a>//g' | sed 's/<.\?span[^>]*>//g' | grep -o 'div class="SENSE".*End of DIV SENSE--' | sed 's/End of DIV SENSE--/\n/g' | grep -n . | sed 's/^.:/&\n/' | sed 's/End of DIV EXAMPLES/\n/g' | sed '/^[0-9]:/{h;d;};G; s/^\(.*\)\n\([0-9]:\)/\2 \1/' | grep "<strong>" | sed 's/^\([0-9]\).*<strong>\([^<]*\)<.*class=\"EXAMPLE\">\([^<]*\)<.*/\1 \'$C_BRIGHT_RAW'\2'$C_NORMAL'. \3/' | sed 's/^\([0-9]\).*<strong>\([^<]*\)<\/strong>\([^<]*\).*/\1 \'$C_BRIGHT_RAW'\2'$C_NORMAL'. \3/' | sed 's/\. / /')
-					if [[ $phrases_2 ]];then
-						echo -e "$C_GRAY_RED_RAW"EXAMPLES:$C_NORMAL >> "$cachefile"
-						echo -e "$phrases_2" >> "$cachefile"
+			    #vform
+			    vform=$(echo "$macmill" | grep -o "GREF-ENTRY-before.*</a>" | sed 's/<\/a>/<\/a>\n/g' | head -n 1 | sed 's/.*<a[^>]*>\([^<]*\).*/\1/')
+			    vform_desc=$(echo "$macmill" | grep "span class=\"GREF-TYPE\"" | sed 's/.*<span class=\"GREF-TYPE\">\([^<]*\)<.*/\1/')
+			    [[ $vform ]] && echo -e "$C_BLUE_RAW$vform_desc$C_NORMAL_RAW" "$C_BRIGHT_RAW$vform$C_NORMAL_RAW" >> "$cachefile"
+			    #phrases
+			    #raw_phras=$(echo "$macmill" | grep -o '<li ID.*End of DIV SENSE--></li>' | sed 's/<.\?span[^>]*>//g')
+			    #phras=$(echo $raw_phras | sed -e 's/<a[^>]*>//g' -e 's/<\/a>//g' | sed -e 's/div class=\"P-HEAD\"/\n?????/g' | grep "?????" | grep -n . | sed 's/^[0-9]*:/&\n/' | sed 's/End of DIV EXAMPLES/\n/g' | sed '/^[0-9]*:/{h;d;};G; s/^\(.*\)\n\([0-9]*:\)/\2 \1/' | sed \
+				#-e 's/^\([0-9]*\):.*\"h2\">\([^<]*\).*\"h2\">\([^<]*\).*\"EXAMPLE\">\([^<]*\).*/**\1 \'$C_BRIGHT_RAW'\2\3'$C_NORMAL'\. \4/' \
+				#-e 's/^\([0-9]*\):.*\"h2\">\([^<]*\).*\"EXAMPLE\">\([^<]*\).*/**\1 \'$C_BRIGHT_RAW'\2'$C_NORMAL'\. \3/' \
+				#-e 's/^\([0-9]*\):.*\"h2\">\([^<]*\).*\"h2\">\([^<]*\).*class=\"SENSE-BODY\">\([^<]*\).*/**\1 \'$C_BRIGHT_RAW'\2\3'$C_NORMAL'\. \4/' \
+				#-e 's/^\([0-9]*\):.*\"h2\">\([^<]*\).*class=\"SENSE-BODY\">\([^<]*\).*/**\1 \'$C_BRIGHT_RAW'\2'$C_NORMAL'\. \3/' \
+				#-e 's/^\([0-9]*\):.*\"EXAMPLE\">\([^<]*\).*/**\1 \2/' | grep -o "^\*\*[0-9].*" | sed 's/^\*\*//' ) # doubleh2+exmaple, h2+exmaple, doubleh2+sentence, h2+sentence, only example
+			    phras=$(echo "$macmill" | grep -o 'div id="phrases_container".*End of DIV --' | sed 's/<\/a>/\n/g' | sed 's/.*>//' | grep -o "^ .*")
+			    if [[ $phras ]]; then 	#phrases
+				echo -e "$C_GRAY_RED_RAW"PHRASES:$C_NORMAL >> "$cachefile"
+				echo -e "$phras" >> "$cachefile"
+				#echo -e "$C_DARK_BLUE_RAW"http://www.macmillandictionary.com/dictionary/american/"$request"$C_NORMAL >> "$cachefile"
+			    else 			#second attempt examples
+				phrases_2=$(echo "$macmill" | sed -e 's/<a[^>]*>//g' -e 's/<\/a>//g' | sed 's/<.\?span[^>]*>//g' | grep -o 'div class="SENSE".*End of DIV SENSE--' | sed 's/End of DIV SENSE--/\n/g' | grep -n . | sed 's/^.:/&\n/' | sed 's/End of DIV EXAMPLES/\n/g' | sed '/^[0-9]:/{h;d;};G; s/^\(.*\)\n\([0-9]:\)/\2 \1/' | grep "<strong>" | sed 's/^\([0-9]\).*<strong>\([^<]*\)<.*class=\"EXAMPLE\">\([^<]*\)<.*/\1 \'$C_BRIGHT_RAW'\2'$C_NORMAL'. \3/' | sed 's/^\([0-9]\).*<strong>\([^<]*\)<\/strong>\([^<]*\).*/\1 \'$C_BRIGHT_RAW'\2'$C_NORMAL'. \3/' | sed 's/\. / /')
+				if [[ $phrases_2 ]];then
+				    echo -e "$C_GRAY_RED_RAW"EXAMPLES:$C_NORMAL >> "$cachefile"
+				    echo -e "$phrases_2" >> "$cachefile"
+				fi
+			    fi
+
+			    #
+			    [[ $urban ]] && echo "$urban" >> "$cachefile"
+			    #transcription
+			    [[ $trans ]] && echo "["$trans"]" >> "$cachefile"
+
+			    cat "$cachefile" 2>/dev/null #output for 1 word
+			    #				echo -e "$C_DARK_BLUE_RAW"http://oxforddictionaries.com/definition/english/$(echo "$request" | sed "s/'/%27/" )$C_NORMAL_RAW # just another good english dictionary
+
+			    if [[ ${#request} -gt 2 || $r_words_count -le 2 ]] ; then
+
+				#saving words
+				ted_words_file=$(cat "$TR_ENG_WORDS")
+				ted_words_file=$(echo "$ted_words_file" | tail -n 70)
+				if [[ ! $(echo "$ted_words_file" | grep "$request" 2>/dev/null) ]]; then
+				    echo -e "$ted_words_file\n""$request" > "$TR_ENG_WORDS"
+				    #echo -e "$request \t\t\t\t\t\t\t\t\t\t [$trans]" >> "$TR_ENG_WORDS"
+				fi
+
+			    fi
+			elif [[ ! $fl_raw && $r_words_count -le 5 ]]; then  #all languages dictionary (without errors - fl_raw)
+			    echo -e "$C_GREEN$t_result$C_NORMAL_RAW" > "$cachefile"				#google translated text output
+			    [[ $source != en && $r_words_count -le $TRANSLIT_WORDS_MAX && $(echo $t_result | sed 's/ //g' | tr '[:upper:]' '[:lower:]') !=  $(echo $translit | sed 's/ //g' | tr '[:upper:]' '[:lower:]') ]] && echo -e "$translit" >> "$cachefile"				#google translit	output
+			    [[ $dictionary ]] && echo -e "$dictionary" >> "$cachefile"			#google dictionary 	output
+			    [[ $(echo "$options_for_one_word" | wc -l) -gt 1 && $r_words_count -le 2 && $(echo "$dictionary" | wc -l) -le 3 ]] && echo -e "$C_BLUE_RAW"Options:"$C_NORMAL"'\n'"$options_for_one_word" >> "$cachefile" #google sugestions to cache
+
+			    if [[ $source == en && $r_words_count -le 5 ]]; then #english
+				#phrases for 2 words
+				if [[ $r_words_count -le 2 ]];then
+
+				    macmill=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://www.macmillandictionary.com/dictionary/british/"$(echo $request | tr ' ' - )" )
+				    [[ $? != 0 ]] && { echo "cant getmacmillandictionary.com phrases for string" ; bashtrap; }
+				    macmill=$(echo "$macmill" | grep -o 'div class="SENSE".*End of DIV SENSE--' | sed -e 's/<a[^>]*>//g' -e 's/<\/a>//g' | sed 's/End of DIV SENSE--/\n/g' | grep -n . | sed 's/^[0-9]*:/&\n/' | sed 's/End of DIV EXAMPLES/\n/g' | sed '/^[0-9]*:/{h;d;};G; s/^\(.*\)\n\([0-9]*:\)/\2 \1/' | sed \
+																																								  -e's/^\([0-9]*\):.*p id=\"EXAMPLE\" class=\"EXAMPLE\">\([^<]*\)<.*/*\1 \2/' \
+																																								  -e 's/^\([0-9]\).*span class=\"BASE\">\([^<]*\).*context=\"DEFINITION-before\"> <\/span>\([^<]*\).*/*\1 \'$C_BRIGHT_RAW'\2'$C_NORMAL'\. \3/' | grep -o "^\*[0-9].*" | sed 's/^*//')
+				    if [[ $macmill ]];then
+					echo -e "$C_GRAY_RED_RAW"EXAMPLES:$C_NORMAL >> "$cachefile"
+					echo -e "$macmill" >> "$cachefile"
+				    fi
+				fi
+
+				#search for ideom for 2-5 words
+				ideom_and_list=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://idioms.thefreedictionary.com/"$(echo $request | tr ' ' + )")
+				[[ $? != 0 ]] && { echo "cant get thefreedictionary.com phrases for ideom1" ; bashtrap; }
+				list=$(echo "$ideom_and_list" | grep "[fF]ound in:")
+				raw_ideoms=$(echo "$ideom_and_list" | grep -o 'div class="ds-single".*</div><div')
+				ideom=$(echo "$raw_ideoms" | sed 's/<i>//' | sed 's/<\/i>//' | sed 's/.*ds-single\">\([^<]*\)<.*/\1/')
+				illustration=$(echo "$raw_ideoms" | sed 's/.*class=illustration>\([^<]*\)<.*/\1/')
+				if [[ $ideom ]]; then
+				    echo -e "$C_GRAY_RED_RAW"Ideom:$C_NORMAL >> "$cachefile"
+				    echo -n "$ideom " >> "$cachefile"
+				    [[ $illustration ]] && echo $illustration >> "$cachefile"
+				elif [[ $SUGGESTIONS_ACTIVATED && ! $dictionary ]]; then
+				    a_compl=$(curl -s --user-agent "$useragent" -G --data-urlencode "query=$request" "http://www.thefreedictionary.com/_/search/suggest.ashx?jsonp=SAYT.Callback" | grep -o "\[\[.*\]\]" | sed 's/",/\n/g' | sed -e 's/.*"//' -e '$ d')
+				    [[ $a_compl && $(echo $a_compl | tr '[:upper:]' '[:lower:]') != $request ]] && echo -e "$C_BRIGHT_RAW"Suggestions:$C_NORMAL'\n'"$a_compl" >> "$cachefile"
+				fi
+
+				if [[ ! $ideom && $list ]]; then
+				    ency_link=$(echo "$list" | grep -o 'http://encyclopedia2[^"]*')
+				    if [[ $ency_link ]]; then
+					raw_ency=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" "$ency_link")
+					[[ $? != 0 ]] && { echo "cant get thefreedictionary.com phrases for ideom2" ; bashtrap; }
+					#not counting <div id=MainTxt><span class="hw">
+					redirectto=$(echo "$raw_ency" | grep -o "<h1>.*</h1>" | sed 's/<div>.*<\/div>//' | sed -e 's/<h1>//' -e 's/<.h1>//' | tr '[:upper:]' '[:lower:]')
+					if [[ $r_words_count -eq $(echo $redirectto | wc -w ) ]]; then
+					    firstpass=$(echo "$raw_ency" | grep '<div class=hw>' | sed 's/<script>/\n/'| head -n 1 | sed 's/<br \/><br \/>/\n/g' | sed 's/<br \/>//g' | sed -e 's/<div class=hw>/ /' -e 's/<\/div>/. /' | sed -e 's/^[ \t]*//')
+					    #								echo "$raw_ency" | grep '<div class=hw>'
+					    if [[ $(echo $firstpass | grep -o "<div class=runseg>") ]];then #sheet metal
+						ency=$(echo "$firstpass" | sed -e 's/<i>//g' -e 's/<\/i>/,/g' | sed -e 's/<b>/'$(tput bold)'/g' -e 's/<\/b>/'$C_NORMAL'/g' | sed 's/.*<div[^>]*>\([^<]*\).*/\1/' | sed -e 's/^.*<p>//' -e 's/<\/p>.*//' | sed -e 's/^.*<p>//')
+					    else #Three sheets to the wind, number crunching, syntactic sugar, death valley, tightly coupled
+						ency=$(echo "$firstpass" | sed -e 's/<b>/'$(tput bold)'/g' -e 's/<\/b>/'$C_NORMAL'/g' | sed 's/<a.*<\/a>//g' | sed 's/^<p>//' | sed 's/<p>/\n/g' | sed 's/<\/p>//g' | sed 's/.*iv>\([^<]*\)<a.*/\1/' | sed -e 's/Contrast with//' -e 's/See//')
+					    fi
+					    if [[ $ency ]]; then
+						corephrase1=$(echo "$raw_ency" | grep '<div class=hw>' | grep -o '<h1>.*</h1>' | sed 's/.*>\([^<]*\)<.*/\1/')
+						corephrase2=$(echo "$raw_ency" | grep -o '<div class=hw>[^<]*<' | sed 's/.*>\([^<]*\)</\1/')
+						echo -e "$C_GRAY_RED_RAW"Ideom:$C_NORMAL >> "$cachefile"
+						[[ $corephrase1 && $(echo $corephrase1 | tr '[:upper:]' '[:lower:]') != $request ]] && echo -e "$C_BRIGHT_RAW"$corephrase1"$C_NORMAL" >> "$cachefile"
+						[[ $corephrase2 && $corephrase2 != $corephrase1 ]] && echo -e "$C_BRIGHT_RAW"$corephrase2"$C_NORMAL" >> "$cachefile"
+						echo "$ency" >> "$cachefile"
+						contr_ency=$(echo "$raw_ency" | grep "Contrast with" | sed 's/.*\">\([^<]*\)<\/a.*/\1/')
+						if [[ $contr_ency ]]; then
+						    echo -e Contrast with: "$C_BRIGHT_RAW"$contr_ency"$C_NORMAL" >> "$cachefile"
+						else
+						    see_ency=$(echo "$raw_ency" | grep '<div class=hw>' | grep -o "See.*<a href=.*</a>" | sed 's/.*>\([^<]*\)<.*/\1/')
+						    [[ $see_ency ]] && echo -e See"$C_BRIGHT_RAW" $see_ency"$C_NORMAL" >> "$cachefile"
+						fi
+					    fi
 					fi
+				    fi
 				fi
 
 				#
 				[[ $urban ]] && echo "$urban" >> "$cachefile"
-				#transcription
-				[[ $trans ]] && echo "["$trans"]" >> "$cachefile"
 
-				cat "$cachefile" 2>/dev/null #output for 1 word
-#				echo -e "$C_DARK_BLUE_RAW"http://oxforddictionaries.com/definition/english/$(echo "$request" | sed "s/'/%27/" )$C_NORMAL_RAW # just another good english dictionary
-
-				if [[ ${#request} -gt 2 || $r_words_count -le 2 ]] ; then
-
-					#saving words
-					ted_words_file=$(cat "$TR_ENG_WORDS")
-					ted_words_file=$(echo "$ted_words_file" | tail -n 70)
-					if [[ ! $(echo "$ted_words_file" | grep "$request" 2>/dev/null) ]]; then
-						echo -e "$ted_words_file\n""$request" > "$TR_ENG_WORDS"
-						#echo -e "$request \t\t\t\t\t\t\t\t\t\t [$trans]" >> "$TR_ENG_WORDS"
-					fi
-
-				fi
-			elif [[ ! $fl_raw && $r_words_count -le 5 ]]; then  #all languages dictionary (without errors - fl_raw)
-				echo -e "$C_GREEN$t_result$C_NORMAL_RAW" > "$cachefile"				#google translated text output
-				[[ $source != en && $r_words_count -le $TRANSLIT_WORDS_MAX && $(echo $t_result | sed 's/ //g' | tr '[:upper:]' '[:lower:]') !=  $(echo $translit | sed 's/ //g' | tr '[:upper:]' '[:lower:]') ]] && echo -e "$translit" >> "$cachefile"				#google translit	output
-				[[ $dictionary ]] && echo -e "$dictionary" >> "$cachefile"			#google dictionary 	output
-				[[ $(echo "$options_for_one_word" | wc -l) -gt 1 && $r_words_count -le 2 && $(echo "$dictionary" | wc -l) -le 3 ]] && echo -e "$C_BLUE_RAW"Options:"$C_NORMAL"'\n'"$options_for_one_word" >> "$cachefile" #google sugestions to cache
-
-				if [[ $source == en && $r_words_count -le 5 ]]; then #english
-					#phrases for 2 words
-					if [[ $r_words_count -le 2 ]];then
-
-						macmill=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://www.macmillandictionary.com/dictionary/british/"$(echo $request | tr ' ' - )" )
-						[[ $? != 0 ]] && { echo "cant getmacmillandictionary.com phrases for string" ; bashtrap; }
-						macmill=$(echo "$macmill" | grep -o 'div class="SENSE".*End of DIV SENSE--' | sed -e 's/<a[^>]*>//g' -e 's/<\/a>//g' | sed 's/End of DIV SENSE--/\n/g' | grep -n . | sed 's/^[0-9]*:/&\n/' | sed 's/End of DIV EXAMPLES/\n/g' | sed '/^[0-9]*:/{h;d;};G; s/^\(.*\)\n\([0-9]*:\)/\2 \1/' | sed \
--e's/^\([0-9]*\):.*p id=\"EXAMPLE\" class=\"EXAMPLE\">\([^<]*\)<.*/*\1 \2/' \
--e 's/^\([0-9]\).*span class=\"BASE\">\([^<]*\).*context=\"DEFINITION-before\"> <\/span>\([^<]*\).*/*\1 \'$C_BRIGHT_RAW'\2'$C_NORMAL'\. \3/' | grep -o "^\*[0-9].*" | sed 's/^*//')
-						if [[ $macmill ]];then
-							echo -e "$C_GRAY_RED_RAW"EXAMPLES:$C_NORMAL >> "$cachefile"
-							echo -e "$macmill" >> "$cachefile"
-						fi
-					fi
-
-					#search for ideom for 2-5 words
-					ideom_and_list=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://idioms.thefreedictionary.com/"$(echo $request | tr ' ' + )")
-					[[ $? != 0 ]] && { echo "cant get thefreedictionary.com phrases for ideom1" ; bashtrap; }
-					list=$(echo "$ideom_and_list" | grep "[fF]ound in:")
-					raw_ideoms=$(echo "$ideom_and_list" | grep -o 'div class="ds-single".*</div><div')
-					ideom=$(echo "$raw_ideoms" | sed 's/<i>//' | sed 's/<\/i>//' | sed 's/.*ds-single\">\([^<]*\)<.*/\1/')
-					illustration=$(echo "$raw_ideoms" | sed 's/.*class=illustration>\([^<]*\)<.*/\1/')
-					if [[ $ideom ]]; then
-						echo -e "$C_GRAY_RED_RAW"Ideom:$C_NORMAL >> "$cachefile"
-						echo -n "$ideom " >> "$cachefile"
-						[[ $illustration ]] && echo $illustration >> "$cachefile"
-					elif [[ $SUGGESTIONS_ACTIVATED && ! $dictionary ]]; then
-						a_compl=$(curl -s --user-agent "$useragent" -G --data-urlencode "query=$request" "http://www.thefreedictionary.com/_/search/suggest.ashx?jsonp=SAYT.Callback" | grep -o "\[\[.*\]\]" | sed 's/",/\n/g' | sed -e 's/.*"//' -e '$ d')
-						[[ $a_compl && $(echo $a_compl | tr '[:upper:]' '[:lower:]') != $request ]] && echo -e "$C_BRIGHT_RAW"Suggestions:$C_NORMAL'\n'"$a_compl" >> "$cachefile"
-					fi
-
-					if [[ ! $ideom && $list ]]; then
-						ency_link=$(echo "$list" | grep -o 'http://encyclopedia2[^"]*')
-						if [[ $ency_link ]]; then
-							raw_ency=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" "$ency_link")
-							[[ $? != 0 ]] && { echo "cant get thefreedictionary.com phrases for ideom2" ; bashtrap; }
-							#not counting <div id=MainTxt><span class="hw">
-							redirectto=$(echo "$raw_ency" | grep -o "<h1>.*</h1>" | sed 's/<div>.*<\/div>//' | sed -e 's/<h1>//' -e 's/<.h1>//' | tr '[:upper:]' '[:lower:]')
-							if [[ $r_words_count -eq $(echo $redirectto | wc -w ) ]]; then
-								firstpass=$(echo "$raw_ency" | grep '<div class=hw>' | sed 's/<script>/\n/'| head -n 1 | sed 's/<br \/><br \/>/\n/g' | sed 's/<br \/>//g' | sed -e 's/<div class=hw>/ /' -e 's/<\/div>/. /' | sed -e 's/^[ \t]*//')
-#								echo "$raw_ency" | grep '<div class=hw>'
-								if [[ $(echo $firstpass | grep -o "<div class=runseg>") ]];then #sheet metal
-									ency=$(echo "$firstpass" | sed -e 's/<i>//g' -e 's/<\/i>/,/g' | sed -e 's/<b>/'$(tput bold)'/g' -e 's/<\/b>/'$C_NORMAL'/g' | sed 's/.*<div[^>]*>\([^<]*\).*/\1/' | sed -e 's/^.*<p>//' -e 's/<\/p>.*//' | sed -e 's/^.*<p>//')
-								else #Three sheets to the wind, number crunching, syntactic sugar, death valley, tightly coupled
-									ency=$(echo "$firstpass" | sed -e 's/<b>/'$(tput bold)'/g' -e 's/<\/b>/'$C_NORMAL'/g' | sed 's/<a.*<\/a>//g' | sed 's/^<p>//' | sed 's/<p>/\n/g' | sed 's/<\/p>//g' | sed 's/.*iv>\([^<]*\)<a.*/\1/' | sed -e 's/Contrast with//' -e 's/See//')
-								fi
-								if [[ $ency ]]; then
-									corephrase1=$(echo "$raw_ency" | grep '<div class=hw>' | grep -o '<h1>.*</h1>' | sed 's/.*>\([^<]*\)<.*/\1/')
-									corephrase2=$(echo "$raw_ency" | grep -o '<div class=hw>[^<]*<' | sed 's/.*>\([^<]*\)</\1/')
-									echo -e "$C_GRAY_RED_RAW"Ideom:$C_NORMAL >> "$cachefile"
-									[[ $corephrase1 && $(echo $corephrase1 | tr '[:upper:]' '[:lower:]') != $request ]] && echo -e "$C_BRIGHT_RAW"$corephrase1"$C_NORMAL" >> "$cachefile"
-									[[ $corephrase2 && $corephrase2 != $corephrase1 ]] && echo -e "$C_BRIGHT_RAW"$corephrase2"$C_NORMAL" >> "$cachefile"
-									echo "$ency" >> "$cachefile"
-									contr_ency=$(echo "$raw_ency" | grep "Contrast with" | sed 's/.*\">\([^<]*\)<\/a.*/\1/')
-									if [[ $contr_ency ]]; then
-										echo -e Contrast with: "$C_BRIGHT_RAW"$contr_ency"$C_NORMAL" >> "$cachefile"
-									else
-										see_ency=$(echo "$raw_ency" | grep '<div class=hw>' | grep -o "See.*<a href=.*</a>" | sed 's/.*>\([^<]*\)<.*/\1/')
-										[[ $see_ency ]] && echo -e See"$C_BRIGHT_RAW" $see_ency"$C_NORMAL" >> "$cachefile"
-									fi
-								fi
-							fi
-						fi
-					fi
-
-					#
-					[[ $urban ]] && echo "$urban" >> "$cachefile"
-
-				fi
-				cat "$cachefile" 2>/dev/null #output
-				[[ $r_words_count -gt 2 ]] && rm "$cachefile" 2> /dev/null #rm for more then 2 words
+			    fi
+			    cat "$cachefile" 2>/dev/null #output
+			    [[ $r_words_count -gt 2 ]] && rm "$cachefile" 2> /dev/null #rm for more then 2 words
 
 
 			else # with errors $fl_raw ;  words > 5
-				echo -e "$C_GREEN$t_result$C_NORMAL_RAW" #google translated text output
-				[[ $source != en && $r_words_count -le $TRANSLIT_WORDS_MAX && $(echo $t_result | sed 's/ //g' | tr '[:upper:]' '[:lower:]') !=  $(echo $translit | sed 's/ //g' | tr '[:upper:]' '[:lower:]') ]] && echo -e "$translit"	#google translit	output
-				echo -e "$fl"
+			    echo -e "$C_GREEN$t_result$C_NORMAL_RAW" #google translated text output
+			    [[ $source != en && $r_words_count -le $TRANSLIT_WORDS_MAX && $(echo $t_result | sed 's/ //g' | tr '[:upper:]' '[:lower:]') !=  $(echo $translit | sed 's/ //g' | tr '[:upper:]' '[:lower:]') ]] && echo -e "$translit"	#google translit	output
+			    echo -e "$fl"
 			fi #main end
 		else #cache output
 			cat "$cachefile" #output

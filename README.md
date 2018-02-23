@@ -84,6 +84,9 @@ for english:
 - saving english words to file for learning
 - urban dictionary
 
+for german:
+- transcription
+
 for convenience. Add to ~/.bash_aliases:
 - alias t="/home/user/perlfork.pl"
 - alias ts="/home/user/translate -S"
