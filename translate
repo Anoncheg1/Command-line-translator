@@ -534,7 +534,7 @@ main_func(){
 			[[ $det_language && $det_language != $source && $TLSOURCE ]] && echo -e "$C_GRAY*	$det_language ${ln_arr[$det_language]}$C_NORMAL"
 
 			declare urban # dictionary for 1-4 words NO LANGUAGE DETECTIONS
-			if [[ $r_words_count -le 5 && ${#request} -gt 1 && $source == en && $urban_flag == true && -x ${0%/*}"/urban.pl" ]];then
+			if [[ $r_words_count -le 5 && ${#request} -gt 1 && $source == "en" && $urban_flag == true && -x ${0%/*}"/urban.pl" ]];then
 				urban=$(perl ${0%/*}"/urban.pl" $(echo $request | tr ' ' + ))
 				[[ $? != 0 ]] && {	error=1; }
 			fi
@@ -562,11 +562,11 @@ main_func(){
 			#transcription
 			declare trans
 			if [[ $r_words_count -le 2 && ${#request} -gt 1 && ! $(echo "$difftest" | wc -l) -gt 1 ]];then #special check( expample: advise advice)
-			    if [[ $source == en ]];then
+			    if [[ $source == "en" ]];then
 				trans=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://www.wordreference.com/definition/"$request" | grep pronWR | sed 's/span/\n/g' | grep id=.pronWR | sed 's#.*pronWR.*>/\([^/]*\).*#\1#') #getting transcription
-			       #[[ $? != 0 ]] &&  { echo "can't get transcription"; error=1; } #bashtrap;
-			    elif [[ $source == de ]];then
-				trans=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://www.wordreference.com/dees/"$request" | grep -o "class='pron'>[^<]*" | sed -e "s/.*>.//") #getting transcription
+			       [[ $? != 0 ]] &&  { echo "can't get transcription"; error=1; } #bashtrap;
+			    elif [[ $source == "de" ]];then
+				trans=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://www.wordreference.com/dees/"$request" | grep -o "class='pron'>[^<]*" | head -n 1 | sed -e "s/.*>//") #getting transcription
 				[[ $? != 0 ]] &&  { echo "can't get transcription"; error=1; } #bashtrap;
 			    fi
 			fi
@@ -626,7 +626,7 @@ main_func(){
 			    #
 			    [[ $urban ]] && echo "$urban" >> "$cachefile"
 			    #transcription
-			    [[ $trans ]] && echo "["$trans"]" >> "$cachefile"
+			    [[ $trans ]] && echo "[$trans]" >> "$cachefile"
 
 			    cat "$cachefile" 2>/dev/null #output for 1 word
 			    #				echo -e "$C_DARK_BLUE_RAW"http://oxforddictionaries.com/definition/english/$(echo "$request" | sed "s/'/%27/" )$C_NORMAL_RAW # just another good english dictionary
@@ -634,7 +634,7 @@ main_func(){
 			    if [[ ${#request} -gt 2 || $r_words_count -le 2 ]] ; then
 
 				#saving words
-				ted_words_file=$(cat "$TR_ENG_WORDS")
+				ted_words_file=$(cat "$TR_ENG_WORDS" 2>/dev/null)
 				ted_words_file=$(echo "$ted_words_file" | tail -n 70)
 				if [[ ! $(echo "$ted_words_file" | grep "$request" 2>/dev/null) ]]; then
 				    echo -e "$ted_words_file\n""$request" > "$TR_ENG_WORDS"
@@ -642,11 +642,15 @@ main_func(){
 				fi
 
 			    fi
-			elif [[ ! $fl_raw && $r_words_count -le 5 ]]; then  #all languages dictionary (without errors - fl_raw)
+
+			#all languages dictionary (without errors - fl_raw)
+			elif [[ ! $fl_raw && $r_words_count -le 5 ]]; then
 			    echo -e "$C_GREEN$t_result$C_NORMAL_RAW" > "$cachefile"				#google translated text output
-			    [[ $source != en && $r_words_count -le $TRANSLIT_WORDS_MAX && $(echo $t_result | sed 's/ //g' | tr '[:upper:]' '[:lower:]') !=  $(echo $translit | sed 's/ //g' | tr '[:upper:]' '[:lower:]') ]] && echo -e "$translit" >> "$cachefile"				#google translit	output
+			   
 			    [[ $dictionary ]] && echo -e "$dictionary" >> "$cachefile"			#google dictionary 	output
 			    [[ $(echo "$options_for_one_word" | wc -l) -gt 1 && $r_words_count -le 2 && $(echo "$dictionary" | wc -l) -le 3 ]] && echo -e "$C_BLUE_RAW"Options:"$C_NORMAL"'\n'"$options_for_one_word" >> "$cachefile" #google sugestions to cache
+			    [[ $source != en && $r_words_count -le $TRANSLIT_WORDS_MAX && $translit && $(echo $t_result | sed 's/ //g' | tr '[:upper:]' '[:lower:]') !=  $(echo $translit | sed 's/ //g' | tr '[:upper:]' '[:lower:]') ]] && echo -e "$translit" >> "$cachefile"				#google translit	output
+			    [[ $trans ]] && echo "[$trans]" >> "$cachefile"
 
 			    if [[ $source == en && $r_words_count -le 5 ]]; then #english
 				#phrases for 2 words
