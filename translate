@@ -566,7 +566,7 @@ main_func(){
 				trans=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://www.wordreference.com/definition/"$request" | grep pronWR | sed 's/span/\n/g' | grep id=.pronWR | sed 's#.*pronWR.*>/\([^/]*\).*#\1#') #getting transcription
 			       [[ $? != 0 ]] &&  { echo "can't get transcription"; error=1; } #bashtrap;
 			    elif [[ $source == "de" ]];then
-				reg_for_tr=$(cat $request | tr -s 'ö' 'o' | tr -s 'ä' 'a' | tr -s 'ü' 'u')
+				reg_for_tr=$(echo $request | tr -s 'ö' 'o' | tr -s 'ä' 'a' | tr -s 'ü' 'u')
 				trans=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://www.wordreference.com/dees/"$request" | grep -o "class='pron'>[^<]*" | head -n 1 | sed -e "s/.*>//") #getting transcription
 				[[ $? != 0 ]] &&  { echo "can't get transcription"; error=1; } #bashtrap;
 			    fi
