@@ -51,6 +51,8 @@ otherwise, target language is LATIN_LANG
   list of language codes
 -u
   enable urban dictionary
+-r
+  force requery with fixed string
 -
   read from pipe
 You can force the language with environment varibles by command:
@@ -262,7 +264,7 @@ volume=0.8
 source=
 target=
 urban_flag=$URBAN_DICTIONARY
-while getopts :hlpSs:t:u opt; do
+while getopts :hlpSs:t:ur opt; do
     case $opt in
 	h)
 	    echo "$help"
@@ -283,6 +285,8 @@ while getopts :hlpSs:t:u opt; do
 	    if [[ ln_arr[$OPTARG] ]]; then TLTARGET="$OPTARG";fi;;
 	u)
 	    urban_flag=true;;
+	r)
+	    requery=true;;
 	#		\?)
 	#			echo "Invalid option: -$OPTARG" >&2
 	#			exit 1;;
@@ -485,12 +489,13 @@ main_func(){
 					[[ $(echo "$fl" | tr -d "'") == "$request" ]] && fl="" # skip highlight for ' char
 					difftest="$(cmp -l <(echo -n $request) <(echo -n $fl) 2>/dev/null)" #comparison
 					if [[ $(echo "$difftest" | grep '[0-9]') ]];then
-						echo "$fl" > $FIXED_STRING
-						#[[ $source != en ]]&& diffnum=$(($diffnum/2+$diffnum%2))   #MUST BE CHECKED FOR REQUIRED LANGUAGES
-						#[[ ${fl:$diffnum-1:1} == ' ' ]] && let diffnum-- #white space correction
+					    echo "$fl" > $FIXED_STRING
+					    fl_r=$fl #save for requery
+					    #[[ $source != en ]]&& diffnum=$(($diffnum/2+$diffnum%2))   #MUST BE CHECKED FOR REQUIRED LANGUAGES
+					    #[[ ${fl:$diffnum-1:1} == ' ' ]] && let diffnum-- #white space correction
 						for (( i=$(echo "$difftest" | wc -l); i>=1; i--)); do
-							pos=$(($(echo "$difftest" | sed -n $i'p' | sed -E 's/(([^ ]+ )).*/\1/' ) - 1))
-							fl=$(echo "$fl" | sed 's/^\(.\{'$pos'\}\).\(.*\)/\1'$C_RED"${fl:$pos:1}"$C_NORMAL$C_YELLOW'\2/' 2>/dev/null) #highlight difference in one word
+						    pos=$(($(echo "$difftest" | sed -n $i'p' | sed -E 's/(([^ ]+ )).*/\1/' ) - 1))
+						    fl=$(echo "$fl" | sed 's/^\(.\{'$pos'\}\).\(.*\)/\1'$C_RED"${fl:$pos:1}"$C_NORMAL$C_YELLOW'\2/' 2>/dev/null) #highlight difference in one word
 						done
 					fi
 					fl="$C_YELLOW$fl$C_NORMAL"
@@ -558,6 +563,13 @@ main_func(){
 				exit
 			fi
 
+			#requery
+			if [[ $requery == true && $fl_raw && ! $dictionar ]]; then
+			    request=$fl_r
+			    main_func
+			    return #may violate prompt mode
+			fi
+
 			[[ $source == "auto" ]] && { source=$det_language; cachefile="$PR_DIR/cache/$source-$target"_"$request"; } #auto in cachefile fix #not necessary
 			#transcription
 			declare trans
@@ -567,7 +579,7 @@ main_func(){
 			       [[ $? != 0 ]] &&  { echo "can't get transcription"; error=1; } #bashtrap;
 			    elif [[ $source == "de" ]];then
 				reg_for_tr=$(echo $request | tr -s 'ö' 'o' | tr -s 'ä' 'a' | tr -s 'ü' 'u')
-				trans=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://www.wordreference.com/dees/"$request" | grep -o "class='pron'>[^<]*" | head -n 1 | sed -e "s/.*>//") #getting transcription
+				trans=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://www.wordreference.com/dees/"$reg_for_tr" | grep -o "class='pron'>[^<]*" | head -n 1 | sed -e "s/.*>//") #getting transcription
 				[[ $? != 0 ]] &&  { echo "can't get transcription"; error=1; } #bashtrap;
 			    fi
 			fi
@@ -729,7 +741,7 @@ main_func(){
 			else # with errors $fl_raw ;  words > 5
 			    echo -e "$C_GREEN$t_result$C_NORMAL_RAW" #google translated text output
 			    [[ $source != en && $r_words_count -le $TRANSLIT_WORDS_MAX && $(echo $t_result | sed 's/ //g' | tr '[:upper:]' '[:lower:]') !=  $(echo $translit | sed 's/ //g' | tr '[:upper:]' '[:lower:]') ]] && echo -e "$translit"	#google translit	output
-			    echo -e "$fl"
+			    echo -e "$fl" #echo error
 			fi #main end
 		else #cache output
 			cat "$cachefile" #output

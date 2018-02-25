@@ -77,6 +77,7 @@ FEATURES:
   - translit,
   - execution without parameters will translate fixed string for 1-2 words
   - prompt mode
+  - requery with fixed
   
 for english: 
 - phrases, forms, ideom, transcription, audio pronunciation
