@@ -566,6 +566,7 @@ main_func(){
 			#requery
 			if [[ $requery == true && $fl_raw && ! $dictionar ]]; then
 			    request=$fl_r
+			    echo $request
 			    main_func
 			    return #may violate prompt mode
 			fi
