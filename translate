@@ -376,7 +376,7 @@ main_func(){
 	#else
 		if [[ $r_words_count -le 5 ]];then
 			httpproxy="" ; httpsproxy=""  #don't wanna proxy for 4 words.
-			request=$(echo "$request" | tr '[:upper:]' '[:lower:]') #lower request for short sentences
+			#request=$(echo "$request" | tr '[:upper:]' '[:lower:]') #lower request for short sentences
 		fi
 		cachefile="$PR_DIR/cache/$source-$target"_$(echo ${request//[-._\/]/})
 		r_words_count=$(echo "$request"  |wc -w)
