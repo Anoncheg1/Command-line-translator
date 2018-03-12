@@ -59,9 +59,9 @@ my $ALD=0;                      #Advanced language detection. May be slow.
 my $TERMINAL_C="WOB";		#Your terminal - white on black:WOB, black on white:BOW, other unix:O, Windows:"".
 my $SOUND_ALWAYS = 1;		#text-to-speach
 #my $MPG123 = 0;				# 1- mpg123 0- mplayer    for speach
-my $player = "mpv - " #"mpg123 - "
+my $player = "mpv - "; #"mpg123 - "
     
-my $LC_ALWAYS = 1;			#Lowercase request.
+#my $LC_ALWAYS = 1;			#Lowercase request.
 my $TRANSLIT_LENGTH_MAX = 10;
 my @PROXY ; #for proxy you need LWP::Protocol::socks
 #@PROXY =([qw(http https)] => "socks://172.16.0.1:9150"); #tor
