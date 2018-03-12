@@ -58,8 +58,9 @@ my $SECOND_LANG='en';		# In simple detection of direction it used for A-z latin 
 my $ALD=0;                      #Advanced language detection. May be slow.
 my $TERMINAL_C="WOB";		#Your terminal - white on black:WOB, black on white:BOW, other unix:O, Windows:"".
 my $SOUND_ALWAYS = 1;		#text-to-speach
-my $MPG123 = 0;				# 1- mpg123 0- mplayer    for speach
-
+#my $MPG123 = 0;				# 1- mpg123 0- mplayer    for speach
+my $player = "mpv - " #"mpg123 - "
+    
 my $LC_ALWAYS = 1;			#Lowercase request.
 my $TRANSLIT_LENGTH_MAX = 10;
 my @PROXY ; #for proxy you need LWP::Protocol::socks
@@ -436,7 +437,7 @@ if ($ALD == 1 && ! $TLSOURCE){
 	}elsif($detected_languages[0] eq $SECOND_LANG && $source ne $SECOND_LANG){
 	    $target = $FIRST_LANG; $advdd = 1;
 	}
-    }	
+    }
 }
 ##### language detection loop
 #test
@@ -520,17 +521,20 @@ if( $rsum && (lc $rsum) ne (lc $request) ) {
 		$response = $uac->request($req) if (! $response->is_success); #resent
 
 		if ($response->is_success) {
-			if($MPG123){
-				open(FOO, "|mpg123 - 2>/dev/null") || ( print STDERR "Failed: $!\n" and exit 1 );
-			    print FOO $response->content;
-			}else{
-				my $t = "tmpspeachfileo1o.mpga";
-				open FILE, ">", "$t";
-				print FILE $response->content;
-				close FILE;			
-				system "mplayer $t >/dev/null 2>&1";
-				system "rm -f $t >/dev/null 2>&1";
-			}
+		  open(FOO, "|".$player." 2>/dev/null 1>/dev/null") || ( print STDERR "Failed: $!\n" and exit 1 );
+		  print FOO $response->content;
+
+			# if($MPG123){
+			# 	open(FOO, "|mpg123 - 2>/dev/null 1>/dev/null") || ( print STDERR "Failed: $!\n" and exit 1 );
+			#     print FOO $response->content;
+			# }else{
+			# 	my $t = "tmpspeachfileo1o.mpga";
+			# 	open FILE, ">", "$t";
+			# 	print FILE $response->content;
+			# 	close FILE;			
+			# 	system "mplayer $t >/dev/null 2>&1";
+			# 	system "rm -f $t >/dev/null 2>&1";
+			# }
 		}else{
 		    print STDERR "Can't get sound from google: ".$response->status_line, "\n"; exit 1;
 		}
