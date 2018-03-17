@@ -1,4 +1,5 @@
 #!/usr/bin/env perl
+#-*-Perl-*-
 
 # GOOGLE TRANSLATE SCRIPT. This tool for access Google Translate from terminal.
 
@@ -81,160 +82,160 @@ my $USERAGENT = 'Mozilla/5.0 (Windows NT 6.1; rv:38.0) Gecko/20100101 Firefox/38
 
 my $name = basename($0);
 my %LANGS = (
-    'af' => 'Afrikaans',
-	'ak' => 'Akan',
-    'sq' => 'Albanian',
-	'am' => 'Amharic',
-    'ar' => 'Arabic',
-    'hy' => 'Armenian',
-    'az' => 'Azerbaijani',
-    'eu' => 'Basque',
-    'be' => 'Belarusian',
-	'bem' => 'Bemba',
-    'bn' => 'Bengali',
-	'bh' => 'Bihari',
-	'xx-bork' => 'Bork, bork, bork!',
-    'bs' => 'Bosnian',
-	'br' => 'Breton',
-    'bg' => 'Bulgarian',
-    'ca' => 'Catalan',
-    'ceb' => 'Cebuano',
-	'chr' => 'Cherokee',
-    'ny' => 'Chichewa',
-	'zh' => 'Chinese',
-    'zh-CN' => 'Chinese (Simplified)',
-    'zh-TW' => 'Chinese (Traditional)',
-	'co' => 'Corsican',
-    'hr' => 'Croatian',
-    'cs' => 'Czech',
-    'da' => 'Danish',
-    'nl' => 'Dutch',
-	'xx-elmer' => 'Elmer Fudd',
-    'en' => 'English',
-    'eo' => 'Esperanto',
-    'et' => 'Estonian',
-	'ee' => 'Ewe',
-	'fo' => 'Faroese',
-    'tl' => 'Filipino',
-    'fi' => 'Finnish',
-	'fy' => 'Frisian',
-    'fr' => 'French',
-	'gaa' => 'Ga',
-    'gl' => 'Galician',
-    'ka' => 'Georgian',
-    'de' => 'German',
-    'el' => 'Greek',
-    'gu' => 'Gujarati',
-	'xx-hacker' => 'Hacker',
-    'ht' => 'Haitian Creole',
-    'ha' => 'Hausa',
-	'haw' => 'Hawaiian',
-    'iw' => 'Hebrew',
-    'hi' => 'Hindi',
-    'hmn' => 'Hmong',
-    'hu' => 'Hungarian',
-    'is' => 'Icelandic',
-    'ig' => 'Igbo',
-    'id' => 'Indonesian',
-	'ia' => 'Interlingua',
-    'ga' => 'Irish',
-    'it' => 'Italian',
-    'ja' => 'Japanese',
-    'jw' => 'Javanese',
-    'kn' => 'Kannada',
-    'kk' => 'Kazakh',
-    'km' => 'Khmer',
-	'rw' => 'Kinyarwanda',
-	'rn' => 'Kirundi',
-	'xx-klingon' => 'Klingon',
-	'kg' => 'Kongo',
-    'ko' => 'Korean',
-	'kri' => 'Krio (Sierra Leone)',
-	'ku' => 'Kurdish',
-	'ckb' => 'Kurdish (Soranî)',
-	'ky' => 'Kyrgyz',
-    'lo' => 'Laothian',
-    'la' => 'Latin',
-    'lv' => 'Latvian',
-	'ln' => 'Lingala',
-    'lt' => 'Lithuanian',
-	'loz' => 'Lozi',
-	'lg' => 'Luganda',
-	'ach' => 'Luo',
-    'mk' => 'Macedonian',
-    'mg' => 'Malagasy',
-    'ms' => 'Malay',
-    'ml' => 'Malayalam',
-    'mt' => 'Maltese',
-    'mi' => 'Maori',
-    'mr' => 'Marathi',
-	'mfe' => 'Mauritian Creole',
-	'mo' => 'Moldavian',
-    'mn' => 'Mongolian',
-	'sr-ME' => 'Montenegrin',
-    'my' => 'Myanmar (Burmese)',
-    'ne' => 'Nepali',
-	'pcm' => 'Nigerian Pidgin',
-	'nso' => 'Northern Sotho',
-    'no' => 'Norwegian',
-	'nn' => 'Norwegian (Nynorsk)',
-	'oc' => 'Occitan',
-	'or' => 'Oriya',
-	'om' => 'Oromo',
-	'ps' => 'Pashto',
-    'fa' => 'Persian',
-	'xx-pirate' => 'Pirate',
-    'pl' => 'Polish',
-    'pt' => 'Portuguese',
-	'pt-BR' => 'Portuguese (Brazil)',
-	'pt-PT' => 'Portuguese (Portugal)',
-    'pa' => 'Punjabi',
-	'qu' => 'Quechua',
-    'ro' => 'Romanian',
-	'rm' => 'Romansh',
-	'nyn' => 'Runyakitara',
-    'ru' => 'Russian',
-	'gd' => 'Scots Gaelic',
-    'sr' => 'Serbian',
-	'sh' => 'Serbo-Croatian',
-    'st' => 'Sesotho',
-	'tn' => 'Setswana',
-	'crs' => 'Seychellois Creole',
-	'sn' => 'Shona',
-	'sd' => 'Sindhi',
-    'si' => 'Sinhalese',
-    'sk' => 'Slovak',
-    'sl' => 'Slovenian',
-    'so' => 'Somali',
-    'es' => 'Spanish',
-	'es-419' => 'Spanish (Latin American)',
-    'su' => 'Sundanese',
-    'sw' => 'Swahili',
-    'sv' => 'Swedish',
-    'tg' => 'Tajik',
-    'ta' => 'Tamil',
-	'tt' => 'Tatar',
-    'te' => 'Telugu',
-    'th' => 'Thai',
-	'ti' => 'Tigrinya',
-	'to' => 'Tonga',
-	'lua' => 'Tshiluba',
-	'tum' => 'Tumbuka',
-    'tr' => 'Turkish',
-	'tk' => 'Turkmen',
-	'tw' => 'Twi',
-	'ug' => 'Uighur',
-    'uk' => 'Ukrainian',
-    'ur' => 'Urdu',
-    'uz' => 'Uzbek',
-    'vi' => 'Vietnamese',
-    'cy' => 'Welsh',
-	'wo' => 'Wolof',
-	'xh' => 'Xhosa',
-    'yi' => 'Yiddish',
-    'yo' => 'Yoruba',
-    'zu' => 'Zulu'
-);
+	     'af' => 'Afrikaans',
+	     'ak' => 'Akan',
+	     'sq' => 'Albanian',
+	     'am' => 'Amharic',
+	     'ar' => 'Arabic',
+	     'hy' => 'Armenian',
+	     'az' => 'Azerbaijani',
+	     'eu' => 'Basque',
+	     'be' => 'Belarusian',
+	     'bem' => 'Bemba',
+	     'bn' => 'Bengali',
+	     'bh' => 'Bihari',
+	     'xx-bork' => 'Bork, bork, bork!',
+	     'bs' => 'Bosnian',
+	     'br' => 'Breton',
+	     'bg' => 'Bulgarian',
+	     'ca' => 'Catalan',
+	     'ceb' => 'Cebuano',
+	     'chr' => 'Cherokee',
+	     'ny' => 'Chichewa',
+	     'zh' => 'Chinese',
+	     'zh-CN' => 'Chinese (Simplified)',
+	     'zh-TW' => 'Chinese (Traditional)',
+	     'co' => 'Corsican',
+	     'hr' => 'Croatian',
+	     'cs' => 'Czech',
+	     'da' => 'Danish',
+	     'nl' => 'Dutch',
+	     'xx-elmer' => 'Elmer Fudd',
+	     'en' => 'English',
+	     'eo' => 'Esperanto',
+	     'et' => 'Estonian',
+	     'ee' => 'Ewe',
+	     'fo' => 'Faroese',
+	     'tl' => 'Filipino',
+	     'fi' => 'Finnish',
+	     'fy' => 'Frisian',
+	     'fr' => 'French',
+	     'gaa' => 'Ga',
+	     'gl' => 'Galician',
+	     'ka' => 'Georgian',
+	     'de' => 'German',
+	     'el' => 'Greek',
+	     'gu' => 'Gujarati',
+	     'xx-hacker' => 'Hacker',
+	     'ht' => 'Haitian Creole',
+	     'ha' => 'Hausa',
+	     'haw' => 'Hawaiian',
+	     'iw' => 'Hebrew',
+	     'hi' => 'Hindi',
+	     'hmn' => 'Hmong',
+	     'hu' => 'Hungarian',
+	     'is' => 'Icelandic',
+	     'ig' => 'Igbo',
+	     'id' => 'Indonesian',
+	     'ia' => 'Interlingua',
+	     'ga' => 'Irish',
+	     'it' => 'Italian',
+	     'ja' => 'Japanese',
+	     'jw' => 'Javanese',
+	     'kn' => 'Kannada',
+	     'kk' => 'Kazakh',
+	     'km' => 'Khmer',
+	     'rw' => 'Kinyarwanda',
+	     'rn' => 'Kirundi',
+	     'xx-klingon' => 'Klingon',
+	     'kg' => 'Kongo',
+	     'ko' => 'Korean',
+	     'kri' => 'Krio (Sierra Leone)',
+	     'ku' => 'Kurdish',
+	     'ckb' => 'Kurdish (Soranî)',
+	     'ky' => 'Kyrgyz',
+	     'lo' => 'Laothian',
+	     'la' => 'Latin',
+	     'lv' => 'Latvian',
+	     'ln' => 'Lingala',
+	     'lt' => 'Lithuanian',
+	     'loz' => 'Lozi',
+	     'lg' => 'Luganda',
+	     'ach' => 'Luo',
+	     'mk' => 'Macedonian',
+	     'mg' => 'Malagasy',
+	     'ms' => 'Malay',
+	     'ml' => 'Malayalam',
+	     'mt' => 'Maltese',
+	     'mi' => 'Maori',
+	     'mr' => 'Marathi',
+	     'mfe' => 'Mauritian Creole',
+	     'mo' => 'Moldavian',
+	     'mn' => 'Mongolian',
+	     'sr-ME' => 'Montenegrin',
+	     'my' => 'Myanmar (Burmese)',
+	     'ne' => 'Nepali',
+	     'pcm' => 'Nigerian Pidgin',
+	     'nso' => 'Northern Sotho',
+	     'no' => 'Norwegian',
+	     'nn' => 'Norwegian (Nynorsk)',
+	     'oc' => 'Occitan',
+	     'or' => 'Oriya',
+	     'om' => 'Oromo',
+	     'ps' => 'Pashto',
+	     'fa' => 'Persian',
+	     'xx-pirate' => 'Pirate',
+	     'pl' => 'Polish',
+	     'pt' => 'Portuguese',
+	     'pt-BR' => 'Portuguese (Brazil)',
+	     'pt-PT' => 'Portuguese (Portugal)',
+	     'pa' => 'Punjabi',
+	     'qu' => 'Quechua',
+	     'ro' => 'Romanian',
+	     'rm' => 'Romansh',
+	     'nyn' => 'Runyakitara',
+	     'ru' => 'Russian',
+	     'gd' => 'Scots Gaelic',
+	     'sr' => 'Serbian',
+	     'sh' => 'Serbo-Croatian',
+	     'st' => 'Sesotho',
+	     'tn' => 'Setswana',
+	     'crs' => 'Seychellois Creole',
+	     'sn' => 'Shona',
+	     'sd' => 'Sindhi',
+	     'si' => 'Sinhalese',
+	     'sk' => 'Slovak',
+	     'sl' => 'Slovenian',
+	     'so' => 'Somali',
+	     'es' => 'Spanish',
+	     'es-419' => 'Spanish (Latin American)',
+	     'su' => 'Sundanese',
+	     'sw' => 'Swahili',
+	     'sv' => 'Swedish',
+	     'tg' => 'Tajik',
+	     'ta' => 'Tamil',
+	     'tt' => 'Tatar',
+	     'te' => 'Telugu',
+	     'th' => 'Thai',
+	     'ti' => 'Tigrinya',
+	     'to' => 'Tonga',
+	     'lua' => 'Tshiluba',
+	     'tum' => 'Tumbuka',
+	     'tr' => 'Turkish',
+	     'tk' => 'Turkmen',
+	     'tw' => 'Twi',
+	     'ug' => 'Uighur',
+	     'uk' => 'Ukrainian',
+	     'ur' => 'Urdu',
+	     'uz' => 'Uzbek',
+	     'vi' => 'Vietnamese',
+	     'cy' => 'Welsh',
+	     'wo' => 'Wolof',
+	     'xh' => 'Xhosa',
+	     'yi' => 'Yiddish',
+	     'yo' => 'Yoruba',
+	     'zu' => 'Zulu'
+	    );
 
 ############ Functions
 #$SIG{INT} = \&sig_handler;
@@ -259,6 +260,8 @@ otherwise, target language is LATIN_LANG
   target language
 -l
   list of language codes
+-r
+  force retranslate with fixed string
 -o FILE 
   read request from file
 -
@@ -318,7 +321,7 @@ if ($TERMINAL_C eq "WOB" ){
 }
 
 my %opt =();
-getopts( ":hlpSs:t:o:", \%opt ) or print STDERR "Usage: $name: [-S] [-h] [-l] [-p] [-s language_2_chars] [-t language_2_chars] [-o source_FILE]\n" and exit 1;
+getopts( ":hlpSrs:t:o:", \%opt ) or print STDERR "Usage: $name: [-S] [-h] [-l] [-p] [-s language_2_chars] [-t language_2_chars] [-o source_FILE]\n" and exit 1;
 
 my $source;
 my $target;
@@ -328,10 +331,12 @@ my $TLSOURCE;
 my $TLTARGET;
 my $request;
 my $filesource;
+my $reforced;
 
 #Switch options
 usage() if defined $opt{h};
 $sound = 1 if defined $opt{S};
+$reforced = 1 if defined $opt{r};
 if (defined $opt{l}){
     foreach my $value (sort { $LANGS{$a} cmp $LANGS{$b} } keys %LANGS){
 	print $value."\t".$LANGS{$value}."\n";}
@@ -418,8 +423,8 @@ my $translit_s; # translit source
 my $translit_t; # translit target
 my @suggest; #google suggestions. appears sometimes.(options_for_one_word)
 my @detected_languages;
-my $error1; #error with highlight
-my $error2; #correct version
+my $corr_raw; #error with highlight
+my $corr_clear; #correct version
 my @dictionary;
 #my $url = "https://translate.google.com/translate_a/single?client=t&sl=".$source."&tl=".$target."&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8&tk=".$tk_hacked;
 my $url = "https://translate.google.com/translate_a/single?client=gtx&sl=".$source."&tl=".$target."&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8";
@@ -449,8 +454,8 @@ if ($ALD == 1 && ! $TLSOURCE){
 #fixed mathematic
 
 
-my $source_save = $source;
 my @d_l; # det lang before loop
+my $so; #detected language in  @d_l
 #if
 # no error
 # was detected languages
@@ -458,40 +463,54 @@ my @d_l; # det lang before loop
 #stop if
 # result != request
 # or we have dictionary
-if( !$advdd && ! $error1 && $detected_languages[0] && $detected_languages[0] ne $source){
+if( !$advdd && ! $corr_raw && $detected_languages[0] && $detected_languages[0] ne $source){
     @d_l = @detected_languages;
     print "Detected languages: "; print $_."," foreach @d_l; print "\n";
 
-    foreach $source (@d_l){
+    foreach $so (@d_l){
 		#$target = "en";
-		print "trying with:".$LANGS{$source},"\n";
+		print "trying with:".$LANGS{$so},"\n";
 		###side effect function
 		undef $rsum; # translation
 		undef $translit_s; # translit source
 		undef $translit_t; # translit target
 		undef @suggest; #google suggestions. appears sometimes.(options_for_one_word)
 		undef @detected_languages;
-		undef $error1; #error with highlight
-		undef $error2; #correct version
+		undef $corr_raw; #error with highlight
+		undef $corr_clear; #correct version
 		undef @dictionary;
 		#$url = "https://translate.google.com/translate_a/single?client=t&sl=".$source."&tl=".$target."&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8&tk=".$tk_hacked;
-		$url = "https://translate.google.com/translate_a/single?client=gtx&sl=".$source."&tl=".$target."&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8";
+		$url = "https://translate.google.com/translate_a/single?client=gtx&sl=".$so."&tl=".$target."&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8";
 		&google(clone($ua), $url); #$_[0] - ua    $_[1] - url
 		last if ((lc $rsum) ne (lc $request) || @dictionary);
     }
 }
+#if -r option - rerequest with fixed
+if($reforced && $corr_raw){
+  $request = $corr_clear;
+  $url = "https://translate.google.com/translate_a/single?client=gtx&sl=".$so."&tl=".$target."&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8";
+  undef $rsum;		# translation
+  undef $translit_s;		# translit source
+  undef $translit_t;		# translit target
+  undef @suggest; 		#google suggestions. appears sometimes.(options_for_one_word)
+  undef @detected_languages;
+  undef $corr_raw;		#error with highlight
+  undef $corr_clear;	#correct version
+  undef @dictionary;
+  &google(clone($ua), $url);	#$_[0] - ua    $_[1] - url
+}
 
 ############ Echo
 #utf8::decode($rsum);
-#utf8::decode($error1);
+#utf8::decode($corr_raw);
 #utf8::decode($_) foreach @dictionary;
 #utf8::decode($_) foreach @suggest;
 #utf8::decode($translit_s);
 #utf8::decode($translit_t);
 
 print $C_GREEN.$rsum.$C_NORMAL_RAW,"\n" if $rsum; #echo result
-if($error1){
-    print $error1,"\n"; #echo error   
+if($corr_raw){
+    print $corr_raw,"\n"; #echo error   
 }elsif(@dictionary){
     print $_,"\n" foreach @dictionary;  #echo dictionary
 }
@@ -573,8 +592,8 @@ if( $rsum && (lc $rsum) ne (lc $request) ) {
 #$translit_t; # translit target
 #@suggest; #google suggestions. appears sometimes.(options_for_one_word)
 #@detected_languages;
-#$error1; #error with highlight
-#$error2; #correct version
+#$corr_raw; #error with highlight
+#$corr_clear; #correct version
 #@dictionary;
 #READ:
 #$request
@@ -614,8 +633,8 @@ sub google($$){#$_[0] - ua (object)    $_[1] - url
  #   my $translit_t; # translit target
  #   my @suggest; #google suggestions. appears sometimes.(options_for_one_word)
  #   my @detected_languages;
- #   my $error1; #error with highlight
- #   my $error2; #correct version
+ #   my $corr_raw; #error with highlight
+ #   my $corr_clear; #correct version
  #   my @dictionary;
     if(ref($g_array) eq 'ARRAY'){
 	#language detections
@@ -627,16 +646,16 @@ sub google($$){#$_[0] - ua (object)    $_[1] - url
 	#error detection
 	if(ref($g_array->[7]) eq 'ARRAY'){	
 	    if($g_array->[7][0] && $g_array->[7][1]){
-		$error1 = decode_entities($g_array->[7][0]); #decode html character entities
-		$error2 = $g_array->[7][1];
-		
+		$corr_raw = decode_entities($g_array->[7][0]); #decode html character entities
+		$corr_clear = $g_array->[7][1];
+
 		#Highlight - error checking
 		if(length($request) < 18){ #bad for Japanese and Chinese, fix it late
 			my $r = $request; 
 			utf8::decode($r);
-			utf8::decode($error2);
+			utf8::decode($corr_clear);
 		    my @request = split //,$r;
-		    my @right = split //, $error2;
+		    my @right = split //, $corr_clear;
 		    my @fixed = @right;#working array
 		    my $count = 0;    #insertions
 		    my $save = -1;    #last error position
@@ -658,19 +677,20 @@ sub google($$){#$_[0] - ua (object)    $_[1] - url
 			}
 		    }
 		    @fixed = (@fixed, $C_NORMAL_RAW);
-		    $error1 = join '', @fixed;
-			utf8::encode($error1);
+		    $corr_raw = join '', @fixed;
+			utf8::encode($corr_raw);
 		}else{
-		    $error1 =~ s|<b><i>|$C_YELLOW|g;
-		    $error1 =~ s|</i></b>|$C_NORMAL_RAW|g;
+		    $corr_raw =~ s|<b><i>|$C_YELLOW|g;
+		    $corr_raw =~ s|</i></b>|$C_NORMAL_RAW|g;
 		}
 	    }elsif($g_array->[7][1]){
-		$error1 = $g_array->[7][1];
-		$error2 = $error1;
+		$corr_raw = $g_array->[7][1];
+		$corr_clear = $corr_raw;
 	    } #else{ print "strange error in google json2 [7][1] error"; exit 1;}
+	    utf8::encode($corr_clear);
 	}
 
-#	if( ! defined $error1){
+#	if( ! defined $corr_raw){
 	#translation
 	$_=$request; my $nc = tr/\n|\x{a}//;   #check for \x{a} unicode or \n - we will skip multiline too.
 	if((length $request < 1000) && ($nc == 0)){ # if <1000 we will fix english article problem if >1000 leave it be
