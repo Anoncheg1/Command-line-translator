@@ -107,3 +107,6 @@ Debian Cyrillic support in tty shell:
 - Install en_US.utf8, ru_RU.utf8
 - 2)  #dpkg-reconfigure console-setup
 - Install . Combined - latin slavic Cyrillic; Greek
+
+
+command line google translate command-line translator linux debian gentoo fedora mint ubuntu text-based languages
