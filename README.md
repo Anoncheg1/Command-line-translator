@@ -30,7 +30,7 @@ FILES:
 - translate - Bash version. Good for English dictionary.
 - urban.pl - optional plugin for bash version.
 
-### Perl version - google only
+### Perl version
 get perl version:
 
     $ wget http://git.io/vEUKU
@@ -56,7 +56,7 @@ There is two systems for detection of direction($FIRST_LANG to $SECOND_LANG or v
 - Simple detection of direction. First it search Latin or Russian symbols and decide. If not found it use $source = 'auto'; $target = 'en';
 - Advanced detection of direction. ALD=1;
 
-###  Bash version - extended support for english and german
+###  Bash version - extended support for english and german, urban dictionary
 
 REQUIREMENTS:
 - UTF-8 support for required languages
