@@ -685,13 +685,10 @@ main_func(){
 				ideom_and_list=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://idioms.thefreedictionary.com/"$(echo $request | tr ' ' + )")
 				[[ $? != 0 ]] && { echo "cant get thefreedictionary.com phrases for ideom1" ; bashtrap; }
 				list=$(echo "$ideom_and_list" | grep "[fF]ound in:")
-				raw_ideoms=$(echo "$ideom_and_list" | grep -o 'div class="ds-single".*</div><div')
-				ideom=$(echo "$raw_ideoms" | sed 's/<i>//' | sed 's/<\/i>//' | sed 's/.*ds-single\">\([^<]*\)<.*/\1/')
-				illustration=$(echo "$raw_ideoms" | sed 's/.*class=illustration>\([^<]*\)<.*/\1/')
+				ideom=$(echo "$ideom_and_list" | grep h2 | sed -e "s/<h2>/\n/g" | sed 's/<i>//' | sed 's/<\/i>//' | grep "ds-single\|illustration" | sed -e "s#<\/h2>#\n#g" -e 's#<a.*\/a>##' | sed -e 's/.*ds-single.>\([^<]*\)<.*/\1/' | sed -e "s#<div class=.ds-list.>#\n#g" -e "s#<span class=.illustration.>##g" -e "s#<[^>]*>##g" | grep "[a-z]" )	
 				if [[ $ideom ]]; then
 				    echo -e "$C_GRAY_RED_RAW"Ideom:$C_NORMAL >> "$cachefile"
 				    echo -n "$ideom " >> "$cachefile"
-				    [[ $illustration ]] && echo $illustration >> "$cachefile"
 				elif [[ $SUGGESTIONS_ACTIVATED && ! $dictionary ]]; then
 				    a_compl=$(curl -s --user-agent "$useragent" -G --data-urlencode "query=$request" "http://www.thefreedictionary.com/_/search/suggest.ashx?jsonp=SAYT.Callback" | grep -o "\[\[.*\]\]" | sed 's/",/\n/g' | sed -e 's/.*"//' -e '$ d')
 				    [[ $a_compl && $(echo $a_compl | tr '[:upper:]' '[:lower:]') != $request ]] && echo -e "$C_BRIGHT_RAW"Suggestions:$C_NORMAL'\n'"$a_compl" >> "$cachefile"
