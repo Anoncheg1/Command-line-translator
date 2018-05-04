@@ -50,7 +50,7 @@ otherwise, target language is LATIN_LANG
 -l
   list of language codes
 -u
-  enable urban dictionary
+  search in urban dictionary
 -r
   force requery with fixed string
 -
@@ -77,7 +77,7 @@ declare -r timeout=6
 declare -r TRANSLIT_WORDS_MAX=10
 declare -r SOUND_DOWNLOAD_AWS=0		# 1 - always. 0 - on demand.
 declare -r useragent="Mozilla/5.0 (Windows NT 6.1; rv:38.0) Gecko/20100101 Firefox/38.0"
-declare -r URBAN_DICTIONARY=true			#always use urban dictionary - urban.pl
+declare -r URBAN_DICTIONARY=false			#always use urban dictionary - urban.pl
 #
 CDIR="$HOME/.config"
 [ ! -d "$CDIR" ] && mkdir "$CDIR"
