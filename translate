@@ -36,7 +36,7 @@
 #
 #:) translate.google.com, www.macmillandictionary.com/dictionary/british, thefreedictionary.com, www.forvo.com
 
-help=`basename "$0"`' [-S] [-l] [-h] [-p] [-u] [-s language_2_chars] [-t language_2_chars] <text> | <->
+help=`basename "$0"`' [-S] [-l] [-h] [-p] [-u] [-r] [-s language_2_chars] [-t language_2_chars] <text> | <->
 if text is LATIN_LANG, then target language is FIRST_LANG
 otherwise, target language is LATIN_LANG
 -S
@@ -52,7 +52,7 @@ otherwise, target language is LATIN_LANG
 -u
   search in urban dictionary
 -r
-  force requery with fixed string
+  force requery with fixed string or without cache
 -
   read from pipe
 You can force the language with environment varibles by command:
@@ -76,7 +76,7 @@ declare -r words_buffer=4000		#4000 files max. there is removeing all files olde
 declare -r timeout=6
 declare -r TRANSLIT_WORDS_MAX=10
 declare -r SOUND_DOWNLOAD_AWS=0		# 1 - always. 0 - on demand.
-declare -r useragent="Mozilla/5.0 (Windows NT 6.1; rv:38.0) Gecko/20100101 Firefox/38.0"
+declare -r useragent="Mozilla/5.0 (Windows NT 6.1; rv:52.0) Gecko/20100101 Firefox/52.0"
 declare -r URBAN_DICTIONARY=false			#always use urban dictionary - urban.pl
 #
 CDIR="$HOME/.config"
@@ -386,7 +386,7 @@ main_func(){
 				sound_download &      # in background
 			fi
 
-		if [[ ! -e "$cachefile" ]]; then
+		if [[ ! -e "$cachefile" || $requery == true ]]; then
 
 			g_ttk="https://translate.google.com"
 			grespond=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" -m $timeout $g_ttk)
