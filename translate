@@ -292,7 +292,7 @@ while getopts :hlpSs:t:ur opt; do
 	#			exit 1;;
 	?)
 	echo "Invalid option: -$OPTARG" >&2
-	printf "Usage: %s: [-S] [-h] [-l] [-p] [-s language_2_chars] [-t language_2_chars] <text>\n" `basename "$0"`
+	printf "Usage: %s: [-S] [-l] [-h] [-p] [-u] [-r] [-s language_2_chars] [-t language_2_chars] <text>\n" `basename "$0"`
 	exit 2;;
     esac
 done
@@ -336,6 +336,7 @@ sound_download(){ 			# $cachefile, $request, $source
 declare error=0	#if we have error we will delete cache file.
 main_func(){
 
+       #"without parameters.
 	if [[ ${#request} -eq 0 ]];then #using saved fixed string without parameters
 		if [[ -e $FIXED_STRING ]]; then
 			request=$(cat $FIXED_STRING 2>/dev/null)
@@ -345,7 +346,7 @@ main_func(){
 		fi
 	fi
 
-	request=`echo "$request" | sed -e 's/^ *//g'`
+	request=`echo "$request" | sed -e 's/^ *//g'` #trim leading spaces
 	tchar=${request:0:1} #language detection by the first character
 	tcharnum=$(printf "%d" "'${tchar}")
 	if [[ $tcharnum -ge 65 && $tcharnum -le 122 || (( $TLSOURCE == $LATIN_LANG && ! $TLTARGET )) ]]; then #if request is A-Za-z then it is LATIN_LANG... ("en,it" will not be detected here idk how to make it for now)
@@ -386,7 +387,8 @@ main_func(){
 				sound_download &      # in background
 			fi
 
-		if [[ ! -e "$cachefile" || $requery == true ]]; then
+		# main google http query. If no requery of urban flag set,
+		if [[ ! -e "$cachefile" || $requery == true || $urban_flag == true ]]; then
 
 			g_ttk="https://translate.google.com"
 			grespond=$(curl -s --user-agent "$useragent" $httpsproxy -x "$httpproxy" -m $timeout $g_ttk)
