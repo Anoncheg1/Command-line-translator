@@ -578,12 +578,12 @@ main_func(){
 			declare trans
 			if [[ $r_words_count -le 2 && ${#request} -gt 1 && ! $(echo "$difftest" | wc -l) -gt 1 ]];then #special check( expample: advise advice)
 			    if [[ $source == "en" ]];then
-				trans=$(curl -s -m 6 --connect-to 88.99.254.41:443 --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://www.wordreference.com/definition/"$request" | grep pronWR | sed 's/span/\n/g' | grep id=.pronWR | sed 's#.*pronWR.*>/\([^/]*\).*#\1#') #getting transcription
+				trans=$(curl -s -m 6 --user-agent "$useragent" $httpsproxy -x "$httpproxy" https://www.collinsdictionary.com/dictionary/english-german/"$request" | sed -n '0,/.*pron.type/  s/.*pron.type-\">\([^<]*\).*/\1/p') #getting transcription
 			       [[ $? != 0 || $trans == ""  ]] &&  { echo "can't get transcription"; error=1; } #bashtrap;
 			    elif [[ $source == "de" ]];then
 				reg_for_tr=$(echo $request | sed -e 's/ö/o/g' -e 's/ä/a/g' -e 's/ü/u/g' -e 's/ß/ss/g') #curl UTF-8 combining characters problem
 				#echo $reg_for_tr    #MUST EXIST EVEN IN COMMENT. STRANGE BASH BUG
-				trans=$(curl -s -m 6 --connect-to 88.99.254.41:443 --user-agent "$useragent" $httpsproxy -x "$httpproxy" http://www.wordreference.com/dees/"$reg_for_tr" | grep -o "class='pron'>[^<]*" | head -n 1 | sed -e "s/.*>//") #getting transcription
+				trans=$(curl -s -m 6 --user-agent "$useragent" $httpsproxy -x "$httpproxy" https://www.collinsdictionary.com/dictionary/german-english/"$reg_for_tr" | sed -n '0,/.*pron.type/  s/.*pron.type-\">\([^<]*\).*/\1/p') #getting transcription only first occurance
 				[[ $? != 0 || $trans == ""  ]] &&  { echo "can't get transcription"; error=1; } #bashtrap;
 			    fi
 			fi
