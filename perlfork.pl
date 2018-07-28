@@ -58,9 +58,9 @@ my $FIRST_LANG='ru';		#
 my $SECOND_LANG='en';		# In simple detection of direction it used for A-z latin alphabet
 my $ALD=0;                      #Advanced language detection. May be slow.
 my $TERMINAL_C="WOB";		#Your terminal - white on black:WOB, black on white:BOW, other unix:O, Windows:"".
-my $SOUND_ALWAYS = 1;		#text-to-speach
+my $SOUND_ALWAYS = 0;		#text-to-speach
 #my $MPG123 = 0;				# 1- mpg123 0- mplayer    for speach
-my $player = "mpv - "; #"mpg123 - "
+my $player = "mpg123 -"; #"mpv - "; #"vlc -";
     
 #my $LC_ALWAYS = 1;			#Lowercase request.
 my $TRANSLIT_LENGTH_MAX = 10;
