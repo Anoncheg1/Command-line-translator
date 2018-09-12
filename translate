@@ -578,7 +578,7 @@ main_func(){
 			declare trans
 			if [[ $r_words_count -le 2 && ${#request} -gt 1 && ! $(echo "$difftest" | wc -l) -gt 1 ]];then #special check( expample: advise advice)
 			    if [[ $source == "en" ]];then
-				trans=$(curl -s -m 6 -L --user-agent "$useragent" $httpsproxy -x "$httpproxy" https://www.collinsdictionary.com/dictionary/english/"$request" | grep "pron type-\">[^<]" | head -n 2 | sed -e 's/<[^>]*>//g' |sed -e 's/[,|(|)]//' -e 's/\ //g' ) #getting transcription
+				trans=$(curl -s -m 6 -L --user-agent "$useragent" $httpsproxy -x "$httpproxy" https://www.collinsdictionary.com/dictionary/english/"$(echo $request | tr ' ' - )" | grep "pron type-\">[^<]" | head -n 2 | sed -e 's/<[^>]*>//g' | sed -e 's/^, //' -e 's/^\ //g' -e 's/(//' -e 's/)\ *//' ) #getting transcription
 				#trans=$(echo "$trans" | awk '{print length, $0}'|sort -nr|head -1| sed 's/^[0-9]* //') #get longest line of transcrition
 				[[ $? != 0 || $trans == ""  ]] &&  { echo "can't get transcription"; error=1; } #bashtrap;
 			    elif [[ $source == "de" ]];then
@@ -644,7 +644,7 @@ main_func(){
 			    #
 			    [[ $urban ]] && echo "$urban" >> "$cachefile"
 			    #transcription
-			    [[ $trans ]] && echo "[$trans]" >> "$cachefile"
+			    [[ $trans ]] && echo "$trans" >> "$cachefile"
 
 			    cat "$cachefile" 2>/dev/null #output for 1 word
 			    #				echo -e "$C_DARK_BLUE_RAW"http://oxforddictionaries.com/definition/english/$(echo "$request" | sed "s/'/%27/" )$C_NORMAL_RAW # just another good english dictionary
@@ -668,7 +668,7 @@ main_func(){
 			    [[ $dictionary ]] && echo -e "$dictionary" >> "$cachefile"			#google dictionary 	output
 			    [[ $(echo "$options_for_one_word" | wc -l) -gt 1 && $r_words_count -le 2 && $(echo "$dictionary" | wc -l) -le 3 ]] && echo -e "$C_BLUE_RAW"Options:"$C_NORMAL"'\n'"$options_for_one_word" >> "$cachefile" #google sugestions to cache
 			    [[ $source != en && $r_words_count -le $TRANSLIT_WORDS_MAX && $translit && $(echo $t_result | sed 's/ //g' | tr '[:upper:]' '[:lower:]') !=  $(echo $translit | sed 's/ //g' | tr '[:upper:]' '[:lower:]') ]] && echo -e "$translit" >> "$cachefile"				#google translit	output
-			    [[ $trans ]] && echo "[$trans]" >> "$cachefile"
+			    [[ $trans ]] && echo "$trans" >> "$cachefile"
 
 			    if [[ $source == en && $r_words_count -le 5 ]]; then #english
 				#phrases for 2 words
