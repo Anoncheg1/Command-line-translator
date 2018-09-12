@@ -578,13 +578,13 @@ main_func(){
 			declare trans
 			if [[ $r_words_count -le 2 && ${#request} -gt 1 && ! $(echo "$difftest" | wc -l) -gt 1 ]];then #special check( expample: advise advice)
 			    if [[ $source == "en" ]];then
-				trans=$(curl -s -m 6 --user-agent "$useragent" $httpsproxy -x "$httpproxy" https://www.collinsdictionary.com/dictionary/english/"$request" | grep "pron type-\"" | sed 's/.*pron type-">\([^<]*\)<.*/\1/' ) #getting transcription
+				trans=$(curl -s -m 6 -L --user-agent "$useragent" $httpsproxy -x "$httpproxy" https://www.collinsdictionary.com/dictionary/english/"$request" | grep "pron type-\"" | head -n 2 | sed -e 's/<[^>]*>//g' |sed -e 's/[,|(|)]//' -e 's/\ //g' ) #getting transcription
 				trans=$(echo "$trans" | awk '{print length, $0}'|sort -nr|head -1| sed 's/^[0-9]* //') #get longest line of transcrition
 				[[ $? != 0 || $trans == ""  ]] &&  { echo "can't get transcription"; error=1; } #bashtrap;
 			    elif [[ $source == "de" ]];then
 				reg_for_tr=$(echo $request | sed -e 's/ö/o/g' -e 's/ä/a/g' -e 's/ü/u/g' -e 's/ß/ss/g') #curl UTF-8 combining characters problem
 				#echo $reg_for_tr    #MUST EXIST EVEN IN COMMENT. STRANGE BASH BUG
-				trans=$(curl -s -m 6 --user-agent "$useragent" $httpsproxy -x "$httpproxy" https://www.collinsdictionary.com/dictionary/german-english/"$reg_for_tr" | sed -n '0,/.*pron.type/  s/.*pron.type-\">\([^<]*\).*/\1/p') #getting transcription only first occurance
+				trans=$(curl -s -m 6 -L --user-agent "$useragent" $httpsproxy -x "$httpproxy" https://www.collinsdictionary.com/dictionary/german-english/"$reg_for_tr" | sed -n '0,/.*pron.type/  s/.*pron.type-\">\([^<]*\).*/\1/p') #getting transcription only first occurance
 				[[ $? != 0 || $trans == ""  ]] &&  { echo "can't get transcription"; error=1; } #bashtrap;
 			    fi
 			fi
