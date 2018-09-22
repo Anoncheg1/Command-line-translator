@@ -581,7 +581,7 @@ main_func(){
 				trans=$(curl -s -m 6 -L --user-agent "$useragent" $httpsproxy -x "$httpproxy" https://www.collinsdictionary.com/dictionary/english/"$(echo $request | tr ' ' - )" | grep "\(in\ British\|pron type-\">[^<]\)"  ) #getting transcription
 				trans_p=$(echo "$trans" | grep -m1 -A2 "British" ) #British first with two sentence
 				[[ $? == 0 ]] && { trans=$trans_p ; }
-			        trans=$(echo "$trans" | grep "pron type-\">[^<]" | sed -e 's/<[^>]*>//g' | sed -e 's/^, //' -e 's/^\ //g' -e 's/(//' -e 's/)\ *//' )
+			        trans=$(echo "$trans" | grep "pron type-\">[^<]" | sed -e 's/<[^>]*>//g' | sed -e 's/^, //' -e 's/^\ //g' -e 's/(//' -e 's/)\ *//' -e 's/ *$//')
 				[[ $? != 0 || $trans == ""  ]] &&  { echo "can't get transcription"; error=1; } #bashtrap;
 			    elif [[ $source == "de" ]];then
 				reg_for_tr=$(echo $request | sed -e 's/ö/o/g' -e 's/ä/a/g' -e 's/ü/u/g' -e 's/ß/ss/g') #curl UTF-8 combining characters problem
