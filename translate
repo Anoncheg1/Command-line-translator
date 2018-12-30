@@ -526,11 +526,19 @@ main_func(){
 				trans_p=$(echo "$trans" | grep -m1 -A2 "British" ) #British first with two sentence
 				[[ $? == 0 ]] && { trans=$trans_p ; }
 			        trans=$(echo "$trans" | grep "pron type-\">[^<]" | sed -e 's/<[^>]*>//g' | sed -e 's/^, //' -e 's/^\ //g' -e 's/(//' -e 's/)\ *//' -e 's/ *$//')
+				#second try with translate.yandex EN
+				if [[ $? != 0 || $trans == ""  ]];then
+				    trans=$(curl -s -m 6 -L --user-agent "$useragent" $httpsproxy -x "$httpproxy" 'https://dictionary.yandex.net/dicservice.json/lookupMultiple?ui=en&srv=tr-text&text='"$(echo $request | tr ' ' - )"'&dict=en-ru.regular' | grep -o '\"ts\":\"[^\"]*' | head -n 1 | sed 's/^.*"//'  ) #yandex transcription
+				fi
 				[[ $? != 0 || $trans == ""  ]] &&  { echo "can't get transcription"; error=1; } #bashtrap;
 			    elif [[ $source == "de" ]];then
 				reg_for_tr=$(echo $request | sed -e 's/ö/o/g' -e 's/ä/a/g' -e 's/ü/u/g' -e 's/ß/ss/g') #curl UTF-8 combining characters problem
 				#echo $reg_for_tr    #MUST EXIST EVEN IN COMMENT. STRANGE BASH BUG
 				trans=$(curl -s -m 6 -L --user-agent "$useragent" $httpsproxy -x "$httpproxy" https://www.collinsdictionary.com/dictionary/german-english/"$reg_for_tr" | sed -n '0,/.*pron.type/  s/.*pron.type-\">\([^<]*\).*/\1/p') #getting transcription only first occurance
+				#second try with translate.yandex DE
+				if [[ $? != 0 || $trans == ""  ]];then
+				    trans=$(curl -s -m 6 -L --user-agent "$useragent" $httpsproxy -x "$httpproxy" 'https://dictionary.yandex.net/dicservice.json/lookupMultiple?ui=en&srv=tr-text&text='"$(echo $request | tr ' ' - )"'&dict=de-ru.regular' | grep -o '\"ts\":\"[^\"]*' | head -n 1 | sed 's/^.*"//'  ) #yandex transcription
+				fi
 				[[ $? != 0 || $trans == ""  ]] &&  { echo "can't get transcription"; error=1; } #bashtrap;
 			    fi
 			fi
